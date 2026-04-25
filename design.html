@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STEFAN EKLUND // stefaneklund.se</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+    :root {
+      --green: #00ff41;
+      --green-dim: #00cc33;
+      --green-muted: #005516;
+      --amber: #ffb700;
+      --cyan: #00e5ff;
+      --bg: #080808;
+      --bg2: #0d0d0d;
+      --scanline: rgba(0,0,0,0.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--green);
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: crosshair;
+    }
+
+    /* CRT scanlines overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 2px,
+        var(--scanline) 2px,
+        var(--scanline) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.35;
+    }
+
+    /* CRT vignette */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: var(--bg);
+      border-bottom: 1px solid var(--green-muted);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      height: 40px;
+    }
+
+    .nav-prompt {
+      color: var(--green-dim);
+      margin-right: 1rem;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    nav a {
+      color: var(--green-dim);
+      text-decoration: none;
+      padding: 0 0.9rem;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      transition: color 0.1s, background 0.1s;
+      border-right: 1px solid var(--green-muted);
+    }
+
+    nav a:first-of-type { border-left: 1px solid var(--green-muted); }
+
+    nav a:hover, nav a.active {
+      color: var(--bg);
+      background: var(--green);
+    }
+
+    nav a::before { content: '['; margin-right: 2px; }
+    nav a::after  { content: ']'; margin-left:  2px; }
+
+    .nav-clock {
+      margin-left: auto;
+      color: var(--green-muted);
+      font-size: 12px;
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      min-height: 100vh;
+      padding: 100px 2rem 4rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 40px;
+      min-height: 100vh;
+    }
+
+    .ascii-art {
+      font-family: 'VT323', monospace;
+      font-size: clamp(14px, 2.2vw, 22px);
+      line-height: 1.2;
+      color: var(--green);
+      white-space: pre;
+      margin-bottom: 2rem;
+      text-shadow: 0 0 8px rgba(0,255,65,0.5);
+    }
+
+    .hero-tagline {
+      font-family: 'VT323', monospace;
+      font-size: clamp(28px, 5vw, 52px);
+      color: var(--green);
+      text-shadow: 0 0 20px rgba(0,255,65,0.6);
+      line-height: 1.1;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-sub {
+      color: var(--green-dim);
+      font-size: 14px;
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.08em;
+    }
+
+    .hero-boot {
+      color: var(--green-muted);
+      font-size: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .hero-boot span { color: var(--green-dim); }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 10px;
+      height: 17px;
+      background: var(--green);
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+      margin-left: 2px;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--green);
+      color: var(--green);
+      text-decoration: none;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .btn:hover {
+      background: var(--green);
+      color: var(--bg);
+    }
+
+    .btn.primary {
+      background: var(--green);
+      color: var(--bg);
+    }
+
+    .btn.primary:hover {
+      background: transparent;
+      color: var(--green);
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      margin-bottom: 3rem;
+    }
+
+    .section-cmd {
+      color: var(--green-muted);
+      font-size: 12px;
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.1em;
+    }
+
+    .section-title {
+      font-family: 'VT323', monospace;
+      font-size: clamp(32px, 5vw, 52px);
+      color: var(--green);
+      text-shadow: 0 0 12px rgba(0,255,65,0.4);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--green-muted);
+      position: relative;
+    }
+
+    .section-divider::after {
+      content: attr(data-label);
+      position: absolute;
+      right: 0;
+      top: -9px;
+      background: var(--bg);
+      padding-left: 1rem;
+      color: var(--green-muted);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+    }
+
+    /* ── OM MIG ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 600px) { .about-grid { grid-template-columns: 1fr; } }
+
+    .about-text p {
+      color: var(--green-dim);
+      margin-bottom: 1rem;
+      font-size: 14px;
+    }
+
+    .about-text p strong { color: var(--green); }
+
+    .stat-box {
+      border: 1px solid var(--green-muted);
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .stat-box::before {
+      content: attr(data-label);
+      position: absolute;
+      top: -9px;
+      left: 1rem;
+      background: var(--bg);
+      padding: 0 0.5rem;
+      color: var(--green-muted);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+    }
+
+    .stat-value {
+      font-family: 'VT323', monospace;
+      font-size: 32px;
+      color: var(--amber);
+      text-shadow: 0 0 10px rgba(255,183,0,0.4);
+    }
+
+    .stat-label { color: var(--green-muted); font-size: 11px; letter-spacing: 0.1em; }
+
+    .skill-bar {
+      margin-bottom: 0.8rem;
+    }
+
+    .skill-name {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--green-dim);
+      margin-bottom: 3px;
+    }
+
+    .skill-track {
+      height: 8px;
+      background: var(--green-muted);
+      position: relative;
+    }
+
+    .skill-fill {
+      height: 100%;
+      background: var(--green);
+      box-shadow: 0 0 6px rgba(0,255,65,0.5);
+      transition: width 1s ease;
+    }
+
+    /* ── CV ── */
+    .timeline { position: relative; }
+
+    .tl-entry {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .tl-entry::before {
+      content: '';
+      position: absolute;
+      left: 130px;
+      top: 0; bottom: -2.5rem;
+      width: 1px;
+      background: var(--green-muted);
+    }
+
+    .tl-entry:last-child::before { display: none; }
+
+    .tl-years {
+      color: var(--amber);
+      font-size: 12px;
+      text-align: right;
+      padding-right: 1.5rem;
+      padding-top: 2px;
+      letter-spacing: 0.05em;
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .tl-body {
+      padding-left: 1.5rem;
+      border-left: 1px solid var(--green-muted);
+      position: relative;
+    }
+
+    .tl-body::before {
+      content: '▶';
+      position: absolute;
+      left: -8px;
+      top: 2px;
+      font-size: 10px;
+      color: var(--green);
+      background: var(--bg);
+    }
+
+    .tl-role {
+      color: var(--green);
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .tl-company {
+      color: var(--amber);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .tl-desc {
+      color: var(--green-dim);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .tl-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+
+    .tag {
+      border: 1px solid var(--green-muted);
+      color: var(--green-muted);
+      font-size: 10px;
+      padding: 1px 6px;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── PROJEKT ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .project-card {
+      border: 1px solid var(--green-muted);
+      padding: 1.2rem;
+      position: relative;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      color: inherit;
+    }
+
+    .project-card:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 16px rgba(0,255,65,0.15);
+    }
+
+    .project-card::before {
+      content: attr(data-num);
+      position: absolute;
+      top: -10px;
+      left: 1rem;
+      background: var(--bg);
+      padding: 0 0.5rem;
+      color: var(--amber);
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+    }
+
+    .project-name {
+      font-size: 15px;
+      color: var(--green);
+      margin-bottom: 0.4rem;
+      margin-top: 0.2rem;
+    }
+
+    .project-desc {
+      font-size: 12px;
+      color: var(--green-dim);
+      line-height: 1.6;
+      margin-bottom: 0.8rem;
+    }
+
+    .project-link {
+      font-size: 11px;
+      color: var(--cyan);
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+
+    .project-link::before { content: '→ '; }
+
+    .project-status {
+      float: right;
+      font-size: 10px;
+      color: var(--green-muted);
+      border: 1px solid var(--green-muted);
+      padding: 1px 5px;
+      letter-spacing: 0.1em;
+    }
+
+    .project-status.live {
+      color: var(--green);
+      border-color: var(--green);
+      text-shadow: 0 0 6px rgba(0,255,65,0.5);
+    }
+
+    /* ── KONTAKT ── */
+    #kontakt { min-height: 60vh; }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 600px) { .contact-grid { grid-template-columns: 1fr; } }
+
+    .contact-line {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--green-muted);
+      color: var(--green-dim);
+      font-size: 13px;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .contact-line:hover { color: var(--green); }
+
+    .contact-line .cl-icon {
+      color: var(--amber);
+      width: 20px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    .contact-line .cl-label {
+      color: var(--green-muted);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      min-width: 60px;
+    }
+
+    .terminal-input {
+      margin-top: 2rem;
+    }
+
+    .terminal-input .prompt-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--green-muted);
+      padding-bottom: 0.5rem;
+    }
+
+    .terminal-input input, .terminal-input textarea {
+      background: transparent;
+      border: none;
+      color: var(--green);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      flex: 1;
+      resize: none;
+      caret-color: var(--green);
+    }
+
+    .terminal-input input::placeholder, .terminal-input textarea::placeholder {
+      color: var(--green-muted);
+    }
+
+    .prompt-icon { color: var(--green-dim); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--green-muted);
+      text-align: center;
+      padding: 2rem;
+      color: var(--green-muted);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+    }
+
+    /* ── GLITCH effect on hover ── */
+    .glitch {
+      position: relative;
+      display: inline-block;
+    }
+
+    .glitch:hover {
+      animation: glitch 0.3s steps(2) forwards;
+    }
+
+    @keyframes glitch {
+      0%   { text-shadow: 2px 0 var(--cyan), -2px 0 #ff0040; }
+      25%  { text-shadow: -2px 0 var(--cyan), 2px 0 #ff0040; clip-path: inset(20% 0 40% 0); }
+      50%  { text-shadow: 2px 2px var(--amber); clip-path: inset(50% 0 10% 0); }
+      75%  { text-shadow: -1px 0 var(--cyan); clip-path: inset(0); }
+      100% { text-shadow: 0 0 12px rgba(0,255,65,0.6); }
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--green-muted); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <span class="nav-prompt">C:\STEFAN&gt;</span>
+    <a href="#hero" class="active">[HOME]</a>
+    <a href="#om-mig">[OM MIG]</a>
+    <a href="#cv">[CV]</a>
+    <a href="#projekt">[PROJEKT]</a>
+    <a href="#kontakt">[KONTAKT]</a>
+    <span class="nav-clock" id="clock">00:00:00</span>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero" data-screen-label="01 Hero">
+    <div class="ascii-art">┌─────────────────────────────────────────┐
+│  ███████╗████████╗███████╗███████╗ █████╗ ███╗   ██╗│
+│  ██╔════╝╚══██╔══╝██╔════╝██╔════╝██╔══██╗████╗  ██║│
+│  ███████╗   ██║   █████╗  █████╗  ███████║██╔██╗ ██║│
+│  ╚════██║   ██║   ██╔══╝  ██╔══╝  ██╔══██║██║╚██╗██║│
+│  ███████║   ██║   ███████╗██║     ██║  ██║██║ ╚████║│
+│  ╚══════╝   ╚═╝   ╚══════╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝│
+└─────────────────────────────────────────┘</div>
+
+    <div class="hero-tagline glitch">STEFAN EKLUND</div>
+    <div class="hero-sub">// UTVECKLARE &amp; SKAPARE &nbsp;·&nbsp; STOCKHOLM, SE</div>
+
+    <div class="hero-boot">
+      <span>SYSTEM:</span> stefaneklund.se v1.0 &nbsp;|&nbsp;
+      <span>STATUS:</span> ONLINE &nbsp;|&nbsp;
+      <span>UPTIME:</span> <span id="uptime">0d 0h 0m</span>
+    </div>
+
+    <div class="hero-boot">
+      &gt; Välkommen. Laddar profil... <span style="color:var(--green)">OK</span><br>
+      &gt; Initierar projekt... <span style="color:var(--green)">OK</span><br>
+      &gt; Redo.<span class="cursor-blink"></span>
+    </div>
+
+    <div class="hero-actions">
+      <a class="btn primary" href="#projekt">SE PROJEKT</a>
+      <a class="btn" href="#cv">CV / ERFARENHET</a>
+      <a class="btn" href="#kontakt">KONTAKTA MIG</a>
+    </div>
+  </section>
+
+  <!-- OM MIG -->
+  <section id="om-mig" data-screen-label="02 Om mig">
+    <div class="section-header">
+      <div class="section-cmd">&gt; cat om_mig.txt</div>
+      <div class="section-title">OM MIG</div>
+      <div class="section-divider" data-label="README.md"></div>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          Hej! Jag heter <strong>Stefan Eklund</strong> och jag är en passionerad
+          utvecklare och byggare med ett brett intresse för teknik, kreativitet
+          och problemlösning.
+        </p>
+        <p>
+          Jag gillar att skapa saker – från webappar och verktyg till
+          experiment och sidoprojekt. Med AI-verktyg som Lovable bygger jag
+          snabbt idéer till fungerande produkter.
+        </p>
+        <p>
+          På fritiden spelar jag retrogames, hackar på egna projekt och
+          utforskar vad som är möjligt med modern tech.
+        </p>
+
+        <div style="margin-top:1.5rem;">
+          <div class="skill-bar">
+            <div class="skill-name"><span>Frontend / Webbutveckling</span><span>90%</span></div>
+            <div class="skill-track"><div class="skill-fill" style="width:90%"></div></div>
+          </div>
+          <div class="skill-bar">
+            <div class="skill-name"><span>AI &amp; No-code tools</span><span>85%</span></div>
+            <div class="skill-track"><div class="skill-fill" style="width:85%"></div></div>
+          </div>
+          <div class="skill-bar">
+            <div class="skill-name"><span>Product thinking</span><span>80%</span></div>
+            <div class="skill-track"><div class="skill-fill" style="width:80%"></div></div>
+          </div>
+          <div class="skill-bar">
+            <div class="skill-name"><span>Backend / Databaser</span><span>70%</span></div>
+            <div class="skill-track"><div class="skill-fill" style="width:70%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="stat-box" data-label="PROJEKT">
+          <div class="stat-value">12+</div>
+          <div class="stat-label">SKAPADE PROJEKT</div>
+        </div>
+        <div class="stat-box" data-label="ERFARENHET">
+          <div class="stat-value">10+</div>
+          <div class="stat-label">ÅRS ERFARENHET</div>
+        </div>
+        <div class="stat-box" data-label="TECH">
+          <div class="stat-value" style="font-size:18px; line-height:1.8; color:var(--green-dim); font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:0.05em">
+            React · TypeScript · Node.js<br>
+            Supabase · PostgreSQL<br>
+            Lovable · Cursor · Claude<br>
+            Git · Docker · Figma
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CV -->
+  <section id="cv" data-screen-label="03 CV">
+    <div class="section-header">
+      <div class="section-cmd">&gt; cat erfarenhet.log</div>
+      <div class="section-title">CV / ERFARENHET</div>
+      <div class="section-divider" data-label="TIMELINE.txt"></div>
+    </div>
+
+    <div class="timeline">
+
+      <div class="tl-entry">
+        <div class="tl-years">2022<br>→ nu</div>
+        <div class="tl-body">
+          <div class="tl-role">Produktutvecklare / Grundare</div>
+          <div class="tl-company">EGNA PROJEKT &amp; FREELANCE</div>
+          <div class="tl-desc">Bygger webbapplikationer och produkter med hjälp av moderna AI-verktyg. Idé till lansering på rekordtid med Lovable, Cursor och Claude.</div>
+          <div class="tl-tags">
+            <span class="tag">LOVABLE</span>
+            <span class="tag">REACT</span>
+            <span class="tag">SUPABASE</span>
+            <span class="tag">AI</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-entry">
+        <div class="tl-years">2018<br>→ 2022</div>
+        <div class="tl-body">
+          <div class="tl-role">Senior Utvecklare</div>
+          <div class="tl-company">TEKNIKFÖRETAG AB · STOCKHOLM</div>
+          <div class="tl-desc">Ledde frontend-utveckling för SaaS-plattform. Ansvarig för arkitektur, kodkvalitet och teamets tekniska riktning. Byggde kundvända gränssnitt i React.</div>
+          <div class="tl-tags">
+            <span class="tag">REACT</span>
+            <span class="tag">TYPESCRIPT</span>
+            <span class="tag">NODE.JS</span>
+            <span class="tag">TEAMLEAD</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-entry">
+        <div class="tl-years">2014<br>→ 2018</div>
+        <div class="tl-body">
+          <div class="tl-role">Webbutvecklare</div>
+          <div class="tl-company">BYRÅ &amp; KONSULT · STOCKHOLM</div>
+          <div class="tl-desc">Fullstackutveckling för kunder inom e-handel, media och startup-sektorn. Byggde allt från enkla landningssidor till komplexa applikationer.</div>
+          <div class="tl-tags">
+            <span class="tag">JAVASCRIPT</span>
+            <span class="tag">PHP</span>
+            <span class="tag">MYSQL</span>
+            <span class="tag">WORDPRESS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tl-entry">
+        <div class="tl-years">2010<br>→ 2014</div>
+        <div class="tl-body">
+          <div class="tl-role">Utbildning</div>
+          <div class="tl-company">DATATEKNIK · KTH / ANNAN HÖGSKOLA</div>
+          <div class="tl-desc">Kandidat i datateknik / systemutveckling. Grundlade teknisk bas inom algoritmer, databaser, nätverk och mjukvaruutveckling.</div>
+          <div class="tl-tags">
+            <span class="tag">C++</span>
+            <span class="tag">JAVA</span>
+            <span class="tag">ALGORITHMS</span>
+            <span class="tag">DATABASER</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PROJEKT -->
+  <section id="projekt" data-screen-label="04 Projekt">
+    <div class="section-header">
+      <div class="section-cmd">&gt; ls -la ~/projekt/</div>
+      <div class="section-title">PROJEKT</div>
+      <div class="section-divider" data-label="CATALOG.idx"></div>
+    </div>
+
+    <div class="projects-grid">
+
+      <a class="project-card" href="#" data-num="01" target="_blank">
+        <span class="project-status live">LIVE</span>
+        <div class="project-name">PROJEKT #1</div>
+        <div class="project-desc">En applikation byggd med Lovable. Beskriv ditt projekt här – vad det gör, vem det är för och vad du är stolt över.</div>
+        <div class="project-link">lovable.app/projekt</div>
+      </a>
+
+      <a class="project-card" href="#" data-num="02" target="_blank">
+        <span class="project-status live">LIVE</span>
+        <div class="project-name">PROJEKT #2</div>
+        <div class="project-desc">Ytterligare ett projekt. Kanske ett verktyg, ett spel, eller en tjänst du byggt. Lägg till länk och beskrivning.</div>
+        <div class="project-link">lovable.app/projekt2</div>
+      </a>
+
+      <a class="project-card" href="#" data-num="03" target="_blank">
+        <span class="project-status">WIP</span>
+        <div class="project-name">PROJEKT #3</div>
+        <div class="project-desc">Under utveckling. Nytt projekt som snart lanseras. Håll utkik – spännande grejer är på gång.</div>
+        <div class="project-link">coming soon</div>
+      </a>
+
+      <a class="project-card" href="#" data-num="04" target="_blank">
+        <span class="project-status">WIP</span>
+        <div class="project-name">PROJEKT #4</div>
+        <div class="project-desc">Experiment eller sidoprojekt. Kanske open source, kanske ett roligt hack. Allt räknas.</div>
+        <div class="project-link">github.com/stefan</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- KONTAKT -->
+  <section id="kontakt" data-screen-label="05 Kontakt">
+    <div class="section-header">
+      <div class="section-cmd">&gt; ping <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2251564744434c6247494e574c460c5147">[email&#160;protected]</a></div>
+      <div class="section-title">KONTAKT</div>
+      <div class="section-divider" data-label="SOCKET.conn"></div>
+    </div>
+
+    <div class="contact-grid">
+      <div>
+        <a class="contact-line" href="/cdn-cgi/l/email-protection#f98a8d9c9f9897b98a8d9c9f98979c92958c979dd78a9c">
+          <span class="cl-icon">@</span>
+          <span class="cl-label">EMAIL</span>
+          <span class="__cf_email__" data-cfemail="a7d4d3c2c1c6c9e7d4d3c2c1c6c9c2cccbd2c9c389d4c2">[email&#160;protected]</span>
+        </a>
+        <a class="contact-line" href="https://linkedin.com/in/stefaneklund" target="_blank">
+          <span class="cl-icon">in</span>
+          <span class="cl-label">LINKEDIN</span>
+          /in/stefaneklund
+        </a>
+        <a class="contact-line" href="https://github.com/stefaneklund" target="_blank">
+          <span class="cl-icon">&lt;/&gt;</span>
+          <span class="cl-label">GITHUB</span>
+          github.com/stefaneklund
+        </a>
+        <a class="contact-line" href="https://twitter.com/stefaneklund" target="_blank">
+          <span class="cl-icon">𝕏</span>
+          <span class="cl-label">TWITTER</span>
+          @stefaneklund
+        </a>
+      </div>
+
+      <div>
+        <div style="color:var(--green-dim); font-size:13px; margin-bottom:1.5rem;">
+          &gt; Har du ett projekt du vill diskutera, en fråga, eller bara vill
+          säga hej? Hör av dig!
+        </div>
+        <div class="terminal-input">
+          <div class="prompt-line">
+            <span class="prompt-icon">user@you:~$</span>
+            <input type="text" placeholder="ditt namn..." id="msg-name">
+          </div>
+          <div class="prompt-line" style="margin-top:0.5rem;">
+            <span class="prompt-icon">msg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:~$</span>
+            <input type="text" placeholder="ditt meddelande..." id="msg-text">
+          </div>
+          <div style="margin-top:1rem;">
+            <button class="btn" onclick="sendMsg()">SKICKA SIGNAL</button>
+          </div>
+          <div id="msg-feedback" style="margin-top:0.8rem; color:var(--green-dim); font-size:12px;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div style="margin-bottom:0.5rem;">&copy; 2026 STEFAN EKLUND &nbsp;·&nbsp; STEFANEKLUND.SE</div>
+    <div style="color:var(--green-muted);">MADE WITH KEYBOARD &amp; COFFEE &nbsp;·&nbsp; NO COOKIES &nbsp;·&nbsp; PURE HTML</div>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2,'0');
+      const m = String(now.getMinutes()).padStart(2,'0');
+      const s = String(now.getSeconds()).padStart(2,'0');
+      document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Uptime from page load
+    const startTime = Date.now();
+    function updateUptime() {
+      const diff = Date.now() - startTime;
+      const s = Math.floor(diff/1000);
+      const m = Math.floor(s/60);
+      const h = Math.floor(m/60);
+      const d = Math.floor(h/24);
+      document.getElementById('uptime').textContent = `${d}d ${h%24}h ${m%60}m ${s%60}s`;
+    }
+    setInterval(updateUptime, 1000);
+
+    // Active nav on scroll
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('nav a');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(a => a.classList.remove('active'));
+          const id = e.target.id;
+          const link = document.querySelector(`nav a[href="#${id}"]`);
+          if (link) link.classList.add('active');
+        }
+      });
+    }, { threshold: 0.4 });
+    sections.forEach(s => observer.observe(s));
+
+    // Send message mock
+    function sendMsg() {
+      const name = document.getElementById('msg-name').value.trim();
+      const msg  = document.getElementById('msg-text').value.trim();
+      const fb   = document.getElementById('msg-feedback');
+      if (!name || !msg) {
+        fb.textContent = '> FEL: name och message krävs.';
+        fb.style.color = '#ff4040';
+        return;
+      }
+      fb.style.color = 'var(--green)';
+      fb.textContent = `> SIGNAL MOTTAGEN från ${name}. Svarar inom kort...`;
+      document.getElementById('msg-name').value = '';
+      document.getElementById('msg-text').value = '';
+    }
+
+    // Tweaks panel
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "accentColor": "#00ff41",
+      "bgColor": "#292323",
+      "showScanlines": true,
+      "showUptime": true
+    }/*EDITMODE-END*/;
+
+    window.addEventListener('message', e => {
+      if (e.data?.type === '__activate_edit_mode') showTweaks();
+      if (e.data?.type === '__deactivate_edit_mode') hideTweaks();
+    });
+    window.parent.postMessage({type: '__edit_mode_available'}, '*');
+
+    let tweakState = {...TWEAK_DEFAULTS};
+
+    function applyTweaks() {
+      document.documentElement.style.setProperty('--green', tweakState.accentColor);
+      document.documentElement.style.setProperty('--bg', tweakState.bgColor);
+      document.documentElement.style.setProperty('--bg2', tweakState.bgColor);
+      document.querySelector('body::before') && null;
+      // Scanlines via overlay element
+      const ol = document.getElementById('scanline-overlay');
+      if (ol) ol.style.display = tweakState.showScanlines ? 'block' : 'none';
+    }
+
+    function showTweaks() {
+      document.getElementById('tweaks-panel').style.display = 'block';
+    }
+    function hideTweaks() {
+      document.getElementById('tweaks-panel').style.display = 'none';
+    }
+  </script>
+
+  <!-- Tweaks panel (simple) -->
+  <div id="tweaks-panel" style="display:none; position:fixed; bottom:20px; right:20px; z-index:10000; background:#0d0d0d; border:1px solid #005516; padding:1.2rem; width:240px; font-family:'Share Tech Mono',monospace; font-size:12px; color:#00ff41;">
+    <div style="display:flex; justify-content:space-between; margin-bottom:1rem; align-items:center;">
+      <span style="letter-spacing:0.1em;">// TWEAKS</span>
+      <button onclick="hideTweaks(); window.parent.postMessage({type:'__edit_mode_dismissed'},'*')" style="background:none; border:none; color:#005516; cursor:pointer; font-size:16px;">✕</button>
+    </div>
+
+    <label style="display:block; margin-bottom:0.5rem; color:#005516; letter-spacing:0.1em;">ACCENT COLOR</label>
+    <input type="color" id="tw-accent" value="#00ff41"
+      style="width:100%; height:28px; border:1px solid #005516; background:#000; cursor:pointer; margin-bottom:1rem;"
+      oninput="tweakState.accentColor=this.value; applyTweaks(); window.parent.postMessage({type:'__edit_mode_set_keys', edits:{accentColor:this.value}},'*')">
+
+    <label style="display:block; margin-bottom:0.5rem; color:#005516; letter-spacing:0.1em;">BAKGRUND</label>
+    <input type="color" id="tw-bg" value="#080808"
+      style="width:100%; height:28px; border:1px solid #005516; background:#000; cursor:pointer; margin-bottom:1rem;"
+      oninput="tweakState.bgColor=this.value; applyTweaks(); window.parent.postMessage({type:'__edit_mode_set_keys', edits:{bgColor:this.value}},'*')">
+
+    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; color:#005516; margin-bottom:0.5rem;">
+      <input type="checkbox" id="tw-scanlines" checked
+        style="accent-color:#00ff41"
+        onchange="tweakState.showScanlines=this.checked; document.getElementById('scanline-overlay').style.opacity=this.checked?'0.35':'0'; window.parent.postMessage({type:'__edit_mode_set_keys', edits:{showScanlines:this.checked}},'*')">
+      SCANLINES
+    </label>
+  </div>
+
+  <!-- Scanline overlay (togglable) -->
+  <div id="scanline-overlay" style="position:fixed; inset:0; background:repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(0,0,0,0.25) 2px, rgba(0,0,0,0.25) 4px); pointer-events:none; z-index:9997; opacity:0.35;"></div>
+
+</body>
+</html>
