@@ -34,3 +34,11 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Whenworks (`/whenworks`)
+
+A scheduling app at [stefaneklund.se/whenworks](https://stefaneklund.se/whenworks). It has its own root layout in `app/whenworks/`, and the main site lives in `app/(site)/`.
+
+**Database (required in production):** In the Vercel project, open *Storage* → *Create Database* → **Upstash for Redis**, and connect it to the project. This sets the `KV_REST_API_URL` and `KV_REST_API_TOKEN` variables, or `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`; either pair works. Events expire after 60 days automatically. Locally, `npm run dev` uses an in-memory store when these variables are missing.
+
+**Email (optional):** Set `RESEND_API_KEY` and `WW_EMAIL_FROM` (e.g. `Whenworks <whenworks@stefaneklund.se>`, on a domain verified in Resend) to let organizers email guests when the time is set. Without them, the email toggle is hidden.

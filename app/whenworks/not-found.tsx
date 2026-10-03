@@ -1,0 +1,5 @@
+import NotFoundApp from './_components/not-found'
+
+export default function NotFound() {
+  return <NotFoundApp />
+}
