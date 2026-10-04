@@ -56,6 +56,8 @@ function FinalBanner({ ev }: { ev: GuestView }) {
   )
 }
 
+const NEW = '__new__'
+
 function Join({
   ev,
   guest,
@@ -69,18 +71,44 @@ function Join({
 }) {
   const { S } = useWW()
   const [loading, setLoading] = useState(false)
+  // With a guest list, guests pick their name from a dropdown (or add themselves).
+  const hasList = ev.participants.length > 0
+  const [choice, setChoice] = useState(() =>
+    !hasList ? '' : ev.participants.includes(guest.name) ? guest.name : guest.name ? NEW : '',
+  )
+
+  /** Earlier answers for a name, so returning guests can edit them. */
+  const answersOf = async (name: string) => {
+    const r = ev.responders.find((p) => p.name.toLowerCase() === name.toLowerCase())
+    if (!r) return {}
+    if (r.answers) return r.answers
+    setLoading(true)
+    const res = await getMyAnswers(ev.slug, name).catch(() => null)
+    setLoading(false)
+    return res?.ok ? res.data : {}
+  }
   const pickExisting = async (name: string) => {
-    const known = ev.responders.find((p) => p.name === name)?.answers
-    let answers = known
-    if (!answers) {
-      setLoading(true)
-      const res = await getMyAnswers(ev.slug, name).catch(() => null)
-      setLoading(false)
-      answers = res?.ok ? res.data : {}
-    }
+    const answers = await answersOf(name)
     setGuest({ name, email: '', answers: { ...answers }, pending: [] })
     onNext()
   }
+  const taken =
+    choice === NEW && ev.participants.some((n) => n.toLowerCase() === guest.name.trim().toLowerCase())
+  const next = () => (hasList && choice !== NEW ? pickExisting(choice) : onNext())
+
+  const email = (
+    <Field label={S.g_email} optional hint={S.g_email_d}>
+      <input
+        className="inp"
+        type="email"
+        maxLength={200}
+        value={guest.email}
+        placeholder="name@mail.com"
+        onChange={(e) => setGuest({ ...guest, email: e.target.value })}
+      />
+    </Field>
+  )
+
   return (
     <>
       <FinalBanner ev={ev} />
@@ -90,60 +118,83 @@ function Join({
           <p>{ev.roundNote || S.g_new_round_d}</p>
         </div>
       )}
-      <CardHead title={S.g_name} sub={S.g_name_d} />
-      <div className="fields">
-        <Field label={S.f_name}>
-          <input
-            className="inp"
-            autoFocus
-            maxLength={60}
-            value={guest.name}
-            placeholder={S.g_name_ph}
-            onChange={(e) => setGuest({ ...guest, name: e.target.value })}
-          />
-        </Field>
-        <Field label={S.g_email} optional hint={S.g_email_d}>
-          <input
-            className="inp"
-            type="email"
-            maxLength={200}
-            value={guest.email}
-            placeholder="name@mail.com"
-            onChange={(e) => setGuest({ ...guest, email: e.target.value })}
-          />
-        </Field>
-      </div>
-      {ev.responders.length > 0 && (
-        <div className="returning">
-          <span className="lbl">{S.g_returning}</span>
-          <div className="chips">
-            {ev.responders.map((p) => (
-              <button key={p.name} className="chip chip-av" disabled={loading} onClick={() => pickExisting(p.name)}>
-                <Avatar name={p.name} size={22} />
-                {p.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      {ev.pendingInvitees.length > 0 && (
-        <div className="returning">
-          <span className="lbl">{S.g_invited_pick}</span>
-          <div className="chips">
-            {ev.pendingInvitees.map((n) => (
-              <button
-                key={n}
-                className={'chip chip-av' + (guest.name === n ? ' on' : '')}
-                onClick={() => setGuest({ ...guest, name: n })}
+      {hasList ? (
+        <>
+          <CardHead title={S.g_pick_title} sub={ev.allowSelfAdd ? S.g_pick_sub_add : S.g_pick_sub} />
+          <div className="fields">
+            <Field label={S.f_name}>
+              <select
+                className="inp"
+                value={choice}
+                onChange={(e) => {
+                  setChoice(e.target.value)
+                  setGuest({ ...guest, name: e.target.value === NEW ? '' : e.target.value })
+                }}
               >
-                <Avatar name={n} size={22} />
-                {n}
-              </button>
-            ))}
+                <option value="" disabled>
+                  {S.g_pick_ph}
+                </option>
+                {ev.participants.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+                {ev.allowSelfAdd && <option value={NEW}>{S.g_pick_new}</option>}
+              </select>
+            </Field>
+            {choice === NEW && (
+              <Field label={S.g_name}>
+                <input
+                  className="inp"
+                  autoFocus
+                  maxLength={60}
+                  value={guest.name}
+                  placeholder={S.g_name_ph}
+                  onChange={(e) => setGuest({ ...guest, name: e.target.value })}
+                />
+              </Field>
+            )}
+            {taken && <p className="err">{S.g_name_taken}</p>}
+            {choice && email}
           </div>
-        </div>
+          <Actions
+            onNext={next}
+            nextLabel={S.g_start}
+            nextDisabled={!choice || (choice === NEW && (!guest.name.trim() || taken)) || loading}
+          />
+        </>
+      ) : (
+        <>
+          <CardHead title={S.g_name} sub={S.g_name_d} />
+          <div className="fields">
+            <Field label={S.f_name}>
+              <input
+                className="inp"
+                autoFocus
+                maxLength={60}
+                value={guest.name}
+                placeholder={S.g_name_ph}
+                onChange={(e) => setGuest({ ...guest, name: e.target.value })}
+              />
+            </Field>
+            {email}
+          </div>
+          {ev.responders.length > 0 && (
+            <div className="returning">
+              <span className="lbl">{S.g_returning}</span>
+              <div className="chips">
+                {ev.responders.map((p) => (
+                  <button key={p.name} className="chip chip-av" disabled={loading} onClick={() => pickExisting(p.name)}>
+                    <Avatar name={p.name} size={22} />
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <Actions onNext={next} nextLabel={S.g_start} nextDisabled={!guest.name.trim()} />
+        </>
       )}
-      <Actions onNext={onNext} nextLabel={S.g_start} nextDisabled={!guest.name.trim()} />
     </>
   )
 }
@@ -165,7 +216,7 @@ function Respond({
   const [sd, setSd] = useState('')
   const [st, setSt] = useState('')
   const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState(false)
+  const [err, setErr] = useState('')
   const me = guest.name.trim().toLowerCase()
   const slots = [...ev.slots, ...guest.pending]
     .sort((a, b) => (a.date + (a.time ?? '')).localeCompare(b.date + (b.time ?? '')))
@@ -194,7 +245,7 @@ function Respond({
 
   const send = async () => {
     setBusy(true)
-    setErr(false)
+    setErr('')
     const res = await submitAnswers(ev.slug, {
       name: guest.name,
       email: guest.email,
@@ -203,7 +254,7 @@ function Respond({
     }).catch(() => null)
     setBusy(false)
     if (res?.ok) onSent(res.data)
-    else setErr(true)
+    else setErr(res?.error === 'not_listed' ? S.g_not_listed : S.err)
   }
 
   return (
@@ -269,7 +320,7 @@ function Respond({
           </div>
         </div>
       )}
-      {err && <p className="err">{S.err}</p>}
+      {err && <p className="err">{err}</p>}
       <div className="actions">
         <button className="btn btn-quiet" onClick={onBack}>
           {Ic.arrowL}

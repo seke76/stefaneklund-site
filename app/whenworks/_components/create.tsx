@@ -162,16 +162,27 @@ function WhenRange({ range, setRange }: { range: Range; setRange: (r: Range) => 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** Step 3: people to email the link to. Optional. */
-function GuestsStep({ invitees, setInvitees }: { invitees: Invitee[]; setInvitees: (v: Invitee[]) => void }) {
+function GuestsStep({
+  invitees,
+  setInvitees,
+  allowSelfAdd,
+  setAllowSelfAdd,
+}: {
+  invitees: Invitee[]
+  setInvitees: (v: Invitee[]) => void
+  allowSelfAdd: boolean
+  setAllowSelfAdd: (v: boolean) => void
+}) {
   const { S } = useWW()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [err, setErr] = useState('')
   const add = () => {
+    const n = name.trim()
     const e = email.trim()
-    if (!EMAIL_RE.test(e)) return setErr(S.invalid_email)
-    if (invitees.some((i) => i.email.toLowerCase() === e.toLowerCase())) return setErr(S.dup_guest)
-    setInvitees([...invitees, { name: name.trim(), email: e }])
+    if (e && !EMAIL_RE.test(e)) return setErr(S.invalid_email)
+    if (invitees.some((i) => i.name.toLowerCase() === n.toLowerCase())) return setErr(S.dup_guest)
+    setInvitees([...invitees, { name: n, email: e }])
     setName('')
     setEmail('')
     setErr('')
@@ -186,9 +197,18 @@ function GuestsStep({ invitees, setInvitees }: { invitees: Invitee[]; setInvitee
         }}
       >
         <Field label={S.f_guest_name}>
-          <input className="inp" value={name} maxLength={60} placeholder={S.f_name_ph} onChange={(e) => setName(e.target.value)} />
+          <input
+            className="inp"
+            value={name}
+            maxLength={60}
+            placeholder={S.f_name_ph}
+            onChange={(e) => {
+              setName(e.target.value)
+              setErr('')
+            }}
+          />
         </Field>
-        <Field label={S.f_guest_email}>
+        <Field label={S.f_guest_email} optional>
           <input
             className="inp"
             type="email"
@@ -201,7 +221,7 @@ function GuestsStep({ invitees, setInvitees }: { invitees: Invitee[]; setInvitee
             }}
           />
         </Field>
-        <button type="submit" className="btn btn-ghost" disabled={!name.trim() || !email.trim() || invitees.length >= 50}>
+        <button type="submit" className="btn btn-ghost" disabled={!name.trim() || invitees.length >= 50}>
           {Ic.plus}
           {S.g_add}
         </button>
@@ -216,18 +236,18 @@ function GuestsStep({ invitees, setInvitees }: { invitees: Invitee[]; setInvitee
         ) : (
           <ul className="slot-list">
             {invitees.map((i) => (
-              <li key={i.email}>
+              <li key={i.name}>
                 <span className="inv">
                   <Avatar name={i.name} size={32} />
                   <span className="st">
                     <b>{i.name}</b>
-                    <span>{i.email}</span>
+                    {i.email && <span>{i.email}</span>}
                   </span>
                 </span>
                 <button
                   className="icon-btn"
                   aria-label={S.remove}
-                  onClick={() => setInvitees(invitees.filter((x) => x.email !== i.email))}
+                  onClick={() => setInvitees(invitees.filter((x) => x.name !== i.name))}
                 >
                   {Ic.x}
                 </button>
@@ -236,6 +256,9 @@ function GuestsStep({ invitees, setInvitees }: { invitees: Invitee[]; setInvitee
           </ul>
         )}
       </div>
+      {invitees.length > 0 && (
+        <Toggle checked={allowSelfAdd} onChange={setAllowSelfAdd} title={S.self_add} desc={S.self_add_d} />
+      )}
     </>
   )
 }
@@ -264,6 +287,7 @@ type Draft = {
   range: Range
   allowSuggest: boolean
   invitees: Invitee[]
+  allowSelfAdd: boolean
   organizer: string
   deadline: string
   mustAll: boolean
@@ -280,6 +304,7 @@ const EMPTY: Draft = {
   range: { start: '', end: null },
   allowSuggest: true,
   invitees: [],
+  allowSelfAdd: true,
   organizer: '',
   deadline: '',
   mustAll: true,
@@ -318,6 +343,7 @@ function CreateFlow() {
       mustAll: ev.mustAll,
       showOthers: ev.showOthers,
       invitees: ev.invitees,
+      allowSelfAdd: ev.allowSelfAdd,
       lang,
       origin: window.location.origin,
     }).catch(() => null)
@@ -416,7 +442,12 @@ function CreateFlow() {
     return (
       <FlowLayout step={3}>
         <CardHead title={S.guests_title} sub={S.guests_sub} />
-        <GuestsStep invitees={ev.invitees} setInvitees={(v) => set('invitees', v)} />
+        <GuestsStep
+          invitees={ev.invitees}
+          setInvitees={(v) => set('invitees', v)}
+          allowSelfAdd={ev.allowSelfAdd}
+          setAllowSelfAdd={(v) => set('allowSelfAdd', v)}
+        />
         <Actions onBack={() => go(2)} onNext={() => go(4)} />
       </FlowLayout>
     )

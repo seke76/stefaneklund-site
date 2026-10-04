@@ -13,7 +13,7 @@ export type Slot = {
 
 export type Range = { start: string; end: string | null }
 
-export type Invitee = { name: string; email: string }
+export type Invitee = { name: string; email: string } // email may be ''
 
 /** Stored event document. Never sent to guests as-is. */
 export type EventDoc = {
@@ -38,6 +38,7 @@ export type EventDoc = {
   finalNote: string
   invitees?: Invitee[] // missing on events created before invitations existed
   invitesSent?: number
+  allowSelfAdd?: boolean // with a guest list: may people not on it add themselves? (default true)
   createdAt: number
   expiresAt: number
 }
@@ -69,8 +70,11 @@ export type EventInfo = {
 }
 
 export type GuestResponder = { name: string; answers?: Record<string, Answer> }
-/** pendingInvitees: names (never emails) of invited people who haven't answered yet. */
-export type GuestView = EventInfo & { responders: GuestResponder[]; pendingInvitees: string[] }
+/**
+ * participants: names (never emails) on the guest list plus people who have answered.
+ * Empty when the organizer added no guest list; then guests just type their name.
+ */
+export type GuestView = EventInfo & { responders: GuestResponder[]; participants: string[]; allowSelfAdd: boolean }
 
 export type AdminResponse = { name: string; hasEmail: boolean; answers: Record<string, Answer> }
 export type AdminView = EventInfo & {
@@ -78,6 +82,7 @@ export type AdminView = EventInfo & {
   emailEnabled: boolean
   pendingInvitees: string[]
   invitesSent: number
+  inviteEmails: number // invitees with an address
   notifyCount: number // unique addresses that get the "time is set" email
 }
 
@@ -97,6 +102,7 @@ export type CreateInput = {
   mustAll: boolean
   showOthers: boolean
   invitees: Invitee[]
+  allowSelfAdd: boolean
   lang: Lang
   origin: string
 }

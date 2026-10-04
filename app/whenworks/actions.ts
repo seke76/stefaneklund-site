@@ -8,6 +8,7 @@ import {
   hashToken,
   loadAdmin,
   loadEvent,
+  mayAnswer,
   nameKey,
   newSlug,
   newToken,
@@ -46,9 +47,10 @@ function cleanInvitees(list: unknown): Invitee[] {
   const out: Invitee[] = []
   for (const x of list.slice(0, MAX_INVITEES)) {
     const name = str(x?.name, 60)
-    const email = str(x?.email, 200)
-    if (!name || !EMAIL_RE.test(email) || seen.has(email.toLowerCase())) continue
-    seen.add(email.toLowerCase())
+    const emailIn = str(x?.email, 200)
+    const email = EMAIL_RE.test(emailIn) ? emailIn : '' // email is optional
+    if (!name || seen.has(nameKey(name))) continue
+    seen.add(nameKey(name))
     out.push({ name, email })
   }
   return out
@@ -123,6 +125,7 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
       finalNote: '',
       invitees: cleanInvitees(input.invitees),
       invitesSent: 0,
+      allowSelfAdd: input.allowSelfAdd !== false,
       createdAt: now,
       expiresAt: now + TTL_MS,
     }
@@ -131,11 +134,12 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
     while (await store.getEvent(ev.slug)) ev.slug = newSlug()
 
     const origin = originOf(input.origin)
-    if (ev.invitees!.length && origin) {
+    const withEmail = ev.invitees!.filter((i) => i.email)
+    if (withEmail.length && origin) {
       const S = WW_STR[langOf(input.lang)]
       const link = `${origin}/whenworks/e/${ev.slug}`
       ev.invitesSent = await sendEmails(
-        ev.invitees!.map((i) => ({
+        withEmail.map((i) => ({
           to: i.email,
           subject: S.mail_invite_subject(organizer, title),
           text: S.invite_msg(organizer, title, link),
@@ -173,6 +177,7 @@ export async function submitAnswers(
     const { ev } = l
     const name = str(input.name, 60)
     if (!name) return fail('invalid')
+    if (!mayAnswer(l, name)) return fail('not_listed')
     const emailIn = str(input.email, 200)
     const email = EMAIL_RE.test(emailIn) ? emailIn : ''
 

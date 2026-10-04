@@ -78,11 +78,28 @@ export function notifyAddresses({ ev, responses }: Loaded) {
   return all.filter((e) => e && !seen.has(e.toLowerCase()) && seen.add(e.toLowerCase()))
 }
 
+/** Guest list names plus everyone who answered, guest list order first. Empty without a guest list. */
+function participants({ ev, responses }: Loaded) {
+  const list = ev.invitees ?? []
+  if (!list.length) return []
+  const seen = new Set<string>()
+  return [...list.map((i) => i.name), ...responses.map((r) => r.name)].filter(
+    (n) => !seen.has(nameKey(n)) && seen.add(nameKey(n)),
+  )
+}
+
+/** With a guest list and self-add turned off, only names on the list (or already answered) may answer. */
+export function mayAnswer(l: Loaded, name: string) {
+  if (!(l.ev.invitees ?? []).length || l.ev.allowSelfAdd !== false) return true
+  return participants(l).some((n) => nameKey(n) === nameKey(name))
+}
+
 export function toGuestView(l: Loaded): GuestView {
   return {
     ...info(l),
     responders: l.responses.map((r) => (l.ev.showOthers ? { name: r.name, answers: r.answers } : { name: r.name })),
-    pendingInvitees: pendingInvitees(l),
+    participants: participants(l),
+    allowSelfAdd: l.ev.allowSelfAdd !== false,
   }
 }
 
@@ -93,6 +110,7 @@ export function toAdminView(l: Loaded): AdminView {
     emailEnabled: emailEnabled(),
     pendingInvitees: pendingInvitees(l),
     invitesSent: l.ev.invitesSent ?? 0,
+    inviteEmails: (l.ev.invitees ?? []).filter((i) => i.email).length,
     notifyCount: notifyAddresses(l).length,
   }
 }

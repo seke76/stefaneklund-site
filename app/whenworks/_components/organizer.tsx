@@ -45,7 +45,7 @@ function Created({ ev, links }: { ev: AdminView; links: Links }) {
         {ev.invitesSent > 0 ? (
           <p className="invite-status ok">{S.invites_sent(ev.invitesSent)}</p>
         ) : (
-          ev.pendingInvitees.length > 0 && (
+          ev.inviteEmails > 0 && (
             <p className="invite-status">{ev.emailEnabled ? S.invites_failed : S.invites_off}</p>
           )
         )}
