@@ -13,6 +13,8 @@ export type Slot = {
 
 export type Range = { start: string; end: string | null }
 
+export type Invitee = { name: string; email: string }
+
 /** Stored event document. Never sent to guests as-is. */
 export type EventDoc = {
   slug: string
@@ -34,6 +36,8 @@ export type EventDoc = {
   roundNote: string
   finalSlotId: string | null
   finalNote: string
+  invitees?: Invitee[] // missing on events created before invitations existed
+  invitesSent?: number
   createdAt: number
   expiresAt: number
 }
@@ -65,10 +69,17 @@ export type EventInfo = {
 }
 
 export type GuestResponder = { name: string; answers?: Record<string, Answer> }
-export type GuestView = EventInfo & { responders: GuestResponder[] }
+/** pendingInvitees: names (never emails) of invited people who haven't answered yet. */
+export type GuestView = EventInfo & { responders: GuestResponder[]; pendingInvitees: string[] }
 
 export type AdminResponse = { name: string; hasEmail: boolean; answers: Record<string, Answer> }
-export type AdminView = EventInfo & { responses: AdminResponse[]; emailEnabled: boolean }
+export type AdminView = EventInfo & {
+  responses: AdminResponse[]
+  emailEnabled: boolean
+  pendingInvitees: string[]
+  invitesSent: number
+  notifyCount: number // unique addresses that get the "time is set" email
+}
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string }
 
@@ -85,4 +96,7 @@ export type CreateInput = {
   deadline: string | null
   mustAll: boolean
   showOthers: boolean
+  invitees: Invitee[]
+  lang: Lang
+  origin: string
 }

@@ -41,4 +41,4 @@ A scheduling app at [stefaneklund.se/whenworks](https://stefaneklund.se/whenwork
 
 **Database (required in production):** In the Vercel project, open *Storage* → *Create Database* → **Upstash for Redis**, and connect it to the project. This sets the `KV_REST_API_URL` and `KV_REST_API_TOKEN` variables, or `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`; either pair works. Events expire after 60 days automatically. Locally, `npm run dev` uses an in-memory store when these variables are missing.
 
-**Email (optional):** Set `RESEND_API_KEY` and `WW_EMAIL_FROM` (e.g. `Whenworks <whenworks@stefaneklund.se>`, on a domain verified in Resend) to let organizers email guests when the time is set. Without them, the email toggle is hidden.
+**Email (optional):** Set `RESEND_API_KEY` and `WW_EMAIL_FROM` (e.g. `Whenworks <whenworks@stefaneklund.se>`, on a domain verified in Resend). With them, invitees added in the Guests step get the link by email, and everyone can be emailed when the time is set. Without them, invitees are still listed but no email is sent.

@@ -65,10 +65,24 @@ function info({ ev, slots }: Loaded): EventInfo {
 }
 
 /** What anyone with the guest link may see. Other people's answers only when showOthers is on. */
+/** Invited people (by name) who haven't answered yet. */
+function pendingInvitees({ ev, responses }: Loaded) {
+  const answered = new Set(responses.map((r) => nameKey(r.name)))
+  return (ev.invitees ?? []).map((i) => i.name).filter((n) => !answered.has(nameKey(n)))
+}
+
+/** Everyone who should hear when the time is set: guests who left an address plus invitees. */
+export function notifyAddresses({ ev, responses }: Loaded) {
+  const all = [...responses.map((r) => r.email), ...(ev.invitees ?? []).map((i) => i.email)]
+  const seen = new Set<string>()
+  return all.filter((e) => e && !seen.has(e.toLowerCase()) && seen.add(e.toLowerCase()))
+}
+
 export function toGuestView(l: Loaded): GuestView {
   return {
     ...info(l),
     responders: l.responses.map((r) => (l.ev.showOthers ? { name: r.name, answers: r.answers } : { name: r.name })),
+    pendingInvitees: pendingInvitees(l),
   }
 }
 
@@ -77,25 +91,36 @@ export function toAdminView(l: Loaded): AdminView {
     ...info(l),
     responses: l.responses.map((r) => ({ name: r.name, hasEmail: !!r.email, answers: r.answers })),
     emailEnabled: emailEnabled(),
+    pendingInvitees: pendingInvitees(l),
+    invitesSent: l.ev.invitesSent ?? 0,
+    notifyCount: notifyAddresses(l).length,
   }
 }
 
-/** Sends the "time is set" email through Resend. Failures are logged, never thrown. */
-export async function sendFinalEmails(to: string[], subject: string, text: string) {
+export type Mail = { to: string; subject: string; text: string }
+
+/**
+ * Sends emails through Resend's batch endpoint (one email per recipient, so nobody
+ * sees anyone else's address). Returns how many were accepted. Never throws.
+ */
+export async function sendEmails(mails: Mail[]): Promise<number> {
   const key = process.env.RESEND_API_KEY
   const from = process.env.WW_EMAIL_FROM
-  if (!key || !from || !to.length) return
-  await Promise.all(
-    to.map((addr) =>
-      fetch('https://api.resend.com/emails', {
+  if (!key || !from || !mails.length) return 0
+  let sent = 0
+  for (let i = 0; i < mails.length; i += 100) {
+    const chunk = mails.slice(i, i + 100)
+    try {
+      const res = await fetch('https://api.resend.com/emails/batch', {
         method: 'POST',
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to: [addr], subject, text }),
+        body: JSON.stringify(chunk.map((m) => ({ from, to: [m.to], subject: m.subject, text: m.text }))),
       })
-        .then((res) => {
-          if (!res.ok) console.error('Whenworks: email failed', res.status)
-        })
-        .catch((e) => console.error('Whenworks: email failed', e)),
-    ),
-  )
+      if (res.ok) sent += chunk.length
+      else console.error('Whenworks: email failed', res.status, await res.text().catch(() => ''))
+    } catch (e) {
+      console.error('Whenworks: email failed', e)
+    }
+  }
+  return sent
 }

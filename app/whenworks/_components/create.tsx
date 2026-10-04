@@ -4,10 +4,11 @@ import { useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { createEvent } from '../actions'
 import { fmt, slotKey } from '../_lib/logic'
-import type { DurUnit, Mode, Range } from '../_lib/types'
+import type { DurUnit, Invitee, Mode, Range } from '../_lib/types'
 import {
   Actions,
   Calendar,
+  Avatar,
   CardHead,
   Field,
   Ic,
@@ -158,6 +159,87 @@ function WhenRange({ range, setRange }: { range: Range; setRange: (r: Range) => 
   )
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** Step 3: people to email the link to. Optional. */
+function GuestsStep({ invitees, setInvitees }: { invitees: Invitee[]; setInvitees: (v: Invitee[]) => void }) {
+  const { S } = useWW()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [err, setErr] = useState('')
+  const add = () => {
+    const e = email.trim()
+    if (!EMAIL_RE.test(e)) return setErr(S.invalid_email)
+    if (invitees.some((i) => i.email.toLowerCase() === e.toLowerCase())) return setErr(S.dup_guest)
+    setInvitees([...invitees, { name: name.trim(), email: e }])
+    setName('')
+    setEmail('')
+    setErr('')
+  }
+  return (
+    <>
+      <form
+        className="guest-add"
+        onSubmit={(e) => {
+          e.preventDefault()
+          add()
+        }}
+      >
+        <Field label={S.f_guest_name}>
+          <input className="inp" value={name} maxLength={60} placeholder={S.f_name_ph} onChange={(e) => setName(e.target.value)} />
+        </Field>
+        <Field label={S.f_guest_email}>
+          <input
+            className="inp"
+            type="email"
+            value={email}
+            maxLength={200}
+            placeholder="name@mail.com"
+            onChange={(e) => {
+              setEmail(e.target.value)
+              setErr('')
+            }}
+          />
+        </Field>
+        <button type="submit" className="btn btn-ghost" disabled={!name.trim() || !email.trim() || invitees.length >= 50}>
+          {Ic.plus}
+          {S.g_add}
+        </button>
+      </form>
+      {err && <p className="err">{err}</p>}
+      <div className="section">
+        <span className="lbl">
+          {S.guests_list} <em>{invitees.length}</em>
+        </span>
+        {invitees.length === 0 ? (
+          <p className="empty">{S.no_guests}</p>
+        ) : (
+          <ul className="slot-list">
+            {invitees.map((i) => (
+              <li key={i.email}>
+                <span className="inv">
+                  <Avatar name={i.name} size={32} />
+                  <span className="st">
+                    <b>{i.name}</b>
+                    <span>{i.email}</span>
+                  </span>
+                </span>
+                <button
+                  className="icon-btn"
+                  aria-label={S.remove}
+                  onClick={() => setInvitees(invitees.filter((x) => x.email !== i.email))}
+                >
+                  {Ic.x}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </>
+  )
+}
+
 function FlowLayout({ step, children }: { step: number; children: ReactNode }) {
   const { S } = useWW()
   return (
@@ -181,6 +263,7 @@ type Draft = {
   slots: DraftSlot[]
   range: Range
   allowSuggest: boolean
+  invitees: Invitee[]
   organizer: string
   deadline: string
   mustAll: boolean
@@ -196,21 +279,24 @@ const EMPTY: Draft = {
   slots: [],
   range: { start: '', end: null },
   allowSuggest: true,
+  invitees: [],
   organizer: '',
   deadline: '',
   mustAll: true,
   showOthers: true,
 }
 
+type Step = 1 | 2 | 3 | 4
+
 function CreateFlow() {
-  const { S } = useWW()
+  const { S, lang } = useWW()
   const router = useRouter()
-  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [step, setStep] = useState<Step>(1)
   const [ev, setEv] = useState<Draft>(EMPTY)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(false)
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setEv((e) => ({ ...e, [k]: v }))
-  const go = (s: 1 | 2 | 3) => {
+  const go = (s: Step) => {
     setStep(s)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -231,6 +317,9 @@ function CreateFlow() {
       deadline: ev.deadline || null,
       mustAll: ev.mustAll,
       showOthers: ev.showOthers,
+      invitees: ev.invitees,
+      lang,
+      origin: window.location.origin,
     }).catch(() => null)
     if (res?.ok) {
       router.push(`/whenworks/e/${res.data.slug}/admin/${res.data.token}?new=1`)
@@ -323,8 +412,17 @@ function CreateFlow() {
     )
   }
 
+  if (step === 3)
+    return (
+      <FlowLayout step={3}>
+        <CardHead title={S.guests_title} sub={S.guests_sub} />
+        <GuestsStep invitees={ev.invitees} setInvitees={(v) => set('invitees', v)} />
+        <Actions onBack={() => go(2)} onNext={() => go(4)} />
+      </FlowLayout>
+    )
+
   return (
-    <FlowLayout step={3}>
+    <FlowLayout step={4}>
       <CardHead title={S.who_title} sub={S.who_sub} />
       <div className="fields">
         <Field label={S.f_name}>
@@ -366,7 +464,7 @@ function CreateFlow() {
       </div>
       {err && <p className="err">{S.err}</p>}
       <Actions
-        onBack={() => go(2)}
+        onBack={() => go(3)}
         onNext={create}
         nextLabel={S.create}
         nextDisabled={!ev.organizer.trim() || busy}

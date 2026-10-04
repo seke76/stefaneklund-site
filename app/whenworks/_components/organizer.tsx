@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { askAgain, finalize, getAdmin } from '../actions'
 import { durLabel, findBest, fmt, isNew, missingOf, tally, type Best } from '../_lib/logic'
-import type { AdminView, Slot } from '../_lib/types'
+import type { AdminResponse, AdminView, Slot } from '../_lib/types'
 import { WhenCalendar, type DraftSlot } from './create'
 import {
   Actions,
@@ -27,6 +27,12 @@ type Links = { guest: string; admin: string }
 
 const strip = (url: string) => url.replace(/^https?:\/\//, '')
 
+/** Everyone the organizer is waiting on: people who answered plus invitees who haven't yet. */
+const people = (ev: AdminView): AdminResponse[] => [
+  ...ev.responses,
+  ...ev.pendingInvitees.map((name) => ({ name, hasEmail: false, answers: {} })),
+]
+
 function Created({ ev, links }: { ev: AdminView; links: Links }) {
   const { S } = useWW()
   const msg = S.invite_msg(ev.organizer, ev.title, links.guest)
@@ -36,6 +42,13 @@ function Created({ ev, links }: { ev: AdminView; links: Links }) {
         <span className="badge">{Ic.check}</span>
         <CardHead title={S.created_title} sub={S.created_sub} />
         <CopyBox text={links.guest} mono />
+        {ev.invitesSent > 0 ? (
+          <p className="invite-status ok">{S.invites_sent(ev.invitesSent)}</p>
+        ) : (
+          ev.pendingInvitees.length > 0 && (
+            <p className="invite-status">{ev.emailEnabled ? S.invites_failed : S.invites_off}</p>
+          )
+        )}
         <div className="sub-block">
           <span className="lbl">{S.share_msg}</span>
           <div className="msg-wrap">
@@ -81,7 +94,7 @@ function ResultsMatrix({ ev, slots, B, onPick }: { ev: AdminView; slots: Slot[];
           </tr>
         </thead>
         <tbody>
-          {ev.responses.map((p) => (
+          {people(ev).map((p) => (
             <tr key={p.name}>
               <th className="pcol">
                 <span className="pcol-in">
@@ -101,7 +114,7 @@ function ResultsMatrix({ ev, slots, B, onPick }: { ev: AdminView; slots: Slot[];
           <tr>
             <th className="pcol">{S.can}</th>
             {slots.map((s) => {
-              const r = tally(s, ev.responses)
+              const r = tally(s, people(ev))
               return (
                 <td key={s.id} className={cls(s)}>
                   <b>{r.yes.length}</b>
@@ -128,7 +141,7 @@ function ResultsMatrix({ ev, slots, B, onPick }: { ev: AdminView; slots: Slot[];
 
 function ResultsRanked({ ev, B, onPick }: { ev: AdminView; B: Best; onPick: (s: Slot) => void }) {
   const { S } = useWW()
-  const n = ev.responses.length || 1
+  const n = people(ev).length || 1
   const tagTxt = { all: S.all_can, closest: S.closest, best: S.best }[B.tag]
   return (
     <ol className="rank">
@@ -139,7 +152,7 @@ function ResultsRanked({ ev, B, onPick }: { ev: AdminView; B: Best; onPick: (s: 
             {i === 0 && <span className={'best-tag ' + B.tag}>{tagTxt}</span>}
             {isNew(s, ev.round) && <span className="new-pill">{S.new_tag}</span>}
             <span className="rank-n">
-              <b>{r.yes.length}</b> {S.of} {ev.responses.length}
+              <b>{r.yes.length}</b> {S.of} {people(ev).length}
             </span>
             <button className="btn btn-sm btn-ghost" onClick={() => onPick(s)}>
               {S.pick_this}
@@ -185,7 +198,7 @@ function Results({
   const { S, lang } = useWW()
   const [view, setView] = useState<'matrix' | 'ranked'>('matrix')
   const slots = ev.slots
-  const B = findBest(slots, ev.responses, ev.mustAll)
+  const B = findBest(slots, people(ev), ev.mustAll)
   const curNew = slots.filter((s) => isNew(s, ev.round))
   const waiting = curNew.length > 0 && !ev.responses.some((p) => curNew.some((s) => p.answers[s.id]))
   const needMore = ev.mustAll && !B.full && ev.responses.length > 0
@@ -227,7 +240,7 @@ function Results({
       {needMore && !waiting && (
         <div className="reask-banner">
           <div className="rb-t">
-            <b>{S.no_full(ev.responses.length)}</b>
+            <b>{S.no_full(people(ev).length)}</b>
             {c && (
               <span>
                 {S.closest}: <strong>{fmt.slot(c.s, lang)}</strong>. {S.missing}:{' '}
@@ -292,10 +305,10 @@ function Reask({
 }) {
   const { S } = useWW()
   const slots = ev.slots
-  const B = findBest(slots, ev.responses, ev.mustAll)
+  const B = findBest(slots, people(ev), ev.mustAll)
   const [removed, setRemoved] = useState<string[]>(() => {
     const closeIds = B.closest.map((x) => x.s.id)
-    return slots.filter((s) => !closeIds.includes(s.id) && tally(s, ev.responses).no.length >= 2).map((s) => s.id)
+    return slots.filter((s) => !closeIds.includes(s.id) && tally(s, people(ev)).no.length >= 2).map((s) => s.id)
   })
   const [fresh, setFresh] = useState<DraftSlot[]>([])
   const [note, setNote] = useState('')
@@ -345,13 +358,13 @@ function Reask({
           <span className="lbl">{S.prev_slots}</span>
           <ul className="slot-list prev-list">
             {slots.map((s) => {
-              const r = tally(s, ev.responses)
+              const r = tally(s, people(ev))
               const off = removed.includes(s.id)
               return (
                 <li key={s.id} className={off ? 'off' : ''}>
                   <SlotLabel s={s} />
                   <span className="muted small pl-n">
-                    {r.yes.length} {S.of} {ev.responses.length}
+                    {r.yes.length} {S.of} {people(ev).length}
                   </span>
                   <Seg
                     value={off ? 'rm' : 'keep'}
@@ -414,8 +427,8 @@ function Finalize({
   const [notify, setNotify] = useState(true)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(false)
-  const r = tally(picked, ev.responses)
-  const nEmail = ev.responses.filter((p) => p.hasEmail).length
+  const r = tally(picked, people(ev))
+  const nEmail = ev.notifyCount
   const confirm = async () => {
     setBusy(true)
     setErr(false)

@@ -68,6 +68,16 @@ const en = {
   create_new: "Create a new event",
   back_results: "Responses",
   mail_subject: (t: string) => `“${t}” is set`,
+  step_guests: "Guests",
+  guests_title: "Who's invited?",
+  guests_sub: "Add people and we'll email them the link. You can also skip this and share the link yourself.",
+  f_guest_name: "Name", f_guest_email: "Email", guests_list: "Invited", no_guests: "No one added yet.",
+  invalid_email: "Enter a valid email address.", dup_guest: "That address is already added.",
+  invites_sent: (n: number) => `Invitation emailed to ${n} ${n === 1 ? "person" : "people"}.`,
+  invites_off: "Email isn't set up yet, so no invitations were sent. Share the link yourself.",
+  invites_failed: "The invitations couldn't be sent. Share the link yourself.",
+  waiting_for: "Waiting for", g_invited_pick: "Invited? Pick your name",
+  mail_invite_subject: (o: string, t: string) => `${o} invited you to “${t}”`,
 }
 
 const sv: typeof en = {
@@ -138,6 +148,16 @@ const sv: typeof en = {
   create_new: "Skapa ett nytt event",
   back_results: "Svar",
   mail_subject: (t: string) => `”${t}” är bestämt`,
+  step_guests: "Gäster",
+  guests_title: "Vilka bjuder du in?",
+  guests_sub: "Lägg till personer så mejlar vi länken till dem. Du kan också hoppa över det och dela länken själv.",
+  f_guest_name: "Namn", f_guest_email: "Mejl", guests_list: "Inbjudna", no_guests: "Ingen tillagd än.",
+  invalid_email: "Skriv en giltig mejladress.", dup_guest: "Den adressen finns redan med.",
+  invites_sent: (n: number) => `Inbjudan mejlad till ${n} ${n === 1 ? "person" : "personer"}.`,
+  invites_off: "Mejl är inte uppsatt än, så inga inbjudningar skickades. Dela länken själv.",
+  invites_failed: "Inbjudningarna kunde inte skickas. Dela länken själv.",
+  waiting_for: "Väntar på svar från", g_invited_pick: "Inbjuden? Välj ditt namn",
+  mail_invite_subject: (o: string, t: string) => `${o} har bjudit in dig till ”${t}”`,
 }
 
 export const WW_STR = { en, sv }

@@ -126,6 +126,23 @@ function Join({
           </div>
         </div>
       )}
+      {ev.pendingInvitees.length > 0 && (
+        <div className="returning">
+          <span className="lbl">{S.g_invited_pick}</span>
+          <div className="chips">
+            {ev.pendingInvitees.map((n) => (
+              <button
+                key={n}
+                className={'chip chip-av' + (guest.name === n ? ' on' : '')}
+                onClick={() => setGuest({ ...guest, name: n })}
+              >
+                <Avatar name={n} size={22} />
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <Actions onNext={onNext} nextLabel={S.g_start} nextDisabled={!guest.name.trim()} />
     </>
   )

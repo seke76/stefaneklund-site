@@ -11,7 +11,8 @@ import {
   nameKey,
   newSlug,
   newToken,
-  sendFinalEmails,
+  notifyAddresses,
+  sendEmails,
   toAdminView,
   toGuestView,
 } from './_lib/server'
@@ -21,6 +22,7 @@ import type {
   CreateInput,
   EventDoc,
   GuestView,
+  Invitee,
   Lang,
   Result,
   Slot,
@@ -30,8 +32,27 @@ import type {
 const MAX_SLOTS = 60
 const ANSWERS: Answer[] = ['yes', 'maybe', 'no']
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MAX_INVITEES = 50
+const langOf = (l: unknown): Lang => (l === 'en' ? 'en' : 'sv')
+const originOf = (o: unknown) => (typeof o === 'string' && /^https?:\/\/[^\s/]+$/.test(o) ? o : '')
+
 const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
 const fail = (error: string): Result<never> => ({ ok: false, error })
+
+function cleanInvitees(list: unknown): Invitee[] {
+  if (!Array.isArray(list)) return []
+  const seen = new Set<string>()
+  const out: Invitee[] = []
+  for (const x of list.slice(0, MAX_INVITEES)) {
+    const name = str(x?.name, 60)
+    const email = str(x?.email, 200)
+    if (!name || !EMAIL_RE.test(email) || seen.has(email.toLowerCase())) continue
+    seen.add(email.toLowerCase())
+    out.push({ name, email })
+  }
+  return out
+}
 
 function cleanTimes(list: unknown): { date: string; time: string | null }[] {
   if (!Array.isArray(list)) return []
@@ -100,12 +121,27 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
       roundNote: '',
       finalSlotId: null,
       finalNote: '',
+      invitees: cleanInvitees(input.invitees),
+      invitesSent: 0,
       createdAt: now,
       expiresAt: now + TTL_MS,
     }
     const store = getStore()
     // Retry in the unlikely case the slug is taken.
     while (await store.getEvent(ev.slug)) ev.slug = newSlug()
+
+    const origin = originOf(input.origin)
+    if (ev.invitees!.length && origin) {
+      const S = WW_STR[langOf(input.lang)]
+      const link = `${origin}/whenworks/e/${ev.slug}`
+      ev.invitesSent = await sendEmails(
+        ev.invitees!.map((i) => ({
+          to: i.email,
+          subject: S.mail_invite_subject(organizer, title),
+          text: S.invite_msg(organizer, title, link),
+        })),
+      )
+    }
     await store.putEvent(ev)
     return { ok: true, data: { slug: ev.slug, token } }
   })
@@ -138,7 +174,7 @@ export async function submitAnswers(
     const name = str(input.name, 60)
     if (!name) return fail('invalid')
     const emailIn = str(input.email, 200)
-    const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailIn) ? emailIn : ''
+    const email = EMAIL_RE.test(emailIn) ? emailIn : ''
 
     // New guest suggestions become slots. Ones that match an existing time reuse it.
     const store = getStore()
@@ -240,15 +276,11 @@ export async function finalize(
     await getStore().putEvent({ ...l.ev, finalSlotId: slot.id, finalNote: note })
 
     if (input.notify) {
-      const S = WW_STR[input.lang === 'en' ? 'en' : 'sv']
-      const lang: Lang = input.lang === 'en' ? 'en' : 'sv'
+      const lang = langOf(input.lang)
+      const S = WW_STR[lang]
       const link = /^https?:\/\/[^\s]+$/.test(input.link) ? input.link : ''
       const text = [S.final_msg(l.ev.title, fmt.slot(slot, lang)), note, link].filter(Boolean).join('\n\n')
-      await sendFinalEmails(
-        l.responses.map((r) => r.email).filter(Boolean),
-        S.mail_subject(l.ev.title),
-        text,
-      )
+      await sendEmails(notifyAddresses(l).map((to) => ({ to, subject: S.mail_subject(l.ev.title), text })))
     }
     const reloaded = await loadAdmin(slug, token)
     return reloaded ? { ok: true, data: toAdminView(reloaded) } : fail('not_found')

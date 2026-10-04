@@ -120,7 +120,7 @@ export function Steps({ current }: { current: number }) {
   const { S } = useWW()
   return (
     <ol className="steps">
-      {[S.step_what, S.step_when, S.step_who].map((s, i) => (
+      {[S.step_what, S.step_when, S.step_guests, S.step_who].map((s, i) => (
         <li key={i} className={i + 1 === current ? 'on' : i + 1 < current ? 'done' : ''}>
           <span className="n">{i + 1 < current ? Ic.check : i + 1}</span>
           <span>{s}</span>

@@ -264,3 +264,9 @@ a.brand,a.brand:hover{color:var(--ink);text-decoration:none}
 .err{color:var(--no);font-size:14px;margin-top:12px}
 .notice{max-width:520px;margin:0 auto;text-align:center}
 .notice .display{margin-bottom:16px}
+.guest-add{display:grid;gap:12px;align-items:end}
+@media(min-width:620px){.guest-add{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) auto}}
+.inv{display:flex;align-items:center;gap:12px;min-width:0;padding-left:4px}
+.inv .st{min-width:0}.inv .st b{text-transform:none}.inv .st span{overflow:hidden;text-overflow:ellipsis}
+.invite-status{margin-top:12px;font-size:14px;color:var(--muted)}
+.invite-status.ok{color:var(--yes);font-weight:500}
