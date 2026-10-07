@@ -264,8 +264,15 @@ export function Mark({ v }: { v?: Answer | 'none' }) {
   return <span className="mk none" />
 }
 
+/** How many days each time covers (see spanOf). Set once per page; SlotLabel reads it. */
+const SpanCtx = createContext(1)
+export const SpanProvider = SpanCtx.Provider
+export const useSpan = () => useContext(SpanCtx)
+
 export function SlotLabel({ s, compact }: { s: Pick<Slot, 'date' | 'time'>; compact?: boolean }) {
   const { lang, S } = useWW()
+  const days = useSpan()
+  const multi = days > 1 && !s.time
   return (
     <span className={'slot-lbl' + (compact ? ' compact' : '')}>
       <span className="dbox">
@@ -273,8 +280,8 @@ export function SlotLabel({ s, compact }: { s: Pick<Slot, 'date' | 'time'>; comp
         <i>{fmt.mon(s.date, lang)}</i>
       </span>
       <span className="st">
-        <b>{fmt.day(s.date, lang)}</b>
-        <span>{s.time || S.whole_day}</span>
+        <b>{multi ? fmt.spanDays(s.date, days, lang) : fmt.day(s.date, lang)}</b>
+        <span>{multi ? fmt.spanShort(s.date, days, lang) : s.time || S.whole_day}</span>
       </span>
     </span>
   )

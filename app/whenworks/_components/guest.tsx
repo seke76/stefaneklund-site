@@ -2,11 +2,11 @@
 
 import { useState, type ReactNode } from 'react'
 import { getMyAnswers, submitAnswers } from '../actions'
-import { durLabel, findBest, fmt, isNew, slotKey, tally } from '../_lib/logic'
+import { durLabel, findBest, fmt, isDayEvent, isNew, slotKey, spanOf, tally } from '../_lib/logic'
 import { Legend, Matrix } from './matrix'
 import { AnswerList, newFirst } from './answers'
 import type { Answer, GuestView, Slot } from '../_lib/types'
-import { Actions, Avatar, CardHead, Field, Ic, Mark, SlotLabel, WhenworksShell, downloadIcs, todayIso, useWW } from './ui'
+import { Actions, Avatar, CardHead, Field, Ic, Mark, SlotLabel, WhenworksShell, downloadIcs, todayIso, useWW, SpanProvider } from './ui'
 
 type Guest = {
   name: string
@@ -54,7 +54,7 @@ function FinalBanner({ ev }: { ev: GuestView }) {
   return (
     <div className="final-banner">
       <span className="eyebrow">{S.g_final}</span>
-      <b>{fmt.slot(slot, lang)}</b>
+      <b>{fmt.slot(slot, lang, slot.time ? 1 : spanOf(ev))}</b>
       {note && <span>{note}</span>}
       <button className="btn btn-sm btn-ghost" onClick={() => downloadIcs(ev, slot, note, window.location.href)}>
         {Ic.cal}
@@ -297,7 +297,10 @@ function Respond({
               value={sd}
               onChange={(e) => setSd(e.target.value)}
             />
-            <input className="inp inp-time" type="time" value={st} onChange={(e) => setSt(e.target.value)} />
+            {/* Events measured in days have no clock time. */}
+            {!isDayEvent(ev) && (
+              <input className="inp inp-time" type="time" value={st} onChange={(e) => setSt(e.target.value)} />
+            )}
             <button className="btn btn-ghost" disabled={!sd} onClick={addSuggestion}>
               {Ic.plus}
               {S.g_add}
@@ -443,7 +446,9 @@ function GuestFlow({ initial }: { initial: GuestView }) {
 export default function GuestApp({ initial }: { initial: GuestView }) {
   return (
     <WhenworksShell role="guest">
-      <GuestFlow initial={initial} />
+      <SpanProvider value={spanOf(initial)}>
+        <GuestFlow initial={initial} />
+      </SpanProvider>
     </WhenworksShell>
   )
 }

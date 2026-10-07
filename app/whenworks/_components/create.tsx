@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { createEvent } from '../actions'
-import { fmt, slotKey } from '../_lib/logic'
+import { fmt, isDayEvent, slotKey, spanOf } from '../_lib/logic'
 import type { DurUnit, Invitee, Mode, Range } from '../_lib/types'
 import {
   Actions,
@@ -14,6 +14,7 @@ import {
   Ic,
   Seg,
   SlotLabel,
+  SpanProvider,
   Steps,
   Toggle,
   WhenworksShell,
@@ -24,20 +25,77 @@ import {
 
 const TIMES = ['09:00', '12:00', '15:00', '18:00', '19:00', '20:00']
 
-export type DraftSlot = { id: string; date: string; time: string }
+export type DraftSlot = { id: string; date: string; time: string | null }
 
-/** Calendar + time chips for picking fixed times. Also used when asking again. */
-export function WhenCalendar({
-  slots,
-  setSlots,
-  taken = [],
-  label,
-}: {
+type WhenProps = {
   slots: DraftSlot[]
   setSlots: (s: DraftSlot[]) => void
   taken?: { date: string; time: string | null }[]
   label?: string
-}) {
+  /** Events measured in days: pick start dates, each covering this many days. 0 = pick clock times. */
+  days?: number
+}
+
+/** Picks the suggested times. Also used when asking again. */
+export function WhenCalendar(props: WhenProps) {
+  return props.days ? <WhenDays {...props} days={props.days} /> : <WhenTimes {...props} />
+}
+
+/** Multi-day events: tap the first day, the following days are marked too. No clock time. */
+function WhenDays({ slots, setSlots, taken = [], label, days }: WhenProps & { days: number }) {
+  const { S } = useWW()
+  const [today] = useState(todayIso)
+  const [month, setMonth] = useState(() => monthOf(slots[0]?.date ?? today))
+  const has = (d: string) => slots.some((s) => s.date === d)
+  const isTaken = (d: string) => taken.some((s) => s.date === d && s.time === null)
+  const covered = (c: string) => slots.some((s) => c > s.date && c <= fmt.end(s.date, days))
+  const toggle = (d: string) => {
+    if (isTaken(d)) return
+    setSlots(
+      has(d)
+        ? slots.filter((s) => s.date !== d)
+        : [...slots, { id: slotKey({ date: d, time: null }), date: d, time: null }],
+    )
+  }
+  const sorted = [...slots].sort((a, b) => a.date.localeCompare(b.date))
+  return (
+    <div className="when-cal">
+      <div>
+        <Calendar
+          month={month}
+          setMonth={setMonth}
+          minDate={today}
+          onPick={toggle}
+          isOn={has}
+          isMid={(c) => !has(c) && covered(c)}
+        />
+        <p className="hint cal-hint">{S.days_hint(days)}</p>
+      </div>
+      <div className="slot-col">
+        <span className="lbl">
+          {label || S.your_slots} <em>{sorted.length}</em>
+        </span>
+        {sorted.length === 0 ? (
+          <p className="empty">{S.no_slots_days}</p>
+        ) : (
+          <ul className="slot-list">
+            {sorted.map((s) => (
+              <li key={s.id}>
+                <SlotLabel s={s} />
+                <button className="icon-btn" aria-label={S.remove} onClick={() => toggle(s.date)}>
+                  {Ic.x}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** Calendar + time chips for picking clock times. */
+function WhenTimes({ slots, setSlots, taken = [], label }: WhenProps) {
   const { S, lang } = useWW()
   const [today] = useState(todayIso)
   const [month, setMonth] = useState(() => monthOf(slots[0]?.date ?? today))
@@ -51,7 +109,7 @@ export function WhenCalendar({
         ? slots.filter((s) => !(s.date === d && s.time === t))
         : [...slots, { id: slotKey({ date: d, time: t }), date: d, time: t }],
     )
-  const sorted = [...slots].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+  const sorted = [...slots].sort((a, b) => (a.date + a.time).localeCompare(b.date + (b.time ?? '')))
   return (
     <div className="when-cal">
       <div>
@@ -113,7 +171,7 @@ export function WhenCalendar({
             {sorted.map((s) => (
               <li key={s.id}>
                 <SlotLabel s={s} />
-                <button className="icon-btn" aria-label={S.remove} onClick={() => toggle(s.date, s.time)}>
+                <button className="icon-btn" aria-label={S.remove} onClick={() => toggle(s.date, s.time ?? '')}>
                   {Ic.x}
                 </button>
               </li>
@@ -325,6 +383,10 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(false)
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setEv((e) => ({ ...e, [k]: v }))
+  // Events measured in days pick start dates only; times picked before switching unit are kept aside.
+  const dayMode = isDayEvent(ev)
+  const modeSlots = ev.slots.filter((x) => (dayMode ? x.time === null : x.time !== null))
+  const wrap = (n: ReactNode) => <SpanProvider value={spanOf(ev)}>{n}</SpanProvider>
   const go = (s: Step) => {
     setStep(s)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -340,7 +402,7 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
       durUnit: ev.durUnit,
       mode: ev.mode,
       range: ev.mode === 'open' ? ev.range : null,
-      slots: ev.mode === 'fixed' ? ev.slots.map(({ date, time }) => ({ date, time })) : [],
+      slots: ev.mode === 'fixed' ? modeSlots.map(({ date, time }) => ({ date, time })) : [],
       allowSuggest: ev.allowSuggest,
       organizer: ev.organizer,
       deadline: ev.deadline || null,
@@ -360,7 +422,7 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
   }
 
   if (step === 1)
-    return (
+    return wrap(
       <FlowLayout step={1}>
         <CardHead title={S.what_title} sub={S.what_sub} />
         <div className="fields">
@@ -409,8 +471,8 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
     )
 
   if (step === 2) {
-    const ok = ev.mode === 'open' ? !!ev.range.start : ev.slots.length > 0
-    return (
+    const ok = ev.mode === 'open' ? !!ev.range.start : modeSlots.length > 0
+    return wrap(
       <FlowLayout step={2}>
         <CardHead title={S.when_title} sub={S.when_sub} />
         <div className="mode-cards">
@@ -430,7 +492,11 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
           ))}
         </div>
         {ev.mode === 'fixed' ? (
-          <WhenCalendar slots={ev.slots} setSlots={(v) => set('slots', v)} />
+          <WhenCalendar
+            slots={modeSlots}
+            setSlots={(v) => set('slots', [...ev.slots.filter((x) => !modeSlots.includes(x)), ...v])}
+            days={dayMode ? spanOf(ev) : 0}
+          />
         ) : (
           <WhenRange range={ev.range} setRange={(r) => set('range', r)} />
         )}
@@ -443,7 +509,7 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
   }
 
   if (step === 3)
-    return (
+    return wrap(
       <FlowLayout step={3}>
         <CardHead title={S.guests_title} sub={emailEnabled ? S.guests_sub : S.guests_sub_nomail} />
         <GuestsStep
@@ -457,7 +523,7 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
       </FlowLayout>
     )
 
-  return (
+  return wrap(
     <FlowLayout step={4}>
       <CardHead title={S.who_title} sub={S.who_sub} />
       <div className="fields">

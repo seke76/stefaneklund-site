@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { askAgain, finalize, getAdmin, setMyAnswers } from '../actions'
-import { durLabel, findBest, fmt, isNew, missingOf, tally, type Best } from '../_lib/logic'
+import { durLabel, findBest, fmt, isDayEvent, isNew, missingOf, spanOf, tally, type Best } from '../_lib/logic'
 import type { AdminResponse, AdminView, Slot } from '../_lib/types'
 import { WhenCalendar, type DraftSlot } from './create'
 import { Legend, Matrix } from './matrix'
@@ -18,6 +18,7 @@ import {
   Mark,
   Seg,
   SlotLabel,
+  SpanProvider,
   Toggle,
   WhenworksShell,
   downloadIcs,
@@ -209,7 +210,7 @@ function Results({
             <b>{S.no_full(people(ev).length)}</b>
             {c && (
               <span>
-                {S.closest}: <strong>{fmt.slot(c.s, lang)}</strong>. {S.missing}:{' '}
+                {S.closest}: <strong>{fmt.slot(c.s, lang, spanOf(ev))}</strong>. {S.missing}:{' '}
                 {missingOf(c.r)
                   .map(([n]) => n)
                   .join(', ')}
@@ -226,7 +227,7 @@ function Results({
         <div className="full-banner">
           <Mark v="yes" />
           <b>
-            {S.all_can}: {fmt.slot(B.full.s, lang)}
+            {S.all_can}: {fmt.slot(B.full.s, lang, spanOf(ev))}
           </b>
           <button className="btn btn-sm btn-primary" onClick={() => onPick(B.full!.s)}>
             {S.pick_this}
@@ -382,7 +383,13 @@ function Reask({
           </ul>
         </div>
         <div className="section">
-          <WhenCalendar slots={fresh} setSlots={setFresh} taken={slots} label={S.new_slots} />
+          <WhenCalendar
+            slots={fresh}
+            setSlots={setFresh}
+            taken={slots}
+            label={S.new_slots}
+            days={isDayEvent(ev) ? spanOf(ev) : 0}
+          />
         </div>
         <Toggle checked={sugg} onChange={setSugg} title={S.let_suggest} />
         <div className="fields section">
@@ -506,24 +513,41 @@ function Final({ ev, links, go }: { ev: AdminView; links: Links; go: (s: Screen)
   const { S, lang } = useWW()
   if (!ev.final) return null
   const { slot: f, note } = ev.final
+  const days = f.time ? 1 : spanOf(ev)
+  const dt = (iso: string, o: Intl.DateTimeFormatOptions) => fmt.d(iso).toLocaleDateString(fmt.loc(lang), o)
+  const end = fmt.end(f.date, days)
   return (
     <div className="single">
       <section className="card card-wide final">
         <span className="eyebrow">{ev.title}</span>
         <h1 className="display">{S.final_title}</h1>
         <div className="big-date">
-          <span className="bd-day">{fmt.d(f.date).toLocaleDateString(fmt.loc(lang), { weekday: 'long' })}</span>
-          <span className="bd-main">
-            {fmt.d(f.date).toLocaleDateString(fmt.loc(lang), { day: 'numeric', month: 'long' })}
-          </span>
-          <span className="bd-time">
-            {f.time || S.whole_day}
-            {f.time && ev.dur ? ' · ' + durLabel(ev.dur, ev.durUnit, S) : ''}
-          </span>
+          {days > 1 ? (
+            <>
+              <span className="bd-day">
+                {dt(f.date, { weekday: 'long' })} – {dt(end, { weekday: 'long' })}
+              </span>
+              <span className="bd-main">
+                {f.date.slice(0, 7) === end.slice(0, 7)
+                  ? `${fmt.num(f.date)}–${dt(end, { day: 'numeric', month: 'long' })}`
+                  : `${dt(f.date, { day: 'numeric', month: 'short' })} – ${dt(end, { day: 'numeric', month: 'short' })}`}
+              </span>
+              <span className="bd-time">{durLabel(String(days), 'd', S)}</span>
+            </>
+          ) : (
+            <>
+              <span className="bd-day">{dt(f.date, { weekday: 'long' })}</span>
+              <span className="bd-main">{dt(f.date, { day: 'numeric', month: 'long' })}</span>
+              <span className="bd-time">
+                {f.time || S.whole_day}
+                {f.time && ev.dur ? ' · ' + durLabel(ev.dur, ev.durUnit, S) : ''}
+              </span>
+            </>
+          )}
         </div>
         {note && <p className="note">{note}</p>}
         <p className="muted">{S.final_sub}</p>
-        <CopyBox text={S.final_msg(ev.title, fmt.slot(f, lang))} />
+        <CopyBox text={S.final_msg(ev.title, fmt.slot(f, lang, days))} />
         <div className="actions">
           <button className="btn btn-quiet" onClick={() => go('results')}>
             {Ic.arrowL}
@@ -630,7 +654,9 @@ function OrganizerFlow({
 export default function OrganizerApp(props: { initial: AdminView; token: string; links: Links; isNew: boolean }) {
   return (
     <WhenworksShell role="organizer">
-      <OrganizerFlow {...props} />
+      <SpanProvider value={spanOf(props.initial)}>
+        <OrganizerFlow {...props} />
+      </SpanProvider>
     </WhenworksShell>
   )
 }

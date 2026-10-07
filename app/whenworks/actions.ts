@@ -1,7 +1,7 @@
 'use server'
 
 import { getStore } from './_lib/store'
-import { DATE_RE, TIME_RE, fmt, slotKey } from './_lib/logic'
+import { DATE_RE, TIME_RE, fmt, slotKey, spanOf } from './_lib/logic'
 import { WW_STR } from './_lib/i18n'
 import {
   TTL_MS,
@@ -318,7 +318,7 @@ export async function finalize(
       const lang = langOf(input.lang)
       const S = WW_STR[lang]
       const link = /^https?:\/\/[^\s]+$/.test(input.link) ? input.link : ''
-      const text = [S.final_msg(l.ev.title, fmt.slot(slot, lang)), note, link].filter(Boolean).join('\n\n')
+      const text = [S.final_msg(l.ev.title, fmt.slot(slot, lang, slot.time ? 1 : spanOf(l.ev))), note, link].filter(Boolean).join('\n\n')
       await sendEmails(notifyAddresses(l).map((to) => ({ to, subject: S.mail_subject(l.ev.title), text })))
     }
     const reloaded = await loadAdmin(slug, token)

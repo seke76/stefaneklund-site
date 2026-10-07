@@ -15,8 +15,30 @@ export const fmt = {
   mon: (iso: string, l: Lang) => d(iso).toLocaleDateString(loc(l), { month: 'short' }).replace('.', ''),
   long: (iso: string, l: Lang) =>
     d(iso).toLocaleDateString(loc(l), { weekday: 'long', day: 'numeric', month: 'long' }),
-  slot: (s: Pick<Slot, 'date' | 'time'>, l: Lang) =>
-    fmt.long(s.date, l) + (s.time ? (l === 'sv' ? ' kl. ' : ' at ') + s.time : ''),
+  /** A time in words. Multi-day slots read "lördag 17 – söndag 18 oktober". */
+  slot: (s: Pick<Slot, 'date' | 'time'>, l: Lang, days = 1) =>
+    days > 1
+      ? fmt.spanLong(s.date, days, l)
+      : fmt.long(s.date, l) + (s.time ? (l === 'sv' ? ' kl. ' : ' at ') + s.time : ''),
+  end: (iso: string, days: number) => fmt.addDays(iso, days - 1),
+  /** "17–18 okt", or "31 okt – 1 nov" across months. */
+  spanShort: (iso: string, days: number, l: Lang) => {
+    const e = fmt.end(iso, days)
+    return iso.slice(0, 7) === e.slice(0, 7)
+      ? `${fmt.num(iso)}–${fmt.num(e)} ${fmt.mon(e, l)}`
+      : `${fmt.num(iso)} ${fmt.mon(iso, l)} – ${fmt.num(e)} ${fmt.mon(e, l)}`
+  },
+  /** "lör–sön" */
+  spanDays: (iso: string, days: number, l: Lang) => `${fmt.day(iso, l)}–${fmt.day(fmt.end(iso, days), l)}`,
+  /** "lördag 17 – söndag 18 oktober" */
+  spanLong: (iso: string, days: number, l: Lang) => {
+    const e = fmt.end(iso, days)
+    const wd = (x: string) => d(x).toLocaleDateString(loc(l), { weekday: 'long' })
+    const month = (x: string) => d(x).toLocaleDateString(loc(l), { month: 'long' })
+    return iso.slice(0, 7) === e.slice(0, 7)
+      ? `${wd(iso)} ${fmt.num(iso)} – ${wd(e)} ${fmt.num(e)} ${month(e)}`
+      : `${wd(iso)} ${fmt.num(iso)} ${month(iso)} – ${wd(e)} ${fmt.num(e)} ${month(e)}`
+  },
   iso: (dt: Date) =>
     `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`,
   addDays: (iso: string, n: number) => {
@@ -93,6 +115,18 @@ export function findBest(slots: Slot[], responses: WithAnswers[], mustAll: boole
     n,
   }
 }
+
+/**
+ * How many days each suggested time covers. Events measured in days have no clock time:
+ * a 2-day event's slot is a start date that covers two days. Open mode (guests mark single
+ * days) and events measured in hours are always 1.
+ */
+export const spanOf = (ev: { mode: 'fixed' | 'open'; durUnit: 'h' | 'd'; dur: string }) =>
+  ev.mode === 'fixed' && ev.durUnit === 'd' ? Math.max(1, Math.min(60, Number(ev.dur) || 1)) : 1
+
+/** Day-based events pick dates only, no clock time. */
+export const isDayEvent = (ev: { mode: 'fixed' | 'open'; durUnit: 'h' | 'd' }) =>
+  ev.mode === 'fixed' && ev.durUnit === 'd'
 
 export const durLabel = (dur: string, unit: 'h' | 'd', S: Strings) =>
   dur + ' ' + (unit === 'h' ? S.hours : S.days).toLowerCase()
