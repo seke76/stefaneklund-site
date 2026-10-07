@@ -2,7 +2,8 @@
 
 import { useState, type ReactNode } from 'react'
 import { getMyAnswers, submitAnswers } from '../actions'
-import { durLabel, fmt, isNew, slotKey, tally } from '../_lib/logic'
+import { durLabel, findBest, fmt, isNew, slotKey, tally } from '../_lib/logic'
+import { Legend, Matrix } from './matrix'
 import type { Answer, GuestView, Slot } from '../_lib/types'
 import { Actions, Avatar, CardHead, Field, Ic, Mark, SlotLabel, WhenworksShell, downloadIcs, todayIso, useWW } from './ui'
 
@@ -352,7 +353,17 @@ function Respond({
   )
 }
 
-function Done({ ev, guest, onEdit }: { ev: GuestView; guest: Guest; onEdit: () => void }) {
+function Done({
+  ev,
+  guest,
+  onEdit,
+  onSeeAll,
+}: {
+  ev: GuestView
+  guest: Guest
+  onEdit: () => void
+  onSeeAll: () => void
+}) {
   const { S } = useWW()
   const me = guest.name.trim()
   return (
@@ -375,23 +386,69 @@ function Done({ ev, guest, onEdit }: { ev: GuestView; guest: Guest; onEdit: () =
         </div>
       </div>
       <div className="actions">
-        <span />
-        <button className="btn btn-ghost" onClick={onEdit}>
+        <button className="btn btn-quiet" onClick={onEdit}>
           {S.g_edit}
         </button>
+        {ev.showOthers && ev.responders.length > 0 && (
+          <button className="btn btn-primary" onClick={onSeeAll}>
+            {S.g_see_all}
+            {Ic.arrowR}
+          </button>
+        )}
       </div>
     </>
   )
 }
 
+/** Read-only version of the organizer's answer table, for events where guests may see each other's answers. */
+function AllAnswers({ ev, me, onBack }: { ev: GuestView; me: string; onBack: () => void }) {
+  const { S, lang } = useWW()
+  const answered = new Set(ev.responders.map((r) => r.name.toLowerCase()))
+  // Same people as the organizer sees: everyone who answered, then invitees still to answer.
+  const people = [
+    ...ev.responders.map((r) => ({ name: r.name, answers: r.answers ?? {} })),
+    ...ev.participants.filter((n) => !answered.has(n.toLowerCase())).map((name) => ({ name, answers: {} })),
+  ]
+  const B = findBest(ev.slots, people, ev.mustAll)
+  return (
+    <div className="results">
+      <div className="res-head">
+        <div>
+          <span className="eyebrow">{S.g_all_title}</span>
+          <h1 className="display sm">{ev.title}</h1>
+          <p className="muted">
+            {S.n_resp(ev.responders.length)}
+            {ev.deadline && !ev.final ? ' · ' + S.reply_by + ' ' + fmt.long(ev.deadline, lang) : ''}
+            {' · '}
+            {S.g_all_note}
+          </p>
+        </div>
+        <div className="res-tools">
+          <button className="btn btn-sm btn-ghost" onClick={onBack}>
+            {Ic.arrowL}
+            {S.back}
+          </button>
+        </div>
+      </div>
+      <FinalBanner ev={ev} />
+      <section className="card card-flush">
+        <Matrix people={people} slots={ev.slots} round={ev.round} B={B} me={me} />
+      </section>
+      <Legend />
+    </div>
+  )
+}
+
 function GuestFlow({ initial }: { initial: GuestView }) {
   const [ev, setEv] = useState(initial)
-  const [screen, setScreen] = useState<'join' | 'respond' | 'done'>('join')
+  const [screen, setScreen] = useState<'join' | 'respond' | 'done' | 'all'>('join')
   const [guest, setGuest] = useState<Guest>({ name: '', email: '', answers: {}, pending: [], answersFor: '' })
   const go = (s: typeof screen) => {
     setScreen(s)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+  // Everyone's answers get the full page width, like the organizer's table.
+  if (screen === 'all') return <AllAnswers ev={ev} me={guest.name.trim()} onBack={() => go('done')} />
   return (
     <GuestLayout ev={ev}>
       {screen === 'join' && <Join ev={ev} guest={guest} setGuest={setGuest} onNext={() => go('respond')} />}
@@ -408,7 +465,7 @@ function GuestFlow({ initial }: { initial: GuestView }) {
           }}
         />
       )}
-      {screen === 'done' && <Done ev={ev} guest={guest} onEdit={() => go('respond')} />}
+      {screen === 'done' && <Done ev={ev} guest={guest} onEdit={() => go('respond')} onSeeAll={() => go('all')} />}
     </GuestLayout>
   )
 }

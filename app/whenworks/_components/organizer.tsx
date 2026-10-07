@@ -5,6 +5,7 @@ import { askAgain, finalize, getAdmin } from '../actions'
 import { durLabel, findBest, fmt, isNew, missingOf, tally, type Best } from '../_lib/logic'
 import type { AdminResponse, AdminView, Slot } from '../_lib/types'
 import { WhenCalendar, type DraftSlot } from './create'
+import { Legend, Matrix } from './matrix'
 import {
   Actions,
   Avatar,
@@ -68,73 +69,6 @@ function Created({ ev, links }: { ev: AdminView; links: Links }) {
           </div>
         </div>
       </section>
-    </div>
-  )
-}
-
-function ResultsMatrix({ ev, slots, B, onPick }: { ev: AdminView; slots: Slot[]; B: Best; onPick: (s: Slot) => void }) {
-  const { S } = useWW()
-  const best = B.best
-  const cls = (s: Slot) => (best && s.id === best.id ? (B.tag === 'closest' ? 'close' : 'best') : '')
-  const tagTxt = { all: S.all_can, closest: S.closest, best: S.best }[B.tag]
-  return (
-    <div className="mx-wrap">
-      <table className="mx">
-        <thead>
-          <tr>
-            <th className="pcol" />
-            {slots.map((s) => (
-              <th key={s.id} className={cls(s)}>
-                {best && s.id === best.id && <span className={'best-tag ' + B.tag}>{tagTxt}</span>}
-                <SlotLabel s={s} compact />
-                {isNew(s, ev.round) && <span className="by new">{S.new_tag}</span>}
-                {s.by && <span className="by">{S.suggested_by(s.by)}</span>}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {people(ev).map((p) => (
-            <tr key={p.name}>
-              <th className="pcol">
-                <span className="pcol-in">
-                  <Avatar name={p.name} size={28} />
-                  <span>{p.name}</span>
-                </span>
-              </th>
-              {slots.map((s) => (
-                <td key={s.id} className={cls(s)}>
-                  <Mark v={p.answers[s.id]} />
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr>
-            <th className="pcol">{S.can}</th>
-            {slots.map((s) => {
-              const r = tally(s, people(ev))
-              return (
-                <td key={s.id} className={cls(s)}>
-                  <b>{r.yes.length}</b>
-                  <span className="muted">{r.maybe.length ? ' +' + r.maybe.length : ''}</span>
-                </td>
-              )
-            })}
-          </tr>
-          <tr>
-            <th className="pcol" />
-            {slots.map((s) => (
-              <td key={s.id} className={cls(s)}>
-                <button className="btn btn-sm btn-pick" aria-label={S.pick_this} onClick={() => onPick(s)}>
-                  {Ic.check}
-                </button>
-              </td>
-            ))}
-          </tr>
-        </tfoot>
-      </table>
     </div>
   )
 }
@@ -269,25 +203,12 @@ function Results({
       )}
       <section className="card card-flush">
         {view === 'matrix' ? (
-          <ResultsMatrix ev={ev} slots={slots} B={B} onPick={onPick} />
+          <Matrix people={people(ev)} slots={slots} round={ev.round} B={B} onPick={onPick} />
         ) : (
           <ResultsRanked ev={ev} B={B} onPick={onPick} />
         )}
       </section>
-      <div className="legend">
-        <span>
-          <Mark v="yes" />
-          {S.can}
-        </span>
-        <span>
-          <Mark v="maybe" />
-          {S.maybe}
-        </span>
-        <span>
-          <Mark v="no" />
-          {S.cant}
-        </span>
-      </div>
+      <Legend />
     </div>
   )
 }
