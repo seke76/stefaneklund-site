@@ -31,6 +31,14 @@ const projects = [
     href: '#',
     status: 'wip' as const,
   },
+  {
+    num: '05',
+    name: 'WHENWORKS',
+    desc: 'Hitta en tid som passar alla. Skapa ett event, dela en länk och se vem som kan när. Inga konton, ingen inloggning.',
+    link: 'stefaneklund.se/whenworks',
+    href: '/whenworks',
+    status: 'live' as const,
+  },
 ]
 
 export default function ProjectsSection() {
@@ -49,8 +57,8 @@ export default function ProjectsSection() {
             className="project-card"
             href={href}
             data-num={num}
-            target="_blank"
-            rel="noreferrer"
+            // Projects on this site open in the same tab; external ones in a new tab.
+            {...(href.startsWith('/') ? {} : { target: '_blank', rel: 'noreferrer' })}
           >
             <span className={`project-status${status === 'live' ? ' live' : ''}`}>
               {status === 'live' ? 'LIVE' : 'WIP'}
