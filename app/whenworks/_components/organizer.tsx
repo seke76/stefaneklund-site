@@ -38,7 +38,7 @@ const people = (ev: AdminView): AdminResponse[] => [
   ...ev.pendingInvitees.map((name) => ({ name, hasEmail: false, answers: {} })),
 ]
 
-function Created({ ev, links }: { ev: AdminView; links: Links }) {
+function Created({ ev, links, onOpen }: { ev: AdminView; links: Links; onOpen: () => void }) {
   const { S } = useWW()
   const msg = S.invite_msg(ev.organizer, ev.title, links.guest)
   return (
@@ -71,6 +71,13 @@ function Created({ ev, links }: { ev: AdminView; links: Links }) {
               <CopyBtn text={links.admin} />
             </div>
           </div>
+        </div>
+        <div className="actions">
+          <span />
+          <button className="btn btn-primary" onClick={onOpen}>
+            {S.to_admin}
+            {Ic.arrowR}
+          </button>
         </div>
       </section>
     </div>
@@ -574,7 +581,7 @@ function OrganizerFlow({
 
   switch (screen) {
     case 'created':
-      return <Created ev={ev} links={links} />
+      return <Created ev={ev} links={links} onOpen={() => go('results')} />
     case 'mine':
       return (
         <Mine
