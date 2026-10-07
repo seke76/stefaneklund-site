@@ -6,7 +6,13 @@ import { durLabel, fmt, isNew, slotKey, tally } from '../_lib/logic'
 import type { Answer, GuestView, Slot } from '../_lib/types'
 import { Actions, Avatar, CardHead, Field, Ic, Mark, SlotLabel, WhenworksShell, downloadIcs, todayIso, useWW } from './ui'
 
-type Guest = { name: string; email: string; answers: Record<string, Answer>; pending: Slot[] }
+type Guest = {
+  name: string
+  email: string
+  answers: Record<string, Answer>
+  pending: Slot[]
+  answersFor: string // lowercased name the answers belong to
+}
 
 function GuestLayout({ ev, children }: { ev: GuestView; children: ReactNode }) {
   const { S, lang } = useWW()
@@ -87,14 +93,22 @@ function Join({
     setLoading(false)
     return res?.ok ? res.data : {}
   }
-  const pickExisting = async (name: string) => {
-    const answers = await answersOf(name)
-    setGuest({ name, email: '', answers: { ...answers }, pending: [] })
+  /** Continues as `name`. Switching person always swaps in that person's answers (or none). */
+  const continueAs = async (raw: string, email = guest.email) => {
+    const name = raw.trim()
+    const key = name.toLowerCase()
+    if (guest.answersFor === key) {
+      setGuest({ ...guest, name, email })
+    } else {
+      const answers = await answersOf(name)
+      setGuest({ name, email, answers: { ...answers }, pending: [], answersFor: key })
+    }
     onNext()
   }
+  const pickExisting = (name: string) => continueAs(name, '')
   const taken =
     choice === NEW && ev.participants.some((n) => n.toLowerCase() === guest.name.trim().toLowerCase())
-  const next = () => (hasList && choice !== NEW ? pickExisting(choice) : onNext())
+  const next = () => continueAs(hasList && choice !== NEW ? choice : guest.name)
 
   const email = (
     <Field label={S.g_email} optional hint={S.g_email_d}>
@@ -373,7 +387,7 @@ function Done({ ev, guest, onEdit }: { ev: GuestView; guest: Guest; onEdit: () =
 function GuestFlow({ initial }: { initial: GuestView }) {
   const [ev, setEv] = useState(initial)
   const [screen, setScreen] = useState<'join' | 'respond' | 'done'>('join')
-  const [guest, setGuest] = useState<Guest>({ name: '', email: '', answers: {}, pending: [] })
+  const [guest, setGuest] = useState<Guest>({ name: '', email: '', answers: {}, pending: [], answersFor: '' })
   const go = (s: typeof screen) => {
     setScreen(s)
     window.scrollTo({ top: 0, behavior: 'smooth' })
