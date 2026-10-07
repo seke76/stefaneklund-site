@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react'
 import { getMyAnswers, submitAnswers } from '../actions'
 import { durLabel, findBest, fmt, isNew, slotKey, tally } from '../_lib/logic'
 import { Legend, Matrix } from './matrix'
+import { AnswerList, newFirst } from './answers'
 import type { Answer, GuestView, Slot } from '../_lib/types'
 import { Actions, Avatar, CardHead, Field, Ic, Mark, SlotLabel, WhenworksShell, downloadIcs, todayIso, useWW } from './ui'
 
@@ -107,8 +108,11 @@ function Join({
     onNext()
   }
   const pickExisting = (name: string) => continueAs(name, '')
-  const taken =
-    choice === NEW && ev.participants.some((n) => n.toLowerCase() === guest.name.trim().toLowerCase())
+  const typed = guest.name.trim().toLowerCase()
+  // The organizer answers from their own page; guests can't use that name.
+  const isOrganizer = (n: string) => n.trim().toLowerCase() === ev.organizer.toLowerCase()
+  const orgName = (choice === NEW || !hasList) && isOrganizer(typed)
+  const taken = choice === NEW && !orgName && ev.participants.some((n) => n.toLowerCase() === typed)
   const next = () => continueAs(hasList && choice !== NEW ? choice : guest.name)
 
   const email = (
@@ -170,12 +174,13 @@ function Join({
               </Field>
             )}
             {taken && <p className="err">{S.g_name_taken}</p>}
+            {orgName && <p className="err">{S.g_org_name}</p>}
             {choice && email}
           </div>
           <Actions
             onNext={next}
             nextLabel={S.g_start}
-            nextDisabled={!choice || (choice === NEW && (!guest.name.trim() || taken)) || loading}
+            nextDisabled={!choice || (choice === NEW && (!guest.name.trim() || taken || orgName)) || loading}
           />
         </>
       ) : (
@@ -192,13 +197,14 @@ function Join({
                 onChange={(e) => setGuest({ ...guest, name: e.target.value })}
               />
             </Field>
+            {orgName && <p className="err">{S.g_org_name}</p>}
             {email}
           </div>
-          {ev.responders.length > 0 && (
+          {ev.responders.some((p) => !isOrganizer(p.name)) && (
             <div className="returning">
               <span className="lbl">{S.g_returning}</span>
               <div className="chips">
-                {ev.responders.map((p) => (
+                {ev.responders.filter((p) => !isOrganizer(p.name)).map((p) => (
                   <button key={p.name} className="chip chip-av" disabled={loading} onClick={() => pickExisting(p.name)}>
                     <Avatar name={p.name} size={22} />
                     {p.name}
@@ -207,7 +213,7 @@ function Join({
               </div>
             </div>
           )}
-          <Actions onNext={next} nextLabel={S.g_start} nextDisabled={!guest.name.trim()} />
+          <Actions onNext={next} nextLabel={S.g_start} nextDisabled={!guest.name.trim() || orgName || loading} />
         </>
       )}
     </>
@@ -233,9 +239,7 @@ function Respond({
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const me = guest.name.trim().toLowerCase()
-  const slots = [...ev.slots, ...guest.pending]
-    .sort((a, b) => (a.date + (a.time ?? '')).localeCompare(b.date + (b.time ?? '')))
-    .sort((a, b) => (isNew(b, ev.round) ? 1 : 0) - (isNew(a, ev.round) ? 1 : 0))
+  const slots = newFirst([...ev.slots, ...guest.pending], ev.round)
   const others = ev.showOthers
     ? ev.responders
         .filter((p) => p.name.toLowerCase() !== me)
@@ -269,53 +273,19 @@ function Respond({
     }).catch(() => null)
     setBusy(false)
     if (res?.ok) onSent(res.data)
-    else setErr(res?.error === 'not_listed' ? S.g_not_listed : S.err)
+    else setErr(res?.error === 'not_listed' ? S.g_not_listed : res?.error === 'organizer' ? S.g_org_name : S.err)
   }
 
   return (
     <>
       <CardHead title={S.g_resp_title} sub={ev.mode === 'open' ? S.g_resp_open : S.g_resp_fixed} />
-      <ul className="answer-list">
-        {slots.map((s) => {
-          const yes = ev.showOthers ? tally(s, others).yes.length : 0
-          const a = guest.answers[s.id]
-          const fresh = isNew(s, ev.round)
-          return (
-            <li key={s.id} className={a ? 'answered ' + a : ''}>
-              <div className="al-l">
-                <SlotLabel s={s} />
-                {(yes > 0 || s.by || fresh) && (
-                  <span className="al-meta">
-                    {fresh && <span className="new-pill">{S.new_tag}</span>}
-                    {s.by ? S.suggested_by(s.by) : ''}
-                    {s.by && yes ? ' · ' : ''}
-                    {yes ? yes + ' ' + S.can.toLowerCase() : ''}
-                  </span>
-                )}
-              </div>
-              <div className="yn">
-                {(
-                  [
-                    ['yes', S.yes_l],
-                    ['maybe', S.maybe_l],
-                    ['no', S.no_l],
-                  ] as const
-                ).map(([v, l]) => (
-                  <button
-                    key={v}
-                    className={'yn-b ' + v + (a === v ? ' on' : '')}
-                    onClick={() => setA(s.id, v)}
-                    aria-pressed={a === v}
-                  >
-                    <Mark v={v} />
-                    <span>{l}</span>
-                  </button>
-                ))}
-              </div>
-            </li>
-          )
-        })}
-      </ul>
+      <AnswerList
+        slots={slots}
+        answers={guest.answers}
+        onAnswer={setA}
+        round={ev.round}
+        yesCount={ev.showOthers ? (s) => tally(s, others).yes.length : undefined}
+      />
       {canSuggest && (
         <div className="suggest">
           <span className="lbl">{S.g_suggest}</span>

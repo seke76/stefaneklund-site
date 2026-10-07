@@ -83,6 +83,7 @@ function participants({ ev, responses }: Loaded) {
   const list = ev.invitees ?? []
   if (!list.length) return []
   const seen = new Set<string>()
+  seen.add(nameKey(ev.organizer)) // guests can't pick the organizer
   return [...list.map((i) => i.name), ...responses.map((r) => r.name)].filter(
     (n) => !seen.has(nameKey(n)) && seen.add(nameKey(n)),
   )

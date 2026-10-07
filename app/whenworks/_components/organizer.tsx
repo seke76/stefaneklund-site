@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { askAgain, finalize, getAdmin } from '../actions'
+import { askAgain, finalize, getAdmin, setMyAnswers } from '../actions'
 import { durLabel, findBest, fmt, isNew, missingOf, tally, type Best } from '../_lib/logic'
 import type { AdminResponse, AdminView, Slot } from '../_lib/types'
 import { WhenCalendar, type DraftSlot } from './create'
 import { Legend, Matrix } from './matrix'
+import { AnswerList, newFirst } from './answers'
 import {
   Actions,
   Avatar,
@@ -23,10 +24,13 @@ import {
   useWW,
 } from './ui'
 
-type Screen = 'created' | 'results' | 'reask' | 'finalize' | 'final'
+type Screen = 'created' | 'results' | 'reask' | 'finalize' | 'final' | 'mine'
 type Links = { guest: string; admin: string }
 
 const strip = (url: string) => url.replace(/^https?:\/\//, '')
+
+const isOrg = (ev: AdminView, name: string) => name.toLowerCase() === ev.organizer.toLowerCase()
+const myAnswers = (ev: AdminView) => ev.responses.find((r) => isOrg(ev, r.name))?.answers ?? {}
 
 /** Everyone the organizer is waiting on: people who answered plus invitees who haven't yet. */
 const people = (ev: AdminView): AdminResponse[] => [
@@ -132,11 +136,17 @@ function Results({
   const { S, lang } = useWW()
   const [view, setView] = useState<'matrix' | 'ranked'>('matrix')
   const slots = ev.slots
-  const B = findBest(slots, people(ev), ev.mustAll)
+  // The organizer always counts in the table, but banners wait until a guest has answered.
+  const guests = ev.responses.filter((r) => !isOrg(ev, r.name))
+  const anyGuest = guests.length > 0
+  const all = findBest(slots, people(ev), ev.mustAll)
+  const B = anyGuest ? all : { ...all, best: undefined, full: undefined }
   const curNew = slots.filter((s) => isNew(s, ev.round))
-  const waiting = curNew.length > 0 && !ev.responses.some((p) => curNew.some((s) => p.answers[s.id]))
-  const needMore = ev.mustAll && !B.full && ev.responses.length > 0
+  const waiting = curNew.length > 0 && !guests.some((p) => curNew.some((s) => p.answers[s.id]))
+  const needMore = ev.mustAll && !B.full && anyGuest
   const c = B.closest[0]
+  const mine = myAnswers(ev)
+  const todo = slots.filter((s) => !mine[s.id]).length
   return (
     <div className="results">
       <div className="res-head">
@@ -147,7 +157,7 @@ function Results({
           </span>
           <h1 className="display sm">{ev.title}</h1>
           <p className="muted">
-            {S.n_resp(ev.responses.length)}
+            {S.n_resp(guests.length)}
             {ev.deadline ? ' · ' + S.reply_by + ' ' + fmt.long(ev.deadline, lang) : ''}
           </p>
         </div>
@@ -165,11 +175,26 @@ function Results({
               {S.ask_again}
             </button>
           )}
+          <button className="btn btn-sm btn-ghost" onClick={() => go('mine')}>
+            {S.mine_btn}
+          </button>
           <button className="btn btn-sm btn-ghost" onClick={() => go('created')}>
             {S.share_again}
           </button>
         </div>
       </div>
+      {todo > 0 && (
+        <div className="info-banner mine-banner">
+          <div>
+            <b>{S.mine_todo(todo)}</b>
+            <p>{S.mine_todo_d}</p>
+          </div>
+          <button className="btn btn-sm btn-primary" onClick={() => go('mine')}>
+            {S.mine_answer}
+            {Ic.arrowR}
+          </button>
+        </div>
+      )}
       {waiting && <div className="info-banner">{S.round_live(ev.round)}</div>}
       {needMore && !waiting && (
         <div className="reask-banner">
@@ -203,12 +228,61 @@ function Results({
       )}
       <section className="card card-flush">
         {view === 'matrix' ? (
-          <Matrix people={people(ev)} slots={slots} round={ev.round} B={B} onPick={onPick} />
+          <Matrix people={people(ev)} slots={slots} round={ev.round} B={B} onPick={onPick} me={ev.organizer} />
         ) : (
           <ResultsRanked ev={ev} B={B} onPick={onPick} />
         )}
       </section>
       <Legend />
+    </div>
+  )
+}
+
+/** The organizer's own Yes / Maybe / No, same controls as the guests have. */
+function Mine({
+  ev,
+  token,
+  onDone,
+  go,
+}: {
+  ev: AdminView
+  token: string
+  onDone: (v: AdminView) => void
+  go: (s: Screen) => void
+}) {
+  const { S } = useWW()
+  const [answers, setAnswers] = useState(() => myAnswers(ev))
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(false)
+  // Times still waiting for an answer first. Fixed when the screen opens so rows don't jump around.
+  const [slots] = useState(() => {
+    const had = myAnswers(ev)
+    return newFirst(ev.slots, ev.round).sort((a, b) => (had[a.id] ? 1 : 0) - (had[b.id] ? 1 : 0))
+  })
+  const others = ev.responses.filter((r) => !isOrg(ev, r.name))
+  const save = async () => {
+    setBusy(true)
+    setErr(false)
+    const res = await setMyAnswers(ev.slug, token, answers).catch(() => null)
+    setBusy(false)
+    if (res?.ok) onDone(res.data)
+    else setErr(true)
+  }
+  return (
+    <div className="single">
+      <section className="card card-wide card-xl">
+        <span className="eyebrow">{ev.title}</span>
+        <CardHead title={S.mine_title} sub={S.mine_sub} />
+        <AnswerList
+          slots={slots}
+          answers={answers}
+          onAnswer={(id, v) => setAnswers({ ...answers, [id]: v })}
+          round={ev.round}
+          yesCount={(s) => tally(s, others).yes.length}
+        />
+        {err && <p className="err">{S.err}</p>}
+        <Actions onBack={() => go('results')} onNext={save} nextLabel={S.save} nextDisabled={busy} />
+      </section>
     </div>
   )
 }
@@ -501,6 +575,18 @@ function OrganizerFlow({
   switch (screen) {
     case 'created':
       return <Created ev={ev} links={links} />
+    case 'mine':
+      return (
+        <Mine
+          ev={ev}
+          token={token}
+          go={go}
+          onDone={(v) => {
+            setEv(v)
+            go('results')
+          }}
+        />
+      )
     case 'reask':
       return (
         <Reask

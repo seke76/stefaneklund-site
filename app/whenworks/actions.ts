@@ -73,6 +73,19 @@ function cleanTimes(list: unknown): { date: string; time: string | null }[] {
   return out
 }
 
+/** The organizer is a participant too; their answers live with everyone else's, under their name. */
+async function addOrganizerAnswers(ev: EventDoc, answers: Record<string, Answer>) {
+  const store = getStore()
+  const key = nameKey(ev.organizer)
+  const prev = await store.getResponse(ev.slug, key)
+  await store.putResponse(
+    ev.slug,
+    key,
+    { name: ev.organizer, email: prev?.email ?? '', answers: { ...(prev?.answers ?? {}), ...answers }, updatedAt: Date.now() },
+    ev.expiresAt,
+  )
+}
+
 async function run<T>(fn: () => Promise<Result<T>>): Promise<Result<T>> {
   try {
     return await fn()
@@ -123,7 +136,7 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
       roundNote: '',
       finalSlotId: null,
       finalNote: '',
-      invitees: cleanInvitees(input.invitees),
+      invitees: cleanInvitees(input.invitees).filter((i) => nameKey(i.name) !== nameKey(organizer)),
       invitesSent: 0,
       allowSelfAdd: input.allowSelfAdd !== false,
       createdAt: now,
@@ -147,6 +160,7 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
       )
     }
     await store.putEvent(ev)
+    await addOrganizerAnswers(ev, Object.fromEntries(ev.slots.map((s) => [s.id, 'yes' as const])))
     return { ok: true, data: { slug: ev.slug, token } }
   })
 }
@@ -157,6 +171,7 @@ export async function getMyAnswers(slug: string, name: string): Promise<Result<R
   return run(async () => {
     const l = await loadEvent(slug)
     if (!l) return fail('not_found')
+    if (nameKey(str(name, 60)) === nameKey(l.ev.organizer)) return { ok: true, data: {} }
     const r = await getStore().getResponse(slug, nameKey(str(name, 60)))
     return { ok: true, data: r?.answers ?? {} }
   })
@@ -177,6 +192,7 @@ export async function submitAnswers(
     const { ev } = l
     const name = str(input.name, 60)
     if (!name) return fail('invalid')
+    if (nameKey(name) === nameKey(ev.organizer)) return fail('organizer')
     if (!mayAnswer(l, name)) return fail('not_listed')
     const emailIn = str(input.email, 200)
     const email = EMAIL_RE.test(emailIn) ? emailIn : ''
@@ -231,6 +247,23 @@ export async function getAdmin(slug: string, token: string): Promise<Result<Admi
   })
 }
 
+export async function setMyAnswers(
+  slug: string,
+  token: string,
+  input: Record<string, Answer>,
+): Promise<Result<AdminView>> {
+  return run(async () => {
+    const l = await loadAdmin(slug, token)
+    if (!l) return fail('not_found')
+    const valid = new Set(l.slots.map((s) => s.id))
+    const answers: Record<string, Answer> = {}
+    for (const [id, v] of Object.entries(input ?? {})) if (valid.has(id) && ANSWERS.includes(v)) answers[id] = v
+    await addOrganizerAnswers(l.ev, answers)
+    const reloaded = await loadAdmin(slug, token)
+    return reloaded ? { ok: true, data: toAdminView(reloaded) } : fail('not_found')
+  })
+}
+
 export async function askAgain(
   slug: string,
   token: string,
@@ -262,6 +295,7 @@ export async function askAgain(
       roundNote: str(input.note, 600),
     }
     await getStore().putEvent(updated)
+    if (fresh.length) await addOrganizerAnswers(updated, Object.fromEntries(fresh.map((s) => [s.id, 'yes' as const])))
     const reloaded = await loadAdmin(slug, token)
     return reloaded ? { ok: true, data: toAdminView(reloaded) } : fail('not_found')
   })
