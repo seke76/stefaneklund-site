@@ -74,7 +74,12 @@ export type GuestResponder = { name: string; answers?: Record<string, Answer> }
  * participants: names (never emails) on the guest list plus people who have answered.
  * Empty when the organizer added no guest list; then guests just type their name.
  */
-export type GuestView = EventInfo & { responders: GuestResponder[]; participants: string[]; allowSelfAdd: boolean }
+export type GuestView = EventInfo & {
+  responders: GuestResponder[]
+  participants: string[]
+  allowSelfAdd: boolean
+  emailEnabled: boolean // hide the email field until email can be sent
+}
 
 export type AdminResponse = { name: string; hasEmail: boolean; answers: Record<string, Answer> }
 export type AdminView = EventInfo & {

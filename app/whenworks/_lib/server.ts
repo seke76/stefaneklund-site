@@ -101,6 +101,7 @@ export function toGuestView(l: Loaded): GuestView {
     responders: l.responses.map((r) => (l.ev.showOthers ? { name: r.name, answers: r.answers } : { name: r.name })),
     participants: participants(l),
     allowSelfAdd: l.ev.allowSelfAdd !== false,
+    emailEnabled: emailEnabled(),
   }
 }
 

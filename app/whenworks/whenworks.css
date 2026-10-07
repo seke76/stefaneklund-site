@@ -274,3 +274,4 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:
 .fields>.err{margin-top:-10px}
 .results .final-banner{margin-bottom:0}
 .mine-banner{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}
+@media(min-width:620px){.guest-add.no-mail{grid-template-columns:minmax(0,1fr) auto}}

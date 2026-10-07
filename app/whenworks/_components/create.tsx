@@ -167,11 +167,13 @@ function GuestsStep({
   setInvitees,
   allowSelfAdd,
   setAllowSelfAdd,
+  emailEnabled,
 }: {
   invitees: Invitee[]
   setInvitees: (v: Invitee[]) => void
   allowSelfAdd: boolean
   setAllowSelfAdd: (v: boolean) => void
+  emailEnabled: boolean
 }) {
   const { S } = useWW()
   const [name, setName] = useState('')
@@ -190,7 +192,7 @@ function GuestsStep({
   return (
     <>
       <form
-        className="guest-add"
+        className={'guest-add' + (emailEnabled ? '' : ' no-mail')}
         onSubmit={(e) => {
           e.preventDefault()
           add()
@@ -208,19 +210,21 @@ function GuestsStep({
             }}
           />
         </Field>
-        <Field label={S.f_guest_email} optional>
-          <input
-            className="inp"
-            type="email"
-            value={email}
-            maxLength={200}
-            placeholder="name@mail.com"
-            onChange={(e) => {
-              setEmail(e.target.value)
-              setErr('')
-            }}
-          />
-        </Field>
+        {emailEnabled && (
+          <Field label={S.f_guest_email} optional>
+            <input
+              className="inp"
+              type="email"
+              value={email}
+              maxLength={200}
+              placeholder="name@mail.com"
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setErr('')
+              }}
+            />
+          </Field>
+        )}
         <button type="submit" className="btn btn-ghost" disabled={!name.trim() || invitees.length >= 50}>
           {Ic.plus}
           {S.g_add}
@@ -313,7 +317,7 @@ const EMPTY: Draft = {
 
 type Step = 1 | 2 | 3 | 4
 
-function CreateFlow() {
+function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
   const { S, lang } = useWW()
   const router = useRouter()
   const [step, setStep] = useState<Step>(1)
@@ -441,8 +445,9 @@ function CreateFlow() {
   if (step === 3)
     return (
       <FlowLayout step={3}>
-        <CardHead title={S.guests_title} sub={S.guests_sub} />
+        <CardHead title={S.guests_title} sub={emailEnabled ? S.guests_sub : S.guests_sub_nomail} />
         <GuestsStep
+          emailEnabled={emailEnabled}
           invitees={ev.invitees}
           setInvitees={(v) => set('invitees', v)}
           allowSelfAdd={ev.allowSelfAdd}
@@ -504,10 +509,10 @@ function CreateFlow() {
   )
 }
 
-export default function CreateApp() {
+export default function CreateApp({ emailEnabled }: { emailEnabled: boolean }) {
   return (
     <WhenworksShell role="organizer">
-      <CreateFlow />
+      <CreateFlow emailEnabled={emailEnabled} />
     </WhenworksShell>
   )
 }

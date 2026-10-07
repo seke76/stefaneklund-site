@@ -175,7 +175,7 @@ function Join({
             )}
             {taken && <p className="err">{S.g_name_taken}</p>}
             {orgName && <p className="err">{S.g_org_name}</p>}
-            {choice && email}
+            {choice && ev.emailEnabled && email}
           </div>
           <Actions
             onNext={next}
@@ -198,7 +198,7 @@ function Join({
               />
             </Field>
             {orgName && <p className="err">{S.g_org_name}</p>}
-            {email}
+            {ev.emailEnabled && email}
           </div>
           {ev.responders.some((p) => !isOrganizer(p.name)) && (
             <div className="returning">
