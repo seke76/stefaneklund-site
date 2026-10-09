@@ -350,7 +350,6 @@ function Respond({
           {S.back}
         </button>
         <div className="row">
-          {left > 0 && <span className="muted small">{S.g_left(left)}</span>}
           <button className="btn btn-primary" onClick={send} disabled={left === slots.length || busy}>
             {S.g_send}
             {Ic.arrowR}
@@ -428,18 +427,6 @@ function Home({
         ) : (
           !ev.showOthers && <p className="muted">{S.g_hidden_best}</p>
         ))}
-
-      <div className="sub-block">
-        <span className="lbl">{S.g_my_answers}</span>
-        <ul className="my-answers">
-          {newFirst(ev.slots, ev.round).map((s) => (
-            <li key={s.id}>
-              <SlotLabel s={s} compact />
-              <Mark v={me.answers[s.id]} />
-            </li>
-          ))}
-        </ul>
-      </div>
 
       <div className="actions">
         <button className="btn btn-quiet" onClick={onSwitch}>
