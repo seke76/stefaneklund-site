@@ -399,7 +399,7 @@ function Home({
       <FinalBanner ev={ev} />
       {todo > 0 && !ev.final && (
         <div className="info-banner mine-banner">
-          <b>{S.g_todo(todo)}</b>
+          <b>{S.g_todo}</b>
           <button className="btn btn-sm btn-primary" onClick={onEdit}>
             {S.g_todo_btn}
             {Ic.arrowR}
