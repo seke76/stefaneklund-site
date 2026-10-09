@@ -1,5 +1,6 @@
 'use server'
 
+import { cookies } from 'next/headers'
 import { getStore } from './_lib/store'
 import { DATE_RE, TIME_RE, fmt, slotKey, spanOf } from './_lib/logic'
 import { WW_STR } from './_lib/i18n'
@@ -13,6 +14,8 @@ import {
   newSlug,
   newToken,
   notifyAddresses,
+  responseFor,
+  TOKEN_RE,
   sendEmails,
   toAdminView,
   toGuestView,
@@ -84,6 +87,48 @@ async function addOrganizerAnswers(ev: EventDoc, answers: Record<string, Answer>
     { name: ev.organizer, email: prev?.email ?? '', answers: { ...(prev?.answers ?? {}), ...answers }, updatedAt: Date.now() },
     ev.expiresAt,
   )
+}
+
+/* ---------- Guest identity ---------- */
+// After a guest's first answer their browser gets a secret token in a cookie. Their name is then
+// locked: only that browser, or their personal link (?me=token), can change those answers.
+
+const meCookie = (slug: string) => `ww_me_${slug}`
+
+async function readMe(slug: string) {
+  const t = (await cookies()).get(meCookie(slug))?.value
+  return t && TOKEN_RE.test(t) ? t : undefined
+}
+
+async function rememberMe(slug: string, token: string, expiresAt: number) {
+  ;(await cookies()).set(meCookie(slug), token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/whenworks',
+    maxAge: Math.max(60, Math.floor((expiresAt - Date.now()) / 1000)),
+  })
+}
+
+/** Opening a personal link: remember this browser as that guest. */
+export async function openMyLink(slug: string, token: string): Promise<Result<GuestView>> {
+  return run(async () => {
+    const l = await loadEvent(slug)
+    if (!l) return fail('not_found')
+    if (!responseFor(l, token)) return fail('bad_link')
+    await rememberMe(slug, token, l.ev.expiresAt)
+    return { ok: true, data: toGuestView(l, token) }
+  })
+}
+
+/** "Not you?": this browser forgets who it is. */
+export async function forgetMe(slug: string): Promise<Result<GuestView>> {
+  return run(async () => {
+    const l = await loadEvent(slug)
+    if (!l) return fail('not_found')
+    ;(await cookies()).delete({ name: meCookie(slug), path: '/whenworks' })
+    return { ok: true, data: toGuestView(l) }
+  })
 }
 
 async function run<T>(fn: () => Promise<Result<T>>): Promise<Result<T>> {
@@ -173,6 +218,11 @@ export async function getMyAnswers(slug: string, name: string): Promise<Result<R
     if (!l) return fail('not_found')
     if (nameKey(str(name, 60)) === nameKey(l.ev.organizer)) return { ok: true, data: {} }
     const r = await getStore().getResponse(slug, nameKey(str(name, 60)))
+    // A locked name's answers only go to its own browser.
+    if (r?.tokenHash) {
+      const t = await readMe(slug)
+      if (!t || hashToken(t) !== r.tokenHash) return fail('claimed')
+    }
     return { ok: true, data: r?.answers ?? {} }
   })
 }
@@ -223,18 +273,24 @@ export async function submitAnswers(
 
     const key = nameKey(name)
     const prev = await store.getResponse(slug, key)
+    // Someone already answered as this name from another browser: only they may change it.
+    const cookieToken = await readMe(slug)
+    if (prev?.tokenHash && (!cookieToken || hashToken(cookieToken) !== prev.tokenHash)) return fail('claimed')
+    const myToken = prev?.tokenHash ? cookieToken! : newToken()
     const resp: StoredResponse = {
       name,
       // Keep an earlier address if the guest leaves the field empty when editing.
       email: email || prev?.email || '',
       // Keep answers to slots that are hidden right now.
       answers: { ...(prev?.answers ?? {}), ...answers },
+      tokenHash: hashToken(myToken),
       updatedAt: Date.now(),
     }
     await store.addSuggestions(slug, added, ev.expiresAt)
     await store.putResponse(slug, key, resp, ev.expiresAt)
+    await rememberMe(slug, myToken, ev.expiresAt)
     const fresh = await loadEvent(slug)
-    return fresh ? { ok: true, data: toGuestView(fresh) } : fail('not_found')
+    return fresh ? { ok: true, data: toGuestView(fresh, myToken) } : fail('not_found')
   })
 }
 

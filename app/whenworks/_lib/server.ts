@@ -95,10 +95,23 @@ export function mayAnswer(l: Loaded, name: string) {
   return participants(l).some((n) => nameKey(n) === nameKey(name))
 }
 
-export function toGuestView(l: Loaded): GuestView {
+/** The response a guest token belongs to, if any. */
+export function responseFor(l: Loaded, token: string | undefined) {
+  if (!token || !TOKEN_RE.test(token)) return undefined
+  const h = hashToken(token)
+  return l.responses.find((r) => r.tokenHash === h)
+}
+
+export function toGuestView(l: Loaded, token?: string): GuestView {
+  const mine = responseFor(l, token)
   return {
     ...info(l),
-    responders: l.responses.map((r) => (l.ev.showOthers ? { name: r.name, answers: r.answers } : { name: r.name })),
+    responders: l.responses.map((r) => ({
+      name: r.name,
+      ...(l.ev.showOthers ? { answers: r.answers } : {}),
+      claimed: !!r.tokenHash,
+    })),
+    me: mine && token ? { name: mine.name, answers: mine.answers, token } : null,
     participants: participants(l),
     allowSelfAdd: l.ev.allowSelfAdd !== false,
     emailEnabled: emailEnabled(),

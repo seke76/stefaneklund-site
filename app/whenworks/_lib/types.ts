@@ -47,6 +47,7 @@ export type StoredResponse = {
   name: string
   email: string
   answers: Record<string, Answer>
+  tokenHash?: string // set on first answer; only that browser (or the personal link) may edit
   updatedAt: number
 }
 
@@ -69,7 +70,10 @@ export type EventInfo = {
   final: { slot: Slot; note: string } | null
 }
 
-export type GuestResponder = { name: string; answers?: Record<string, Answer> }
+export type GuestResponder = { name: string; answers?: Record<string, Answer>; claimed?: boolean }
+
+/** The visitor, recognised by their cookie or personal link. token is their own secret. */
+export type Me = { name: string; answers: Record<string, Answer>; token: string }
 /**
  * participants: names (never emails) on the guest list plus people who have answered.
  * Empty when the organizer added no guest list; then guests just type their name.
@@ -79,6 +83,7 @@ export type GuestView = EventInfo & {
   participants: string[]
   allowSelfAdd: boolean
   emailEnabled: boolean // hide the email field until email can be sent
+  me: Me | null
 }
 
 export type AdminResponse = { name: string; hasEmail: boolean; answers: Record<string, Answer> }
