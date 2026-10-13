@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import GuestApp from '../../_components/guest'
 import { loadEvent, toGuestView } from '../../_lib/server'
@@ -15,5 +16,7 @@ export default async function GuestPage({ params }: Props) {
   const { slug } = await params
   const l = await loadEvent(slug)
   if (!l) notFound()
-  return <GuestApp initial={toGuestView(l)} />
+  // A returning guest is recognised by the cookie set when they first answered.
+  const me = (await cookies()).get(`ww_me_${slug}`)?.value
+  return <GuestApp initial={toGuestView(l, me)} />
 }
