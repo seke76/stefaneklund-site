@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { askAgain, finalize, getAdmin, setMyAnswers } from '../actions'
+import { useEffect, useRef, useState } from 'react'
+import { askAgain, finalize, getAdmin, setAnswerFor, setMyAnswers } from '../actions'
 import { durLabel, findBest, fmt, isDayEvent, isNew, missingOf, spanOf, tally, type Best } from '../_lib/logic'
-import type { AdminResponse, AdminView, Slot } from '../_lib/types'
+import type { AdminResponse, AdminView, Answer, Slot } from '../_lib/types'
 import { WhenCalendar, type DraftSlot } from './create'
 import { Legend, Matrix } from './matrix'
 import { AnswerList, newFirst } from './answers'
@@ -132,17 +132,56 @@ function ResultsRanked({ ev, B, onPick }: { ev: AdminView; B: Best; onPick: (s: 
   )
 }
 
+const NEXT: Record<string, Answer | null> = { none: 'yes', yes: 'maybe', maybe: 'no', no: null }
+
 function Results({
   ev,
+  token,
+  onUpdate,
   onPick,
   go,
 }: {
   ev: AdminView
+  token: string
+  onUpdate: (v: AdminView) => void
   onPick: (s: Slot) => void
   go: (s: Screen) => void
 }) {
   const { S, lang } = useWW()
   const [view, setView] = useState<'matrix' | 'ranked'>('matrix')
+  const [err, setErr] = useState(false)
+  const latest = useRef(0)
+  // Saves run one after another so quick clicks on the same person can't overwrite each other.
+  const queue = useRef<Promise<unknown>>(Promise.resolve())
+  /** Edit mode: each click steps Yes → Maybe → No → empty and saves right away. */
+  const editCell = async (name: string, s: Slot) => {
+    const person = people(ev).find((p) => p.name === name)
+    const value = NEXT[person?.answers[s.id] ?? 'none']
+    const key = name.toLowerCase()
+    // Show the change at once; the server's answer replaces it.
+    const answered = ev.responses.some((r) => r.name.toLowerCase() === key)
+    const set = (a: Record<string, Answer>) => {
+      const next = { ...a }
+      if (value) next[s.id] = value
+      else delete next[s.id]
+      return next
+    }
+    onUpdate({
+      ...ev,
+      responses: answered
+        ? ev.responses.map((r) => (r.name.toLowerCase() === key ? { ...r, answers: set(r.answers) } : r))
+        : [...ev.responses, { name, hasEmail: false, answers: set({}) }],
+      pendingInvitees: ev.pendingInvitees.filter((n) => n.toLowerCase() !== key),
+    })
+    const req = ++latest.current
+    setErr(false)
+    const save = queue.current.then(() => setAnswerFor(ev.slug, token, { name, slotId: s.id, value }).catch(() => null))
+    queue.current = save
+    const res = await save
+    if (req !== latest.current) return // a newer click is on its way
+    if (res?.ok) onUpdate(res.data)
+    else setErr(true)
+  }
   const slots = ev.slots
   // The organizer always counts in the table, but banners wait until a guest has answered.
   const guests = ev.responses.filter((r) => !isOrg(ev, r.name))
@@ -193,16 +232,14 @@ function Results({
       </div>
       {todo > 0 && (
         <div className="info-banner mine-banner">
-          <div>
-            <b>{S.mine_todo(todo)}</b>
-            <p>{S.mine_todo_d}</p>
-          </div>
+          <b>{S.g_todo}</b>
           <button className="btn btn-sm btn-primary" onClick={() => go('mine')}>
             {S.mine_answer}
             {Ic.arrowR}
           </button>
         </div>
       )}
+      {err && <p className="err">{S.err}</p>}
       {waiting && <div className="info-banner">{S.round_live(ev.round)}</div>}
       {needMore && !waiting && (
         <div className="reask-banner">
@@ -236,12 +273,21 @@ function Results({
       )}
       <section className="card card-flush">
         {view === 'matrix' ? (
-          <Matrix people={people(ev)} slots={slots} round={ev.round} B={B} onPick={onPick} me={ev.organizer} />
+          <Matrix
+            people={people(ev)}
+            slots={slots}
+            round={ev.round}
+            B={B}
+            onPick={onPick}
+            me={ev.organizer}
+            onCell={editCell}
+          />
         ) : (
           <ResultsRanked ev={ev} B={B} onPick={onPick} />
         )}
       </section>
       <Legend />
+      {view === 'matrix' && <p className="hint">{S.edit_hint}</p>}
     </div>
   )
 }
@@ -647,7 +693,7 @@ function OrganizerFlow({
     case 'final':
       return <Final ev={ev} links={links} go={go} />
     default:
-      return <Results ev={ev} onPick={onPick} go={go} />
+      return <Results ev={ev} token={token} onUpdate={setEv} onPick={onPick} go={go} />
   }
 }
 

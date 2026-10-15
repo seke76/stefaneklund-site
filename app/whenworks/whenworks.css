@@ -285,3 +285,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:
 .my-answers{list-style:none;display:flex;flex-direction:column;gap:6px}
 .my-answers li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 10px 6px 6px;border-radius:14px;background:var(--bg)}
 .link-err{margin:0 0 18px}
+.mx-cell{display:inline-grid;place-items:center;padding:4px;border-radius:50%;box-shadow:0 0 0 1.5px transparent;transition:box-shadow .15s,transform .1s}
+.mx-cell:hover{box-shadow:0 0 0 1.5px var(--line-2)}
+.mx-cell:active{transform:scale(.92)}
+.time-sel{display:inline-flex;align-items:center;gap:2px;font-variant-numeric:tabular-nums}
+.time-sel select{font:inherit;color:var(--ink);background:none;border:0;outline:none;appearance:none;-webkit-appearance:none;padding:2px 4px;border-radius:6px;cursor:pointer;text-align:center}
+.time-sel select:focus-visible{box-shadow:0 0 0 2px var(--ac)}
+.time-sel select:disabled{color:#A39AA4;cursor:default;opacity:1}
+.inp.time-sel{padding:9px 12px}
+.chip-other .time-sel{font-size:14px}

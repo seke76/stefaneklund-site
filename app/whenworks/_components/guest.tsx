@@ -16,6 +16,7 @@ import {
   Mark,
   SlotLabel,
   SpanProvider,
+  TimeSelect,
   WhenworksShell,
   downloadIcs,
   todayIso,
@@ -334,7 +335,7 @@ function Respond({
             />
             {/* Events measured in days have no clock time. */}
             {!isDayEvent(ev) && (
-              <input className="inp inp-time" type="time" value={st} onChange={(e) => setSt(e.target.value)} />
+              <TimeSelect className="inp inp-time" value={st} onChange={setSt} label={S.other_time} />
             )}
             <button className="btn btn-ghost" disabled={!sd} onClick={addSuggestion}>
               {Ic.plus}
