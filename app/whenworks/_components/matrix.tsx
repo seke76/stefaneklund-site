@@ -17,6 +17,7 @@ export function Matrix({
   B,
   onPick,
   me,
+  onCell,
 }: {
   people: Person[]
   slots: Slot[]
@@ -24,6 +25,8 @@ export function Matrix({
   B: Best
   onPick?: (s: Slot) => void
   me?: string
+  /** Edit mode (organizer): every cell becomes a button. */
+  onCell?: (name: string, s: Slot) => void
 }) {
   const { S } = useWW()
   const best = B.best
@@ -59,7 +62,17 @@ export function Matrix({
               </th>
               {slots.map((s) => (
                 <td key={s.id} className={cls(s)}>
-                  <Mark v={p.answers[s.id]} />
+                  {onCell ? (
+                    <button
+                      className="mx-cell"
+                      onClick={() => onCell(p.name, s)}
+                      aria-label={`${p.name}: ${p.answers[s.id] ?? '–'}`}
+                    >
+                      <Mark v={p.answers[s.id]} />
+                    </button>
+                  ) : (
+                    <Mark v={p.answers[s.id]} />
+                  )}
                 </td>
               ))}
             </tr>

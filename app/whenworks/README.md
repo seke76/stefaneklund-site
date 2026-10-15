@@ -28,6 +28,7 @@ Whenworks har en **egen root-layout** (`layout.tsx`, `whenworks.css`). Därför 
 flowchart LR
   A[Vad] --> B[När] --> C[Gäster] --> D[Vem] --> E[Eventet är klart<br/>länkar att dela]
   E --> F[Svar<br/>tabell / rangordnat]
+  F --> K[Ändra svar<br/>klicka i tabellen]
   F --> G[Mina svar]
   F --> H[Fråga efter nya tider<br/>ny runda]
   F --> I[Bekräfta tid] --> J[Det är bestämt<br/>+ kalenderfil]
@@ -38,6 +39,7 @@ flowchart LR
   - Längd i **dagar**: arrangören väljer bara startdagar, och varje förslag täcker så många dagar (t.ex. "17–18 okt"). Se `spanOf()` i `_lib/logic.ts`.
 - **Gäster** (valfritt): en lista med namn och eventuellt mejl. Togglen *"Fler kan lägga till sig själva"* styr om andra än de på listan får svara.
 - **Arrangören är också deltagare.** Tider hen själv föreslår markeras automatiskt som Ja. Svar på andra tider ger hen under *Mina svar*.
+- **Ändra svar:** i redigeringsläget kan arrangören klicka i tabellen och ändra **vem som helsts** svar, även sina egna. Det är praktiskt vid långa datumserier eller när någon har svarat via sms. Varje klick stegar Ja → Kanske → Nej → tomt och sparas direkt. Raderna behåller sin ordning.
 
 ### Gästen
 
@@ -103,7 +105,7 @@ Det finns inga konton. Behörigheten bygger på **hemliga nycklar i länkar och 
 
 | Vem | Hemligheten finns i | Databasen sparar | Ger rätt att |
 |---|---|---|---|
-| Arrangören | arrangörslänken (`/admin/[token]`) | `EventDoc.adminHash` | se allt, ändra eventet, bekräfta tid |
+| Arrangören | arrangörslänken (`/admin/[token]`) | `EventDoc.adminHash` | se allt, ändra eventet och **allas svar**, bekräfta tid |
 | Gästen | cookien `ww_me_{slug}` och den personliga länken (`?me=…`) | `StoredResponse.tokenHash` | ändra *sina egna* svar |
 
 **Gästidentitet:**
@@ -111,6 +113,7 @@ Det finns inga konton. Behörigheten bygger på **hemliga nycklar i länkar och 
 2. Därefter är **namnet låst**. Svar med det namnet godtas bara från en webbläsare med rätt nyckel. Låsta namn kan inte väljas i namnlistan.
 3. Översikten visar gästens **personliga länk** (`/whenworks/e/{slug}?me={nyckel}`). Öppnas den på en annan enhet sätts samma cookie där. Nyckeln tas sedan bort ur adressfältet.
 4. *"Inte {namn}?"* raderar cookien i den webbläsaren.
+5. Arrangören kan fortfarande ändra en låst gästs svar från arrangörssidan. Låset (`tokenHash`) ligger kvar, så gästen kan också fortsätta ändra själv.
 
 **Regler som servern kontrollerar** (i `actions.ts`), inte bara gränssnittet:
 - Gäster kan inte svara med arrangörens namn.
@@ -130,7 +133,7 @@ Svar som gavs innan namnlåsningen fanns saknar `tokenHash`. De låses första g
 | `_lib/server.ts` | Laddar event, kontrollerar arrangörsnyckeln och bygger vyerna för gäst och arrangör (vad var och en får se). Skickar mejl. |
 | `_lib/logic.ts` | Rena uträkningar: datumformat, flerdagsspann, poäng och bästa datum. Används både i webbläsaren och på servern. |
 | `_lib/i18n.ts` | Alla texter på svenska och engelska. |
-| `actions.ts` | Server actions, det enda sättet att ändra data: `createEvent`, `submitAnswers`, `getMyAnswers`, `openMyLink`, `forgetMe`, `getAdmin`, `setMyAnswers`, `askAgain`, `finalize`. |
+| `actions.ts` | Server actions, det enda sättet att ändra data: `createEvent`, `submitAnswers`, `getMyAnswers`, `openMyLink`, `forgetMe`, `getAdmin`, `setMyAnswers`, `setAnswerFor` (arrangören ändrar någons svar), `askAgain`, `finalize`. |
 | `_components/` | Skärmarna (`create`, `guest`, `organizer`) och delade delar (`ui`, `matrix` = svarstabellen, `answers` = Ja/Kanske/Nej-listan). |
 
 ## Konfiguration

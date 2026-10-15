@@ -320,6 +320,49 @@ export async function setMyAnswers(
   })
 }
 
+/**
+ * The organizer edits anyone's answer straight in the table (including their own).
+ * value null clears it. A guest's lock (tokenHash) is kept, so they can still edit their own answers.
+ */
+export async function setAnswerFor(
+  slug: string,
+  token: string,
+  input: { name: string; slotId: string; value: Answer | null },
+): Promise<Result<AdminView>> {
+  return run(async () => {
+    const l = await loadAdmin(slug, token)
+    if (!l) return fail('not_found')
+    if (!l.slots.some((s) => s.id === input.slotId)) return fail('invalid')
+    if (input.value !== null && !ANSWERS.includes(input.value)) return fail('invalid')
+    // Only people already in the table: who answered, the guest list, or the organizer.
+    const key = nameKey(str(input.name, 60))
+    const known = [
+      ...l.responses.map((r) => r.name),
+      ...(l.ev.invitees ?? []).map((i) => i.name),
+      l.ev.organizer,
+    ].find((n) => nameKey(n) === key)
+    if (!known) return fail('invalid')
+    const store = getStore()
+    const prev = await store.getResponse(slug, key)
+    const answers = { ...(prev?.answers ?? {}) }
+    if (input.value) answers[input.slotId] = input.value
+    else delete answers[input.slotId]
+    await store.putResponse(
+      slug,
+      key,
+      {
+        ...(prev ?? { name: known, email: '' }),
+        answers,
+        // Keep the row where it is in the table.
+        updatedAt: prev?.updatedAt ?? Date.now(),
+      },
+      l.ev.expiresAt,
+    )
+    const reloaded = await loadAdmin(slug, token)
+    return reloaded ? { ok: true, data: toAdminView(reloaded) } : fail('not_found')
+  })
+}
+
 export async function askAgain(
   slug: string,
   token: string,
