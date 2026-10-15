@@ -317,6 +317,47 @@ export function CopyBox({ text, mono }: { text: string; mono?: boolean }) {
   )
 }
 
+const HOURS = [...Array(24)].map((_, i) => String(i).padStart(2, '0'))
+const QUARTERS = ['00', '15', '30', '45']
+
+/**
+ * Time picker limited to quarter hours. The browser's own time input can't be limited
+ * to 00/15/30/45 reliably, so this is two dropdowns. value is 'HH:mm', or '' until an hour is picked.
+ */
+export function TimeSelect({
+  value,
+  onChange,
+  className = '',
+  label,
+}: {
+  value: string
+  onChange: (v: string) => void
+  className?: string
+  label: string
+}) {
+  const [h, m] = value ? value.split(':') : ['', '']
+  return (
+    <span className={'time-sel ' + className} role="group" aria-label={label}>
+      <select value={h} onChange={(e) => onChange(e.target.value ? `${e.target.value}:${m || '00'}` : '')} aria-label={label}>
+        <option value="">--</option>
+        {HOURS.map((x) => (
+          <option key={x} value={x}>
+            {x}
+          </option>
+        ))}
+      </select>
+      <span aria-hidden>:</span>
+      <select value={m || '00'} disabled={!h} onChange={(e) => onChange(`${h}:${e.target.value}`)} aria-label={label}>
+        {QUARTERS.map((x) => (
+          <option key={x} value={x}>
+            {x}
+          </option>
+        ))}
+      </select>
+    </span>
+  )
+}
+
 export const todayIso = () => fmt.iso(new Date())
 
 type Month = { y: number; m: number }

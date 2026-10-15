@@ -35,7 +35,7 @@ flowchart LR
 ```
 
 - **När:** antingen *föreslår arrangören tider*, eller så *låter hen gästerna föreslå*: ett datumintervall där gästerna markerar dagar.
-  - Längd i **timmar**: arrangören väljer datum och klockslag.
+  - Längd i **timmar**: arrangören väljer datum och klockslag. Egna klockslag (och gästernas förslag) väljs i **kvartar** (00, 15, 30, 45) med `TimeSelect` i `_components/ui.tsx`.
   - Längd i **dagar**: arrangören väljer bara startdagar, och varje förslag täcker så många dagar (t.ex. "17–18 okt"). Se `spanOf()` i `_lib/logic.ts`.
 - **Gäster** (valfritt): en lista med namn och eventuellt mejl. Togglen *"Fler kan lägga till sig själva"* styr om andra än de på listan får svara.
 - **Arrangören är också deltagare.** Tider hen själv föreslår markeras automatiskt som Ja. Svar på andra tider ger hen under *Mina svar*.

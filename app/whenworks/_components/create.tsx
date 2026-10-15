@@ -16,6 +16,7 @@ import {
   SlotLabel,
   SpanProvider,
   Steps,
+  TimeSelect,
   Toggle,
   WhenworksShell,
   monthOf,
@@ -138,12 +139,7 @@ function WhenTimes({ slots, setSlots, taken = [], label }: WhenProps) {
                 </button>
               ))}
               <span className="chip-other">
-                <input
-                  type="time"
-                  value={other}
-                  onChange={(e) => setOther(e.target.value)}
-                  aria-label={S.other_time}
-                />
+                <TimeSelect value={other} onChange={setOther} label={S.other_time} />
                 <button
                   className="chip"
                   disabled={!other}
