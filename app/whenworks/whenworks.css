@@ -150,7 +150,7 @@ textarea.inp{resize:vertical;min-height:56px}
 .mx-wrap{overflow-x:auto}
 .mx{border-collapse:collapse;width:100%;min-width:max-content}
 .mx th,.mx td{padding:12px 14px;text-align:center;border-bottom:1px solid var(--line);vertical-align:middle}
-.mx thead th{vertical-align:bottom;padding-top:22px;position:relative}
+.mx thead th{vertical-align:top;padding-top:30px;position:relative}
 .mx thead .slot-lbl{flex-direction:column;gap:6px;text-align:center}
 .mx .pcol{text-align:left;position:sticky;left:0;background:var(--paper);z-index:1;min-width:150px;padding-left:clamp(16px,3vw,28px)}
 .mx tbody .pcol{font-weight:500}
@@ -219,9 +219,9 @@ textarea.inp{resize:vertical;min-height:56px}
 .answer-list li.yes{border-color:var(--yes);background:var(--yes-soft)}
 .answer-list li.maybe{border-color:#E2C58E;background:var(--maybe-soft)}
 .answer-list li.no{background:var(--bg);border-color:var(--line)}
-.al-l{display:flex;flex-direction:column;gap:4px}
+.al-l{display:flex;flex-direction:column;gap:4px;flex:1 1 0;min-width:170px}
 .al-meta{font-size:12px;color:var(--muted);padding-left:56px}
-.yn{display:flex;gap:4px;padding:3px;border-radius:999px;background:var(--paper);border:1px solid var(--line)}
+.yn{flex:none;display:flex;gap:4px;padding:3px;border-radius:999px;background:var(--paper);border:1px solid var(--line)}
 .yn-b{display:flex;align-items:center;gap:6px;padding:6px 12px 6px 6px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--muted);min-height:40px}
 .yn-b .mk{width:26px;height:26px;background:var(--bg);color:var(--muted);box-shadow:none}
 .yn-b:hover{color:var(--ink)}
@@ -294,3 +294,8 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:
 .time-sel select:disabled{color:#A39AA4;cursor:default;opacity:1}
 .inp.time-sel{padding:9px 12px}
 .chip-other .time-sel{font-size:14px}
+.al-meta{text-wrap:pretty}
+/* Same width for every time column; "Suggested by …" wraps instead of widening its column. */
+.mx thead th:not(.pcol){width:112px;min-width:112px}
+.mx thead .by{white-space:normal;max-width:104px;margin-inline:auto;line-height:1.3;text-wrap:balance}
+.mx thead th.pcol{width:180px}
