@@ -149,7 +149,6 @@ function Results({
 }) {
   const { S, lang } = useWW()
   const [view, setView] = useState<'matrix' | 'ranked'>('matrix')
-  const [editing, setEditing] = useState(false)
   const [err, setErr] = useState(false)
   const latest = useRef(0)
   // Saves run one after another so quick clicks on the same person can't overwrite each other.
@@ -223,17 +222,6 @@ function Results({
               {S.ask_again}
             </button>
           )}
-          {!editing && (
-            <button
-              className="btn btn-sm btn-ghost"
-              onClick={() => {
-                setView('matrix')
-                setEditing(true)
-              }}
-            >
-              {S.edit_answers}
-            </button>
-          )}
           <button className="btn btn-sm btn-ghost" onClick={() => go('mine')}>
             {S.mine_btn}
           </button>
@@ -242,24 +230,12 @@ function Results({
           </button>
         </div>
       </div>
-      {todo > 0 && !editing && (
+      {todo > 0 && (
         <div className="info-banner mine-banner">
           <b>{S.g_todo}</b>
           <button className="btn btn-sm btn-primary" onClick={() => go('mine')}>
             {S.mine_answer}
             {Ic.arrowR}
-          </button>
-        </div>
-      )}
-      {editing && (
-        <div className="info-banner edit-banner">
-          <div>
-            <b>{S.edit_title}</b>
-            <p>{S.edit_hint}</p>
-          </div>
-          <button className="btn btn-sm btn-primary" onClick={() => setEditing(false)}>
-            {Ic.check}
-            {S.edit_done}
           </button>
         </div>
       )}
@@ -302,15 +278,16 @@ function Results({
             slots={slots}
             round={ev.round}
             B={B}
-            onPick={editing ? undefined : onPick}
+            onPick={onPick}
             me={ev.organizer}
-            onCell={editing ? editCell : undefined}
+            onCell={editCell}
           />
         ) : (
           <ResultsRanked ev={ev} B={B} onPick={onPick} />
         )}
       </section>
       <Legend />
+      {view === 'matrix' && <p className="hint">{S.edit_hint}</p>}
     </div>
   )
 }

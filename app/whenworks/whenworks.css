@@ -288,7 +288,6 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:
 .mx-cell{display:inline-grid;place-items:center;padding:4px;border-radius:50%;box-shadow:0 0 0 1.5px transparent;transition:box-shadow .15s,transform .1s}
 .mx-cell:hover{box-shadow:0 0 0 1.5px var(--line-2)}
 .mx-cell:active{transform:scale(.92)}
-.edit-banner{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap}
 .time-sel{display:inline-flex;align-items:center;gap:2px;font-variant-numeric:tabular-nums}
 .time-sel select{font:inherit;color:var(--ink);background:none;border:0;outline:none;appearance:none;-webkit-appearance:none;padding:2px 4px;border-radius:6px;cursor:pointer;text-align:center}
 .time-sel select:focus-visible{box-shadow:0 0 0 2px var(--ac)}

@@ -39,7 +39,7 @@ flowchart LR
   - Längd i **dagar**: arrangören väljer bara startdagar, och varje förslag täcker så många dagar (t.ex. "17–18 okt"). Se `spanOf()` i `_lib/logic.ts`.
 - **Gäster** (valfritt): en lista med namn och eventuellt mejl. Togglen *"Fler kan lägga till sig själva"* styr om andra än de på listan får svara.
 - **Arrangören är också deltagare.** Tider hen själv föreslår markeras automatiskt som Ja. Svar på andra tider ger hen under *Mina svar*.
-- **Ändra svar:** i redigeringsläget kan arrangören klicka i tabellen och ändra **vem som helsts** svar, även sina egna. Det är praktiskt vid långa datumserier eller när någon har svarat via sms. Varje klick stegar Ja → Kanske → Nej → tomt och sparas direkt. Raderna behåller sin ordning.
+- **Ändra svar:** arrangören kan klicka direkt i tabellen och ändra **vem som helsts** svar, även sina egna. Det är praktiskt vid långa datumserier eller när någon har svarat via sms. Varje klick stegar Ja → Kanske → Nej → tomt och sparas direkt. Raderna behåller sin ordning.
 
 ### Gästen
 
