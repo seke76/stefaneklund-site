@@ -299,3 +299,12 @@ select.inp{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:
 .mx thead th:not(.pcol){width:112px;min-width:112px}
 .mx thead .by{white-space:normal;max-width:104px;margin-inline:auto;line-height:1.3;text-wrap:balance}
 .mx thead th.pcol{width:180px}
+.step-t{display:flex;flex-direction:column}
+.step-t small{display:none}
+@media(min-width:920px){
+  .steps li{align-items:flex-start}
+  .steps .n{flex:none;margin-top:1px}
+  .step-t small{display:block;font-size:13.5px;font-weight:400;color:var(--muted);margin-top:2px;max-width:34ch;text-wrap:pretty;line-height:1.4}
+  .steps li.on .step-t small{color:var(--ink);opacity:.75}
+  .lede{max-width:42ch}
+}

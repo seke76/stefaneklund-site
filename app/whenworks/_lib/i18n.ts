@@ -2,7 +2,11 @@
 
 const en = {
   tagline: "Find a time that works for everyone.",
-  tagline_p: "Create an event, share one link. No accounts, no logins.",
+  tagline_p: "No more endless group chats about which day works. Suggest a few times, share one link and everyone marks when they can. Done in a minute. No accounts, no logins.",
+  step_what_d: "Name the event so guests know what it's about.",
+  step_when_d: "Suggest times, or let guests mark the days that suit them.",
+  step_guests_d: "List who's coming, if you like. Everyone can pick their name.",
+  step_who_d: "Add your name and get the link to share.",
   step_what: "What", step_when: "When", step_who: "Who",
   what_title: "What's happening?", what_sub: "Give your event a name.",
   f_title: "Event title", f_title_ph: "e.g. Friday team dinner",
@@ -112,7 +116,11 @@ const en = {
 
 const sv: typeof en = {
   tagline: "Hitta en tid som passar alla.",
-  tagline_p: "Skapa ett event, dela en länk. Inga konton, ingen inloggning.",
+  tagline_p: "Slipp ändlösa gruppchattar om vilken dag som passar. Föreslå några tider, dela en länk och låt alla markera när de kan. Klart på en minut. Inga konton, ingen inloggning.",
+  step_what_d: "Ge eventet ett namn så att gästerna vet vad det gäller.",
+  step_when_d: "Föreslå tider, eller låt gästerna markera dagarna som passar.",
+  step_guests_d: "Lista vilka som ska med, om du vill. Då väljer var och en sitt namn.",
+  step_who_d: "Skriv ditt namn och få länken att dela.",
   step_what: "Vad", step_when: "När", step_who: "Vem",
   what_title: "Vad händer?", what_sub: "Ge eventet ett namn.",
   f_title: "Namn på eventet", f_title_ph: "t.ex. Fredagsmiddag med teamet",
