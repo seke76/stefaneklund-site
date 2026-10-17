@@ -6,6 +6,8 @@ Arrangören skapar ett event och får två länkar: en **gästlänk** att dela o
 
 > **Håll den här filen aktuell.** Den beskriver hur appen fungerar *nu*. Ändras beteendet, datamodellen eller reglerna ska filen uppdateras i samma commit (se `AGENTS.md` i repots rot). Exakta fältnamn och typer finns i koden, i [`_lib/types.ts`](_lib/types.ts), som är den riktiga sanningen. Den här filen förklarar *varför* och *hur det hänger ihop*.
 
+Se även [`COMPETITORS.md`](COMPETITORS.md), en konkurrentanalys (ögonblicksbild med datum) och förslag på vad som bör byggas härnäst.
+
 ---
 
 ## Sidor
