@@ -2,7 +2,7 @@
 
 const en = {
   tagline: "Find a time that works for everyone.",
-  tagline_p: "No more endless group chats about which day works. Suggest a few times, share one link and everyone marks when they can. Done in a minute. No accounts, no logins.",
+  tagline_p: "No more endless group chats about which day works. Suggest a few times, share one link and see what works for everyone. No ads, no account, done in a minute.",
   step_what_d: "Name the event so guests know what it's about.",
   step_when_d: "Suggest times, or let guests mark the days that suit them.",
   step_guests_d: "List who's coming, if you like. Everyone can pick their name.",
@@ -116,7 +116,7 @@ const en = {
 
 const sv: typeof en = {
   tagline: "Hitta en tid som passar alla.",
-  tagline_p: "Slipp ändlösa gruppchattar om vilken dag som passar. Föreslå några tider, dela en länk och låt alla markera när de kan. Klart på en minut. Inga konton, ingen inloggning.",
+  tagline_p: "Slipp ändlösa gruppchattar om vilken dag som passar. Föreslå några tider, dela en länk och se vad som funkar för alla. Ingen reklam, inget konto, klart på en minut.",
   step_what_d: "Ge eventet ett namn så att gästerna vet vad det gäller.",
   step_when_d: "Föreslå tider, eller låt gästerna markera dagarna som passar.",
   step_guests_d: "Lista vilka som ska med, om du vill. Då väljer var och en sitt namn.",
