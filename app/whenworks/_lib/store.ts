@@ -18,12 +18,15 @@ type Store = {
   getResponses(slug: string): Promise<StoredResponse[]>
   getResponse(slug: string, key: string): Promise<StoredResponse | null>
   putResponse(slug: string, key: string, r: StoredResponse, expiresAt: number): Promise<void>
+  /** True the first time it's called for a name, false after that. Used so an email goes out only once. */
+  once(name: string, expiresAt: number): Promise<boolean>
 }
 
 const K = {
   ev: (slug: string) => `ww:ev:${slug}`,
   sg: (slug: string) => `ww:sg:${slug}`,
   rs: (slug: string) => `ww:rs:${slug}`,
+  once: (name: string) => `ww:once:${name}`,
 }
 const sec = (ms: number) => Math.floor(ms / 1000)
 
@@ -55,6 +58,9 @@ function redisStore(redis: Redis): Store {
       p.expireat(K.rs(slug), sec(expiresAt))
       await p.exec()
     },
+    async once(name, expiresAt) {
+      return (await redis.set(K.once(name), 1, { nx: true, exat: sec(expiresAt) })) === 'OK'
+    },
   }
 }
 
@@ -62,11 +68,12 @@ type Mem = {
   events: Map<string, EventDoc>
   sugg: Map<string, Map<string, Slot>>
   resp: Map<string, Map<string, StoredResponse>>
+  once: Set<string>
 }
 
 function memoryStore(): Store {
   const g = globalThis as unknown as { __wwMem?: Mem }
-  const m: Mem = (g.__wwMem ??= { events: new Map(), sugg: new Map(), resp: new Map() })
+  const m: Mem = (g.__wwMem ??= { events: new Map(), sugg: new Map(), resp: new Map(), once: new Set() })
   const clone = <T>(x: T): T => structuredClone(x)
   const live = (slug: string) => {
     const ev = m.events.get(slug)
@@ -90,6 +97,7 @@ function memoryStore(): Store {
     getResponses: async (slug) => (live(slug) ? clone([...sub(m.resp, slug).values()]) : []),
     getResponse: async (slug, key) => clone(sub(m.resp, slug).get(key) ?? null),
     putResponse: async (slug, key, r) => void sub(m.resp, slug).set(key, clone(r)),
+    once: async (name) => !m.once.has(name) && !!m.once.add(name),
   }
 }
 

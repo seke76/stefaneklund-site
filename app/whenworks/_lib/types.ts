@@ -38,6 +38,10 @@ export type EventDoc = {
   finalNote: string
   invitees?: Invitee[] // missing on events created before invitations existed
   invitesSent?: number
+  organizerEmail?: string // optional; only used to email the organizer, never shown to anyone
+  organizerMailed?: boolean // the organizer link was emailed when the event was created
+  lang?: Lang // language for emails sent later, e.g. "everyone has answered"
+  origin?: string // site address (https://…) for links in those emails
   createdAt: number
   expiresAt: number
 }
@@ -91,6 +95,7 @@ export type AdminView = EventInfo & {
   invitesSent: number
   inviteEmails: number // invitees with an address
   notifyCount: number // unique addresses that get the "time is set" email
+  organizerMailed: boolean
 }
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string }
@@ -104,6 +109,7 @@ export type CreateInput = {
   range: Range | null
   slots: { date: string; time: string | null }[]
   organizer: string
+  organizerEmail: string // optional
   showOthers: boolean
   invitees: Invitee[]
   lang: Lang

@@ -103,6 +103,18 @@ const en = {
   invites_off: "Email isn't set up yet, so no invitations were sent. Share the link yourself.",
   invites_failed: "The invitations couldn't be sent. Share the link yourself.",
   mail_invite_subject: (o: string, t: string) => `${o} invited you to “${t}”`,
+  f_my_email: "Your email",
+  f_my_email_d: "We'll email you your organizer link so you don't lose it, and tell you when everyone has answered.",
+  org_mailed: "We've also emailed this link to you.",
+  mail_org_subject: (t: string) => `Your link to “${t}”`,
+  mail_org_body: (o: string, t: string, admin: string, guest: string, list: boolean) =>
+    `Hi ${o}!\n\nHere's your organizer link to “${t}”. Use it to see the answers and set the time. Keep this email so you can always find your way back. Don't share this link.\n\n${admin}\n\nThe link to share with your guests:\n${guest}` +
+    (list ? "\n\nWe'll email you when everyone on your list has answered." : ""),
+  mail_all_subject: (t: string) => `Everyone has answered “${t}”`,
+  mail_all_full: (d: string) => `Everyone can make ${d}.`,
+  mail_all_closest: (d: string) => `No time works for everyone yet. Closest: ${d}.`,
+  mail_all_body: (t: string, n: number, status: string) =>
+    `All ${n} people you invited have answered “${t}”.${status ? " " + status : ""}\n\nOpen your organizer link to set the time or ask for new times. It's in the email titled Your link to “${t}”.`,
 }
 
 const sv: typeof en = {
@@ -209,6 +221,18 @@ const sv: typeof en = {
   invites_off: "Mejl är inte uppsatt än, så inga inbjudningar skickades. Dela länken själv.",
   invites_failed: "Inbjudningarna kunde inte skickas. Dela länken själv.",
   mail_invite_subject: (o: string, t: string) => `${o} har bjudit in dig till ”${t}”`,
+  f_my_email: "Din mejl",
+  f_my_email_d: "Vi mejlar din arrangörslänk så att du inte tappar bort den, och säger till när alla har svarat.",
+  org_mailed: "Vi har också mejlat länken till dig.",
+  mail_org_subject: (t: string) => `Din länk till ”${t}”`,
+  mail_org_body: (o: string, t: string, admin: string, guest: string, list: boolean) =>
+    `Hej ${o}!\n\nHär är din arrangörslänk till ”${t}”. Med den ser du svaren och bestämmer tiden. Spara mejlet så hittar du alltid tillbaka. Dela inte länken med någon.\n\n${admin}\n\nLänken att dela med dina gäster:\n${guest}` +
+    (list ? "\n\nVi mejlar dig när alla på din lista har svarat." : ""),
+  mail_all_subject: (t: string) => `Alla har svarat på ”${t}”`,
+  mail_all_full: (d: string) => `Alla kan ${d}.`,
+  mail_all_closest: (d: string) => `Ingen tid passar alla än. Närmast: ${d}.`,
+  mail_all_body: (t: string, n: number, status: string) =>
+    `Alla ${n} du bjöd in har svarat på ”${t}”.${status ? " " + status : ""}\n\nÖppna din arrangörslänk för att bestämma tiden eller fråga efter nya tider. Den finns i mejlet med ämnet Din länk till ”${t}”.`,
 }
 export const WW_STR = { en, sv }
 export type Strings = typeof en

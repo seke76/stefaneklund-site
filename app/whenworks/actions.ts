@@ -13,6 +13,7 @@ import {
   newSlug,
   newToken,
   notifyAddresses,
+  notifyIfEveryoneAnswered,
   responseFor,
   TOKEN_RE,
   sendEmails,
@@ -181,6 +182,9 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
       finalNote: '',
       invitees: cleanInvitees(input.invitees).filter((i) => nameKey(i.name) !== nameKey(organizer)),
       invitesSent: 0,
+      organizerEmail: EMAIL_RE.test(str(input.organizerEmail, 200)) ? str(input.organizerEmail, 200) : '',
+      lang: langOf(input.lang),
+      origin: originOf(input.origin),
       createdAt: now,
       expiresAt: now + TTL_MS,
     }
@@ -188,11 +192,22 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
     // Retry in the unlikely case the slug is taken.
     while (await store.getEvent(ev.slug)) ev.slug = newSlug()
 
-    const origin = originOf(input.origin)
+    const origin = ev.origin
+    const S = WW_STR[ev.lang!]
+    const link = `${origin}/whenworks/e/${ev.slug}`
+    // The organizer link by email, so it can't get lost.
+    if (ev.organizerEmail && origin) {
+      ev.organizerMailed =
+        (await sendEmails([
+          {
+            to: ev.organizerEmail,
+            subject: S.mail_org_subject(title),
+            text: S.mail_org_body(organizer, title, `${link}/admin/${token}`, link, ev.invitees!.length > 0),
+          },
+        ])) > 0
+    }
     const withEmail = ev.invitees!.filter((i) => i.email)
     if (withEmail.length && origin) {
-      const S = WW_STR[langOf(input.lang)]
-      const link = `${origin}/whenworks/e/${ev.slug}`
       ev.invitesSent = await sendEmails(
         withEmail.map((i) => ({
           to: i.email,
@@ -286,7 +301,9 @@ export async function submitAnswers(
     await store.putResponse(slug, key, resp, ev.expiresAt)
     await rememberMe(slug, myToken, ev.expiresAt)
     const fresh = await loadEvent(slug)
-    return fresh ? { ok: true, data: toGuestView(fresh, myToken) } : fail('not_found')
+    if (!fresh) return fail('not_found')
+    await notifyIfEveryoneAnswered(fresh)
+    return { ok: true, data: toGuestView(fresh, myToken) }
   })
 }
 
