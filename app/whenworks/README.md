@@ -39,7 +39,7 @@ Målet är att det ska vara **skitenkelt**: tre steg och så få val som möjlig
 
 - **Vad:** titel, beskrivning och togglen *"Pågår flera dagar"*. Är den på anger arrangören antal dagar, och då väljs bara startdagar. Varje förslag täcker så många dagar (t.ex. "17–18 okt"). Se `spanOf()` i `_lib/logic.ts`. Annars är det vanliga tider med klockslag, utan angiven längd.
 - **När:** antingen *föreslår arrangören tider*, eller så *låter hen gästerna föreslå*: ett datumintervall där gästerna markerar dagar. Klockslag väljs i **kvartar** (00, 15, 30, 45) med `TimeSelect` i `_components/ui.tsx`.
-- **Vem:** arrangörens namn. Under den hopfällda *"Lägg till vilka som ska med"* kan hen lista gäster (namn och eventuellt mejl), så att gästerna väljer sitt namn i en lista. Här finns också togglen *"Deltagarna kan se varandras svar"*.
+- **Vem:** arrangörens namn och, om mejl är påslaget, en frivillig mejladress (se *Mejl* nedan). Under den hopfällda *"Lägg till vilka som ska med"* kan hen lista gäster (namn och eventuellt mejl), så att gästerna väljer sitt namn i en lista. Här finns också togglen *"Deltagarna kan se varandras svar"*.
 - **Eventet är klart:** gästlänken med *Kopiera*, och knappen **Dela inbjudan**. På mobilen öppnar den telefonens delningsmeny (WhatsApp, Messenger, sms …) med ett färdigt meddelande. Där delning saknas kopieras meddelandet i stället. Under den finns den privata arrangörslänken.
 - **Arrangören är också deltagare.** Tider hen själv föreslår markeras automatiskt som Ja. Övriga tider svarar hen på genom att klicka på sin egen rad i tabellen. En ruta påminner om det tills allt är besvarat.
 - **Ändra svar:** arrangören kan klicka direkt i tabellen och ändra **vem som helsts** svar, även sina egna. Det är praktiskt vid långa datumserier eller när någon har svarat via sms. Varje klick stegar Ja → Kanske → Nej → tomt och sparas direkt. Raderna behåller sin ordning.
@@ -59,6 +59,19 @@ flowchart LR
 - **Den personliga länken** ligger hopfälld längst ner på översikten (*"Ändra dina svar på en annan enhet?"*), eftersom de flesta inte behöver den.
 - **Efter första svaret** känns gästen igen (se *Identitet* nedan) och hamnar direkt på översikten.
 - *"Se allas svar"* visas bara om arrangören har slagit på *"Deltagarna kan se varandras svar"*.
+
+## Mejl
+
+Mejl skickas via Resend och bara när `RESEND_API_KEY` och `WW_EMAIL_FROM` finns (se *Konfiguration*). Alla mejl är ren text och går till en mottagare i taget, så ingen ser någon annans adress.
+
+| Mejl | Till | När |
+|---|---|---|
+| **Din länk till "…"** | arrangören, om hen angett mejl | när eventet skapas. Innehåller arrangörslänken och gästlänken, så att länken inte kan tappas bort. |
+| **Inbjudan** | inbjudna som har en mejladress | när eventet skapas |
+| **Alla har svarat på "…"** | arrangören, om hen angett mejl | när alla på gästlistan har svarat, **en gång per runda**. I runda 2 och senare räknas man som klar när man svarat på någon av rundans nya tider. Skickas inte utan gästlista eller när tiden redan är bestämd. |
+| **"…" är bestämt** | alla som lämnat mejl, inbjudna och gäster | när arrangören bekräftar tiden, om hen låter togglen vara på |
+
+*Alla har svarat*-mejlet kan inte innehålla arrangörslänken, eftersom databasen bara sparar dess hash. Det hänvisar i stället till det första mejlet. Att mejlet bara går ut en gång styrs av nyckeln `ww:once:{slug}:all:{runda}` (se `once` i `_lib/store.ts`). Texterna finns i `_lib/i18n.ts` (`mail_*`), och mejlet skickas på det språk arrangören hade när eventet skapades.
 
 ## Datamodell
 
@@ -89,6 +102,7 @@ Svenska eller engelska. Ett sparat val (`localStorage`) gäller först, annars f
 - **Tider:** `slots` innehåller arrangörens förslag från alla rundor. `removed` innehåller id:n på tider som tagits bort i en ny runda. De **göms** men raderas inte, så svaren finns kvar.
 - **Inställningar:** `showOthers`. `mustAll` och `allowSuggest` sparas alltid som `true` (se *Fasta regler*). `deadline` finns bara kvar i äldre event och visas inte.
 - **Gästlistan:** `invitees` (namn och valfritt mejl).
+- **Arrangörens mejl:** `organizerEmail`, plus `lang` och `origin` som behövs för mejl som skickas senare.
 - **Rundor:** `round` och `roundNote`.
 - **Slutlig tid:** `finalSlotId` och `finalNote`.
 - **Säkerhet:** `adminHash`, ett fingeravtryck av arrangörens nyckel (se nedan).
@@ -113,7 +127,7 @@ Fält som lagts till efter att appen gick live (t.ex. `invitees`) är **valfria*
 Bästa datum, "Alla kan" / "Närmast", vilka som saknas och vilka inbjudna som inte svarat räknas fram vid varje sidvisning, i `_lib/logic.ts` (`findBest`, `tally`, `missingOf`) och `_lib/server.ts`. Poäng: **Ja = 2, Kanske = 1**. Vid lika poäng vinner den tidigaste tiden.
 
 ### Radering
-Alla tre nycklarna får ett utgångsdatum (TTL), 60 dagar efter att eventet skapades. Redis raderar dem själv, så det behövs inget städjobb.
+Alla tre nycklarna, och `ww:once:`-nycklarna för mejl, får ett utgångsdatum (TTL), 60 dagar efter att eventet skapades. Redis raderar dem själv, så det behövs inget städjobb.
 
 ## Säkerhet och identitet
 
@@ -135,7 +149,7 @@ Det finns inga konton. Behörigheten bygger på **hemliga nycklar i länkar och 
 - Gäster kan inte svara med arrangörens namn.
 - Ett låst namn kan bara ändras med rätt nyckel.
 - Är *"Deltagarna kan se varandras svar"* avstängt skickas andras svar aldrig till gästens webbläsare (`toGuestView` i `_lib/server.ts`).
-- Mejladresser skickas aldrig till gäster, och arrangören ser bara om en gäst har lämnat en adress.
+- Mejladresser skickas aldrig till gäster, och arrangören ser bara om en gäst har lämnat en adress. Arrangörens egen adress visas inte för någon.
 
 Svar som gavs innan namnlåsningen fanns saknar `tokenHash`. De låses första gången personen svarar igen.
 

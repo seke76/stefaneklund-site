@@ -48,6 +48,7 @@ function Created({ ev, links, onOpen }: { ev: AdminView; links: Links; onOpen: (
         <span className="badge">{Ic.check}</span>
         <CardHead title={S.created_title} sub={S.created_sub} />
         <CopyBox text={links.guest} mono />
+        {ev.organizerMailed && <p className="invite-status ok">{S.org_mailed}</p>}
         {ev.invitesSent > 0 ? (
           <p className="invite-status ok">{S.invites_sent(ev.invitesSent)}</p>
         ) : (

@@ -337,6 +337,7 @@ type Draft = {
   range: Range
   invitees: Invitee[]
   organizer: string
+  orgEmail: string
   showOthers: boolean
 }
 
@@ -350,6 +351,7 @@ const EMPTY: Draft = {
   range: { start: '', end: null },
   invitees: [],
   organizer: '',
+  orgEmail: '',
   showOthers: true,
 }
 
@@ -369,6 +371,7 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
   // Multi-day events pick start dates only; times picked before switching are kept aside.
   const dayMode = isDayEvent(shape)
   const modeSlots = ev.slots.filter((x) => (dayMode ? x.time === null : x.time !== null))
+  const badEmail = !!ev.orgEmail.trim() && !EMAIL_RE.test(ev.orgEmail.trim())
   const wrap = (n: ReactNode) => <SpanProvider value={spanOf(shape)}>{n}</SpanProvider>
   const go = (s: Step) => {
     setStep(s)
@@ -387,6 +390,7 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
       range: ev.mode === 'open' ? ev.range : null,
       slots: ev.mode === 'fixed' ? modeSlots.map(({ date, time }) => ({ date, time })) : [],
       organizer: ev.organizer,
+      organizerEmail: emailEnabled ? ev.orgEmail.trim() : '',
       showOthers: ev.showOthers,
       invitees: ev.invitees,
       lang,
@@ -490,6 +494,19 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
             onChange={(e) => set('organizer', e.target.value)}
           />
         </Field>
+        {emailEnabled && (
+          <Field label={S.f_my_email} optional hint={badEmail ? undefined : S.f_my_email_d}>
+            <input
+              className="inp"
+              type="email"
+              autoComplete="email"
+              value={ev.orgEmail}
+              maxLength={200}
+              onChange={(e) => set('orgEmail', e.target.value)}
+            />
+            {badEmail && <span className="err">{S.invalid_email}</span>}
+          </Field>
+        )}
       </div>
       {/* Optional guest list, folded away so the step stays short. */}
       <details className="more" open={ev.invitees.length > 0}>
@@ -508,7 +525,7 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
         onBack={() => go(2)}
         onNext={create}
         nextLabel={S.create}
-        nextDisabled={!ev.organizer.trim() || busy}
+        nextDisabled={!ev.organizer.trim() || badEmail || busy}
       />
     </FlowLayout>,
   )

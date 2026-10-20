@@ -1,6 +1,7 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { getStore } from './store'
-import { visibleSlots } from './logic'
+import { findBest, fmt, spanOf, visibleSlots } from './logic'
+import { WW_STR } from './i18n'
 import type { AdminView, EventDoc, EventInfo, GuestView, Slot, StoredResponse } from './types'
 
 export const TTL_MS = 60 * 24 * 60 * 60 * 1000
@@ -119,7 +120,47 @@ export function toAdminView(l: Loaded): AdminView {
     invitesSent: l.ev.invitesSent ?? 0,
     inviteEmails: (l.ev.invitees ?? []).filter((i) => i.email).length,
     notifyCount: notifyAddresses(l).length,
+    organizerMailed: !!l.ev.organizerMailed,
   }
+}
+
+/**
+ * Everyone on the guest list has answered this round. Never true without a guest list.
+ * In later rounds a person counts once they've answered one of that round's new times.
+ */
+function everyoneAnswered({ ev, slots, responses }: Loaded) {
+  const list = ev.invitees ?? []
+  if (!list.length) return false
+  const roundIds = ev.round > 1 ? slots.filter((s) => s.round === ev.round).map((s) => s.id) : null
+  if (roundIds && !roundIds.length) return false
+  const byName = new Map(responses.map((r) => [nameKey(r.name), r]))
+  return list.every((i) => {
+    const a = byName.get(nameKey(i.name))?.answers ?? {}
+    return roundIds ? roundIds.some((id) => a[id]) : Object.keys(a).length > 0
+  })
+}
+
+/**
+ * Emails the organizer once per round when everyone on the guest list has answered.
+ * The organizer link can't be included (only its hash is stored), so the email points to
+ * the one they got when the event was created.
+ */
+export async function notifyIfEveryoneAnswered(l: Loaded) {
+  const { ev } = l
+  if (!ev.organizerEmail || ev.finalSlotId || !emailEnabled() || !everyoneAnswered(l)) return
+  if (!(await getStore().once(`${ev.slug}:all:${ev.round}`, ev.expiresAt))) return
+  const lang = ev.lang ?? 'sv'
+  const S = WW_STR[lang]
+  const B = findBest(l.slots, l.responses, ev.mustAll)
+  const when = (s: Slot) => fmt.slot(s, lang, s.time ? 1 : spanOf(ev))
+  const status = B.full ? S.mail_all_full(when(B.full.s)) : B.closest[0] ? S.mail_all_closest(when(B.closest[0].s)) : ''
+  await sendEmails([
+    {
+      to: ev.organizerEmail,
+      subject: S.mail_all_subject(ev.title),
+      text: S.mail_all_body(ev.title, (ev.invitees ?? []).length, status),
+    },
+  ])
 }
 
 export type Mail = { to: string; subject: string; text: string }
