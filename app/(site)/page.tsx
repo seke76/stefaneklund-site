@@ -5,6 +5,7 @@ import CVSection from '@/components/CVSection'
 import ProjectsSection from '@/components/ProjectsSection'
 import ContactSection from '@/components/ContactSection'
 import Footer from '@/components/Footer'
+import PageView from '@/components/PageView'
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
       <ProjectsSection />
       <ContactSection />
       <Footer />
+      <PageView page="home" />
     </>
   )
 }

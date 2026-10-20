@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import PageView from '@/components/PageView'
 import CreateApp from './_components/create'
 import { emailEnabled } from './_lib/server'
 
@@ -13,5 +14,10 @@ export const metadata: Metadata = {
 
 export default function WhenworksPage() {
   // Email fields stay hidden until an email service (Resend) is configured.
-  return <CreateApp emailEnabled={emailEnabled()} />
+  return (
+    <>
+      <CreateApp emailEnabled={emailEnabled()} />
+      <PageView page="ww" />
+    </>
+  )
 }

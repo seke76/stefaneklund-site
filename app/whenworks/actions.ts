@@ -1,6 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { logError, track } from '@/lib/stats'
 import { getStore } from './_lib/store'
 import { DATE_RE, TIME_RE, fmt, slotKey, spanOf } from './_lib/logic'
 import { WW_STR } from './_lib/i18n'
@@ -112,7 +113,7 @@ async function rememberMe(slug: string, token: string, expiresAt: number) {
 
 /** Opening a personal link: remember this browser as that guest. */
 export async function openMyLink(slug: string, token: string): Promise<Result<GuestView>> {
-  return run(async () => {
+  return run('openMyLink', async () => {
     const l = await loadEvent(slug)
     if (!l) return fail('not_found')
     if (!responseFor(l, token)) return fail('bad_link')
@@ -123,7 +124,7 @@ export async function openMyLink(slug: string, token: string): Promise<Result<Gu
 
 /** "Not you?": this browser forgets who it is. */
 export async function forgetMe(slug: string): Promise<Result<GuestView>> {
-  return run(async () => {
+  return run('forgetMe', async () => {
     const l = await loadEvent(slug)
     if (!l) return fail('not_found')
     ;(await cookies()).delete({ name: meCookie(slug), path: '/whenworks' })
@@ -131,17 +132,18 @@ export async function forgetMe(slug: string): Promise<Result<GuestView>> {
   })
 }
 
-async function run<T>(fn: () => Promise<Result<T>>): Promise<Result<T>> {
+async function run<T>(where: string, fn: () => Promise<Result<T>>): Promise<Result<T>> {
   try {
     return await fn()
   } catch (e) {
     console.error('Whenworks:', e)
+    await logError('whenworks', where, e)
     return fail('server')
   }
 }
 
 export async function createEvent(input: CreateInput): Promise<Result<{ slug: string; token: string }>> {
-  return run(async () => {
+  return run('createEvent', async () => {
     const title = str(input.title, 120)
     const organizer = str(input.organizer, 60)
     if (!title || !organizer) return fail('invalid')
@@ -218,6 +220,14 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
     }
     await store.putEvent(ev)
     await addOrganizerAnswers(ev, Object.fromEntries(ev.slots.map((s) => [s.id, 'yes' as const])))
+    // Which options people actually use, for the admin page.
+    await track('whenworks', [
+      'created',
+      ...(ev.durUnit === 'd' ? ['created_multi'] : []),
+      ...(ev.mode === 'open' ? ['created_open'] : []),
+      ...(ev.invitees!.length ? ['created_list'] : []),
+      ...(ev.organizerEmail ? ['created_orgmail'] : []),
+    ])
     return { ok: true, data: { slug: ev.slug, token } }
   })
 }
@@ -225,7 +235,7 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
 /* ---------- Guest ---------- */
 
 export async function getMyAnswers(slug: string, name: string): Promise<Result<Record<string, Answer>>> {
-  return run(async () => {
+  return run('getMyAnswers', async () => {
     const l = await loadEvent(slug)
     if (!l) return fail('not_found')
     if (nameKey(str(name, 60)) === nameKey(l.ev.organizer)) return { ok: true, data: {} }
@@ -248,7 +258,7 @@ export async function submitAnswers(
     suggestions: { date: string; time: string | null }[]
   },
 ): Promise<Result<GuestView>> {
-  return run(async () => {
+  return run('submitAnswers', async () => {
     const l = await loadEvent(slug)
     if (!l) return fail('not_found')
     const { ev } = l
@@ -300,6 +310,7 @@ export async function submitAnswers(
     await store.addSuggestions(slug, added, ev.expiresAt)
     await store.putResponse(slug, key, resp, ev.expiresAt)
     await rememberMe(slug, myToken, ev.expiresAt)
+    await track('whenworks', prev ? ['answer'] : ['answer', 'responder'])
     const fresh = await loadEvent(slug)
     if (!fresh) return fail('not_found')
     await notifyIfEveryoneAnswered(fresh)
@@ -310,7 +321,7 @@ export async function submitAnswers(
 /* ---------- Organizer ---------- */
 
 export async function getAdmin(slug: string, token: string): Promise<Result<AdminView>> {
-  return run(async () => {
+  return run('getAdmin', async () => {
     const l = await loadAdmin(slug, token)
     return l ? { ok: true, data: toAdminView(l) } : fail('not_found')
   })
@@ -325,7 +336,7 @@ export async function setAnswerFor(
   token: string,
   input: { name: string; slotId: string; value: Answer | null },
 ): Promise<Result<AdminView>> {
-  return run(async () => {
+  return run('setAnswerFor', async () => {
     const l = await loadAdmin(slug, token)
     if (!l) return fail('not_found')
     if (!l.slots.some((s) => s.id === input.slotId)) return fail('invalid')
@@ -368,7 +379,7 @@ export async function askAgain(
     note: string
   },
 ): Promise<Result<AdminView>> {
-  return run(async () => {
+  return run('askAgain', async () => {
     const l = await loadAdmin(slug, token)
     if (!l) return fail('not_found')
     const { ev } = l
@@ -389,6 +400,7 @@ export async function askAgain(
     }
     await getStore().putEvent(updated)
     if (fresh.length) await addOrganizerAnswers(updated, Object.fromEntries(fresh.map((s) => [s.id, 'yes' as const])))
+    await track('whenworks', 'round')
     const reloaded = await loadAdmin(slug, token)
     return reloaded ? { ok: true, data: toAdminView(reloaded) } : fail('not_found')
   })
@@ -399,13 +411,14 @@ export async function finalize(
   token: string,
   input: { slotId: string; note: string; notify: boolean; lang: Lang; link: string },
 ): Promise<Result<AdminView>> {
-  return run(async () => {
+  return run('finalize', async () => {
     const l = await loadAdmin(slug, token)
     if (!l) return fail('not_found')
     const slot = l.slots.find((s) => s.id === input.slotId)
     if (!slot) return fail('invalid')
     const note = str(input.note, 600)
     await getStore().putEvent({ ...l.ev, finalSlotId: slot.id, finalNote: note })
+    if (!l.ev.finalSlotId) await track('whenworks', 'finalized')
 
     if (input.notify) {
       const lang = langOf(input.lang)

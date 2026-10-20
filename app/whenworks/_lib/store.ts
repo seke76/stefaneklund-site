@@ -1,4 +1,5 @@
-import { Redis } from '@upstash/redis'
+import type { Redis } from '@upstash/redis'
+import { getRedis } from '@/lib/redis'
 import type { EventDoc, Slot, StoredResponse } from './types'
 
 /**
@@ -105,10 +106,9 @@ let store: Store | undefined
 
 export function getStore(): Store {
   if (store) return store
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN
-  if (url && token) {
-    store = redisStore(new Redis({ url, token }))
+  const redis = getRedis()
+  if (redis) {
+    store = redisStore(redis)
   } else if (process.env.NODE_ENV !== 'production' || process.env.WW_MEMORY_STORE === '1') {
     store = memoryStore()
   } else {
