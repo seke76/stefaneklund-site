@@ -49,12 +49,6 @@ function GuestLayout({ ev, children }: { ev: GuestView; children: ReactNode }) {
               <dd>{durLabel(ev.dur, ev.durUnit, S)}</dd>
             </div>
           )}
-          {ev.deadline && !ev.final && (
-            <div>
-              <dt>{S.reply_by}</dt>
-              <dd>{fmt.long(ev.deadline, lang)}</dd>
-            </div>
-          )}
         </dl>
       </aside>
       <section className="card">{children}</section>
@@ -159,7 +153,7 @@ function Join({
       )}
       {hasList ? (
         <>
-          <CardHead title={S.g_pick_title} sub={ev.allowSelfAdd ? S.g_pick_sub_add : S.g_pick_sub} />
+          <CardHead title={S.g_pick_title} sub={S.g_pick_sub_add} />
           <div className="fields">
             <Field label={S.f_name}>
               <select
@@ -178,7 +172,7 @@ function Join({
                     {isClaimed(n) ? `${n} (${S.g_claimed_opt})` : n}
                   </option>
                 ))}
-                {ev.allowSelfAdd && <option value={NEW}>{S.g_pick_new}</option>}
+                <option value={NEW}>{S.g_pick_new}</option>
               </select>
             </Field>
             {choice === NEW && (
@@ -302,13 +296,7 @@ function Respond({
     if (res?.ok) onSent(res.data)
     else
       setErr(
-        res?.error === 'not_listed'
-          ? S.g_not_listed
-          : res?.error === 'organizer'
-            ? S.g_org_name
-            : res?.error === 'claimed'
-              ? S.g_claimed
-              : S.err,
+        res?.error === 'organizer' ? S.g_org_name : res?.error === 'claimed' ? S.g_claimed : S.err,
       )
   }
 
@@ -446,19 +434,22 @@ function Home({
         </div>
       </div>
 
-      <div className="admin">
-        <span className="admin-ic">{Ic.lock}</span>
-        <div>
-          <b>{S.g_my_link}</b>
-          <p>{S.g_my_link_d}</p>
-          {link && (
-            <div className="admin-link">
-              <code>{link.replace(/^https?:\/\//, '')}</code>
-              <CopyBtn text={link} />
-            </div>
-          )}
+      <details className="more my-link">
+        <summary>{S.g_other_device}</summary>
+        <div className="admin">
+          <span className="admin-ic">{Ic.lock}</span>
+          <div>
+            <b>{S.g_my_link}</b>
+            <p>{S.g_my_link_d}</p>
+            {link && (
+              <div className="admin-link">
+                <code>{link.replace(/^https?:\/\//, '')}</code>
+                <CopyBtn text={link} />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </details>
     </>
   )
 }
@@ -477,7 +468,6 @@ function AllAnswers({ ev, me, onBack }: { ev: GuestView; me: string; onBack: () 
           <h1 className="display sm">{ev.title}</h1>
           <p className="muted">
             {S.n_resp(ev.responders.length)}
-            {ev.deadline && !ev.final ? ' · ' + S.reply_by + ' ' + fmt.long(ev.deadline, lang) : ''}
             {' · '}
             {S.g_all_note}
           </p>
@@ -587,7 +577,7 @@ function GuestFlow({ initial }: { initial: GuestView }) {
 
 export default function GuestApp({ initial }: { initial: GuestView }) {
   return (
-    <WhenworksShell role="guest">
+    <WhenworksShell>
       <SpanProvider value={spanOf(initial)}>
         <GuestFlow initial={initial} />
       </SpanProvider>

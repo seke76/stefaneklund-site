@@ -17,13 +17,16 @@ export function useWW() {
 }
 
 /** Header, footer and language state for every Whenworks page. */
-export function WhenworksShell({ role, children }: { role: 'organizer' | 'guest'; children: ReactNode }) {
+export function WhenworksShell({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('sv')
+  // A saved choice wins; otherwise follow the browser (Swedish for sv-*, English for everything else).
   useEffect(() => {
+    let saved: string | null = null
     try {
-      const saved = localStorage.getItem('ww_lang')
-      if (saved === 'en' || saved === 'sv') setLangState(saved)
+      saved = localStorage.getItem('ww_lang')
     } catch {}
+    if (saved === 'en' || saved === 'sv') setLangState(saved)
+    else if (!navigator.language.toLowerCase().startsWith('sv')) setLangState('en')
   }, [])
   useEffect(() => {
     document.documentElement.lang = lang
@@ -43,19 +46,14 @@ export function WhenworksShell({ role, children }: { role: 'organizer' | 'guest'
             <span className="logo">w</span>
             <span>Whenworks</span>
           </a>
-          <div className="hdr-r">
-            <span className="role-tag">{role === 'guest' ? S.role_guest : S.role_org}</span>
-            <div className="lang">
-              {(['en', 'sv'] as const).map((l) => (
-                <button key={l} className={lang === l ? 'on' : ''} onClick={() => setLang(l)}>
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
         </header>
         <main>{children}</main>
-        <footer className="ww-footer">{S.footer}</footer>
+        <footer className="ww-footer">
+          {S.footer}{' '}
+          <button className="lang-link" onClick={() => setLang(lang === 'sv' ? 'en' : 'sv')}>
+            {S.other_lang}
+          </button>
+        </footer>
       </div>
     </WWCtx.Provider>
   )
@@ -100,6 +98,12 @@ export const Ic = {
       <path d="M10.5 2.5h-6a2 2 0 00-2 2v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
+  share: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M8 10V2.5M5 5.5l3-3 3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 8H3.5v5.5h9V8H12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
   cal: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -120,10 +124,20 @@ export function Steps({ current }: { current: number }) {
   const { S } = useWW()
   return (
     <ol className="steps">
-      {[S.step_what, S.step_when, S.step_guests, S.step_who].map((s, i) => (
+      {(
+        [
+          [S.step_what, S.step_what_d],
+          [S.step_when, S.step_when_d],
+          [S.step_who, S.step_who_d],
+        ] as const
+      ).map(([s, d], i) => (
         <li key={i} className={i + 1 === current ? 'on' : i + 1 < current ? 'done' : ''}>
           <span className="n">{i + 1 < current ? Ic.check : i + 1}</span>
-          <span>{s}</span>
+          <span className="step-t">
+            <span>{s}</span>
+            {/* What and why, shown next to the step on wider screens. */}
+            <small>{d}</small>
+          </span>
         </li>
       ))}
     </ol>
@@ -304,6 +318,29 @@ export function CopyBtn({ text }: { text: string }) {
     <button className={'btn btn-sm ' + (ok ? 'btn-ok' : 'btn-dark')} onClick={copy}>
       {ok ? Ic.check : Ic.copy}
       {ok ? S.copied : S.copy}
+    </button>
+  )
+}
+
+/** Opens the phone's share sheet (WhatsApp, Messages…). Copies the text where sharing isn't available. */
+export function ShareBtn({ text, label }: { text: string; label: string }) {
+  const { S } = useWW()
+  const [ok, copy] = useCopy(text)
+  const share = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text })
+        return
+      } catch (e) {
+        if ((e as Error).name === 'AbortError') return // the user closed the share sheet
+      }
+    }
+    copy()
+  }
+  return (
+    <button className={'btn ' + (ok ? 'btn-ok' : 'btn-primary')} onClick={share}>
+      {ok ? Ic.check : Ic.share}
+      {ok ? S.copied : label}
     </button>
   )
 }

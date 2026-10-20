@@ -19,7 +19,7 @@ function Notice() {
 
 export default function NotFoundApp() {
   return (
-    <WhenworksShell role="guest">
+    <WhenworksShell>
       <Notice />
     </WhenworksShell>
   )
