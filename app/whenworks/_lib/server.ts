@@ -53,7 +53,6 @@ function info({ ev, slots }: Loaded): EventInfo {
     durUnit: ev.durUnit,
     mode: ev.mode,
     organizer: ev.organizer,
-    deadline: ev.deadline,
     mustAll: ev.mustAll,
     showOthers: ev.showOthers,
     allowSuggest: ev.allowSuggest,
@@ -89,12 +88,6 @@ function participants({ ev, responses }: Loaded) {
   )
 }
 
-/** With a guest list and self-add turned off, only names on the list (or already answered) may answer. */
-export function mayAnswer(l: Loaded, name: string) {
-  if (!(l.ev.invitees ?? []).length || l.ev.allowSelfAdd !== false) return true
-  return participants(l).some((n) => nameKey(n) === nameKey(name))
-}
-
 /** The response a guest token belongs to, if any. */
 export function responseFor(l: Loaded, token: string | undefined) {
   if (!token || !TOKEN_RE.test(token)) return undefined
@@ -113,7 +106,6 @@ export function toGuestView(l: Loaded, token?: string): GuestView {
     })),
     me: mine && token ? { name: mine.name, answers: mine.answers, token } : null,
     participants: participants(l),
-    allowSelfAdd: l.ev.allowSelfAdd !== false,
     emailEnabled: emailEnabled(),
   }
 }

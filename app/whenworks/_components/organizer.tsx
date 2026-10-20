@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { askAgain, finalize, getAdmin, setAnswerFor, setMyAnswers } from '../actions'
-import { durLabel, findBest, fmt, isDayEvent, isNew, missingOf, spanOf, tally, type Best } from '../_lib/logic'
+import { askAgain, finalize, getAdmin, setAnswerFor } from '../actions'
+import { durLabel, findBest, fmt, isDayEvent, isNew, missingOf, spanOf, tally } from '../_lib/logic'
 import type { AdminResponse, AdminView, Answer, Slot } from '../_lib/types'
 import { WhenCalendar, type DraftSlot } from './create'
 import { Legend, Matrix } from './matrix'
-import { AnswerList, newFirst } from './answers'
 import {
   Actions,
   Avatar,
@@ -18,6 +17,7 @@ import {
   Mark,
   Seg,
   SlotLabel,
+  ShareBtn,
   SpanProvider,
   Toggle,
   WhenworksShell,
@@ -25,7 +25,7 @@ import {
   useWW,
 } from './ui'
 
-type Screen = 'created' | 'results' | 'reask' | 'finalize' | 'final' | 'mine'
+type Screen = 'created' | 'results' | 'reask' | 'finalize' | 'final'
 type Links = { guest: string; admin: string }
 
 const strip = (url: string) => url.replace(/^https?:\/\//, '')
@@ -55,12 +55,8 @@ function Created({ ev, links, onOpen }: { ev: AdminView; links: Links; onOpen: (
             <p className="invite-status">{ev.emailEnabled ? S.invites_failed : S.invites_off}</p>
           )
         )}
-        <div className="sub-block">
-          <span className="lbl">{S.share_msg}</span>
-          <div className="msg-wrap">
-            <div className="msg">{msg}</div>
-            <CopyBtn text={msg} />
-          </div>
+        <div className="share-row">
+          <ShareBtn text={msg} label={S.share_invite} />
         </div>
         <div className="admin">
           <span className="admin-ic">{Ic.lock}</span>
@@ -85,53 +81,6 @@ function Created({ ev, links, onOpen }: { ev: AdminView; links: Links; onOpen: (
   )
 }
 
-function ResultsRanked({ ev, B, onPick }: { ev: AdminView; B: Best; onPick: (s: Slot) => void }) {
-  const { S } = useWW()
-  const n = people(ev).length || 1
-  const tagTxt = { all: S.all_can, closest: S.closest, best: S.best }[B.tag]
-  return (
-    <ol className="rank">
-      {B.ranked.map(({ s, r }, i) => (
-        <li key={s.id} className={i === 0 ? 'top ' + B.tag : ''}>
-          <div className="rank-head">
-            <SlotLabel s={s} />
-            {i === 0 && <span className={'best-tag ' + B.tag}>{tagTxt}</span>}
-            {isNew(s, ev.round) && <span className="new-pill">{S.new_tag}</span>}
-            <span className="rank-n">
-              <b>{r.yes.length}</b> {S.of} {people(ev).length}
-            </span>
-            <button className="btn btn-sm btn-ghost" onClick={() => onPick(s)}>
-              {S.pick_this}
-            </button>
-          </div>
-          <div className="bar">
-            <span className="b-yes" style={{ width: (r.yes.length / n) * 100 + '%' }} />
-            <span className="b-maybe" style={{ width: (r.maybe.length / n) * 100 + '%' }} />
-          </div>
-          <div className="who">
-            {(
-              [
-                ['yes', S.can],
-                ['maybe', S.maybe],
-                ['no', S.cant],
-                ['none', S.noans],
-              ] as const
-            )
-              .filter(([k]) => r[k].length)
-              .map(([k, l]) => (
-                <span key={k} className={'who-g ' + k}>
-                  <Mark v={k} />
-                  {l}: {r[k].join(', ')}
-                </span>
-              ))}
-          </div>
-          {s.by && <span className="by">{S.suggested_by(s.by)}</span>}
-        </li>
-      ))}
-    </ol>
-  )
-}
-
 const NEXT: Record<string, Answer | null> = { none: 'yes', yes: 'maybe', maybe: 'no', no: null }
 
 function Results({
@@ -148,7 +97,6 @@ function Results({
   go: (s: Screen) => void
 }) {
   const { S, lang } = useWW()
-  const [view, setView] = useState<'matrix' | 'ranked'>('matrix')
   const [err, setErr] = useState(false)
   const latest = useRef(0)
   // Saves run one after another so quick clicks on the same person can't overwrite each other.
@@ -203,40 +151,22 @@ function Results({
             {ev.round > 1 ? ' · ' + S.round(ev.round) : ''}
           </span>
           <h1 className="display sm">{ev.title}</h1>
-          <p className="muted">
-            {S.n_resp(guests.length)}
-            {ev.deadline ? ' · ' + S.reply_by + ' ' + fmt.long(ev.deadline, lang) : ''}
-          </p>
+          <p className="muted">{S.n_resp(guests.length)}</p>
         </div>
         <div className="res-tools">
-          <Seg
-            value={view}
-            onChange={setView}
-            options={[
-              { v: 'matrix', l: S.view_matrix },
-              { v: 'ranked', l: S.view_ranked },
-            ]}
-          />
           {!needMore && (
             <button className="btn btn-sm btn-ghost" onClick={() => go('reask')}>
               {S.ask_again}
             </button>
           )}
-          <button className="btn btn-sm btn-ghost" onClick={() => go('mine')}>
-            {S.mine_btn}
-          </button>
           <button className="btn btn-sm btn-ghost" onClick={() => go('created')}>
             {S.share_again}
           </button>
         </div>
       </div>
       {todo > 0 && (
-        <div className="info-banner mine-banner">
-          <b>{S.g_todo}</b>
-          <button className="btn btn-sm btn-primary" onClick={() => go('mine')}>
-            {S.mine_answer}
-            {Ic.arrowR}
-          </button>
+        <div className="info-banner">
+          <b>{S.g_todo}</b> {S.org_todo_hint}
         </div>
       )}
       {err && <p className="err">{S.err}</p>}
@@ -272,71 +202,18 @@ function Results({
         </div>
       )}
       <section className="card card-flush">
-        {view === 'matrix' ? (
-          <Matrix
-            people={people(ev)}
-            slots={slots}
-            round={ev.round}
-            B={B}
-            onPick={onPick}
-            me={ev.organizer}
-            onCell={editCell}
-          />
-        ) : (
-          <ResultsRanked ev={ev} B={B} onPick={onPick} />
-        )}
+        <Matrix
+          people={people(ev)}
+          slots={slots}
+          round={ev.round}
+          B={B}
+          onPick={onPick}
+          me={ev.organizer}
+          onCell={editCell}
+        />
       </section>
       <Legend />
-      {view === 'matrix' && <p className="hint">{S.edit_hint}</p>}
-    </div>
-  )
-}
-
-/** The organizer's own Yes / Maybe / No, same controls as the guests have. */
-function Mine({
-  ev,
-  token,
-  onDone,
-  go,
-}: {
-  ev: AdminView
-  token: string
-  onDone: (v: AdminView) => void
-  go: (s: Screen) => void
-}) {
-  const { S } = useWW()
-  const [answers, setAnswers] = useState(() => myAnswers(ev))
-  const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState(false)
-  // Times still waiting for an answer first. Fixed when the screen opens so rows don't jump around.
-  const [slots] = useState(() => {
-    const had = myAnswers(ev)
-    return newFirst(ev.slots, ev.round).sort((a, b) => (had[a.id] ? 1 : 0) - (had[b.id] ? 1 : 0))
-  })
-  const others = ev.responses.filter((r) => !isOrg(ev, r.name))
-  const save = async () => {
-    setBusy(true)
-    setErr(false)
-    const res = await setMyAnswers(ev.slug, token, answers).catch(() => null)
-    setBusy(false)
-    if (res?.ok) onDone(res.data)
-    else setErr(true)
-  }
-  return (
-    <div className="single">
-      <section className="card card-wide card-xl">
-        <span className="eyebrow">{ev.title}</span>
-        <CardHead title={S.mine_title} sub={S.mine_sub} />
-        <AnswerList
-          slots={slots}
-          answers={answers}
-          onAnswer={(id, v) => setAnswers({ ...answers, [id]: v })}
-          round={ev.round}
-          yesCount={(s) => tally(s, others).yes.length}
-        />
-        {err && <p className="err">{S.err}</p>}
-        <Actions onBack={() => go('results')} onNext={save} nextLabel={S.save} nextDisabled={busy} />
-      </section>
+      <p className="hint">{S.edit_hint}</p>
     </div>
   )
 }
@@ -361,7 +238,6 @@ function Reask({
   })
   const [fresh, setFresh] = useState<DraftSlot[]>([])
   const [note, setNote] = useState('')
-  const [sugg, setSugg] = useState(true)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(false)
   const next = ev.round + 1
@@ -371,7 +247,6 @@ function Reask({
     const res = await askAgain(ev.slug, token, {
       newSlots: fresh.map(({ date, time }) => ({ date, time })),
       removed,
-      allowSuggest: sugg,
       note,
     }).catch(() => null)
     setBusy(false)
@@ -437,7 +312,6 @@ function Reask({
             days={isDayEvent(ev) ? spanOf(ev) : 0}
           />
         </div>
-        <Toggle checked={sugg} onChange={setSugg} title={S.let_suggest} />
         <div className="fields section">
           <Field label={S.f_note} optional>
             <textarea
@@ -455,7 +329,7 @@ function Reask({
           onBack={() => go('results')}
           onNext={send}
           nextLabel={S.send_round(next)}
-          nextDisabled={(fresh.length === 0 && !sugg) || busy}
+          nextDisabled={busy}
         />
       </section>
     </div>
@@ -652,18 +526,6 @@ function OrganizerFlow({
   switch (screen) {
     case 'created':
       return <Created ev={ev} links={links} onOpen={() => go('results')} />
-    case 'mine':
-      return (
-        <Mine
-          ev={ev}
-          token={token}
-          go={go}
-          onDone={(v) => {
-            setEv(v)
-            go('results')
-          }}
-        />
-      )
     case 'reask':
       return (
         <Reask
@@ -699,7 +561,7 @@ function OrganizerFlow({
 
 export default function OrganizerApp(props: { initial: AdminView; token: string; links: Links; isNew: boolean }) {
   return (
-    <WhenworksShell role="organizer">
+    <WhenworksShell>
       <SpanProvider value={spanOf(props.initial)}>
         <OrganizerFlow {...props} />
       </SpanProvider>

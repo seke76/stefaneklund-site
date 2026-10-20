@@ -28,19 +28,20 @@ Whenworks har en **egen root-layout** (`layout.tsx`, `whenworks.css`). Därför 
 
 ```mermaid
 flowchart LR
-  A[Vad] --> B[När] --> C[Gäster] --> D[Vem] --> E[Eventet är klart<br/>länkar att dela]
-  E --> F[Svar<br/>tabell / rangordnat]
-  F --> K[Ändra svar<br/>klicka i tabellen]
-  F --> G[Mina svar]
+  A[Vad] --> B[När] --> D[Vem<br/>+ gäster, valfritt] --> E[Eventet är klart<br/>länk + Dela inbjudan]
+  E --> F[Svar<br/>tabell]
+  F --> K[Svara och ändra svar<br/>klicka i tabellen]
   F --> H[Fråga efter nya tider<br/>ny runda]
   F --> I[Bekräfta tid] --> J[Det är bestämt<br/>+ kalenderfil]
 ```
 
-- **När:** antingen *föreslår arrangören tider*, eller så *låter hen gästerna föreslå*: ett datumintervall där gästerna markerar dagar.
-  - Längd i **timmar**: arrangören väljer datum och klockslag. Egna klockslag (och gästernas förslag) väljs i **kvartar** (00, 15, 30, 45) med `TimeSelect` i `_components/ui.tsx`.
-  - Längd i **dagar**: arrangören väljer bara startdagar, och varje förslag täcker så många dagar (t.ex. "17–18 okt"). Se `spanOf()` i `_lib/logic.ts`.
-- **Gäster** (valfritt): en lista med namn och eventuellt mejl. Togglen *"Fler kan lägga till sig själva"* styr om andra än de på listan får svara.
-- **Arrangören är också deltagare.** Tider hen själv föreslår markeras automatiskt som Ja. Svar på andra tider ger hen under *Mina svar*.
+Målet är att det ska vara **skitenkelt**: tre steg och så få val som möjligt. Det som tidigare var inställningar är nu fasta regler (se *Fasta regler* nedan).
+
+- **Vad:** titel, beskrivning och togglen *"Pågår flera dagar"*. Är den på anger arrangören antal dagar, och då väljs bara startdagar. Varje förslag täcker så många dagar (t.ex. "17–18 okt"). Se `spanOf()` i `_lib/logic.ts`. Annars är det vanliga tider med klockslag, utan angiven längd.
+- **När:** antingen *föreslår arrangören tider*, eller så *låter hen gästerna föreslå*: ett datumintervall där gästerna markerar dagar. Klockslag väljs i **kvartar** (00, 15, 30, 45) med `TimeSelect` i `_components/ui.tsx`.
+- **Vem:** arrangörens namn. Under den hopfällda *"Lägg till vilka som ska med"* kan hen lista gäster (namn och eventuellt mejl), så att gästerna väljer sitt namn i en lista. Här finns också togglen *"Deltagarna kan se varandras svar"*.
+- **Eventet är klart:** gästlänken med *Kopiera*, och knappen **Dela inbjudan**. På mobilen öppnar den telefonens delningsmeny (WhatsApp, Messenger, sms …) med ett färdigt meddelande. Där delning saknas kopieras meddelandet i stället. Under den finns den privata arrangörslänken.
+- **Arrangören är också deltagare.** Tider hen själv föreslår markeras automatiskt som Ja. Övriga tider svarar hen på genom att klicka på sin egen rad i tabellen. En ruta påminner om det tills allt är besvarat.
 - **Ändra svar:** arrangören kan klicka direkt i tabellen och ändra **vem som helsts** svar, även sina egna. Det är praktiskt vid långa datumserier eller när någon har svarat via sms. Varje klick stegar Ja → Kanske → Nej → tomt och sparas direkt. Raderna behåller sin ordning.
 
 ### Gästen
@@ -54,7 +55,8 @@ flowchart LR
   E --> F[Se allas svar<br/>om arrangören tillåter]
 ```
 
-- **Finns en gästlista** väljer gästen sitt namn i en rullgardinsmeny. Finns ingen lista skriver gästen sitt namn.
+- **Finns en gästlista** väljer gästen sitt namn i en rullgardinsmeny, eller väljer *"Jag står inte med"* och skriver sitt namn. Finns ingen lista skriver gästen sitt namn.
+- **Den personliga länken** ligger hopfälld längst ner på översikten (*"Ändra dina svar på en annan enhet?"*), eftersom de flesta inte behöver den.
 - **Efter första svaret** känns gästen igen (se *Identitet* nedan) och hamnar direkt på översikten.
 - *"Se allas svar"* visas bara om arrangören har slagit på *"Deltagarna kan se varandras svar"*.
 
@@ -70,17 +72,29 @@ Data sparas i **Redis** (Upstash), som är en nyckel–värde-databas. Varje eve
 
 Varför tre nycklar och inte en? Gästernas svar och förslag skrivs **var för sig**, så två gäster som svarar samtidigt kan inte skriva över varandra. Eventdokumentet ändras bara av arrangören.
 
+### Fasta regler
+
+De här var tidigare val, men är nu alltid på för att hålla det enkelt:
+- **Alla måste kunna** (`mustAll`). Arrangören ser vilka som saknas och kan fråga efter nya tider i en ny runda.
+- **Gästerna kan föreslå tider** (`allowSuggest`), även i senare rundor.
+- **Vem som helst med länken kan lägga till sig**, även när det finns en gästlista.
+- Det finns ingen *"Svara senast"*.
+
+### Språk
+
+Svenska eller engelska. Ett sparat val (`localStorage`) gäller först, annars följer sidan webbläsarens språk: svenska för `sv`, annars engelska. Växlingen är en liten länk i sidfoten.
+
 ### Eventet (`EventDoc`)
 - **Innehåll:** titel, beskrivning, längd (`dur` + `durUnit`: timmar/dagar), läge (`fixed` = arrangören föreslår, `open` = gästerna markerar dagar i `range`).
 - **Tider:** `slots` innehåller arrangörens förslag från alla rundor. `removed` innehåller id:n på tider som tagits bort i en ny runda. De **göms** men raderas inte, så svaren finns kvar.
-- **Inställningar:** `mustAll`, `showOthers`, `allowSuggest`, `allowSelfAdd`.
+- **Inställningar:** `showOthers`. `mustAll` och `allowSuggest` sparas alltid som `true` (se *Fasta regler*). `deadline` finns bara kvar i äldre event och visas inte.
 - **Gästlistan:** `invitees` (namn och valfritt mejl).
 - **Rundor:** `round` och `roundNote`.
 - **Slutlig tid:** `finalSlotId` och `finalNote`.
 - **Säkerhet:** `adminHash`, ett fingeravtryck av arrangörens nyckel (se nedan).
 - **Livslängd:** `createdAt` och `expiresAt`.
 
-Fält som lagts till efter att appen gick live (t.ex. `invitees`, `allowSelfAdd`) är **valfria** i typen, eftersom äldre event saknar dem. Koden använder i så fall ett standardvärde.
+Fält som lagts till efter att appen gick live (t.ex. `invitees`) är **valfria** i typen, eftersom äldre event saknar dem. Koden använder i så fall ett standardvärde.
 
 ### En tid (`Slot`)
 `{ id, date, time, round, by? }`
@@ -120,7 +134,6 @@ Det finns inga konton. Behörigheten bygger på **hemliga nycklar i länkar och 
 **Regler som servern kontrollerar** (i `actions.ts`), inte bara gränssnittet:
 - Gäster kan inte svara med arrangörens namn.
 - Ett låst namn kan bara ändras med rätt nyckel.
-- Med en gästlista och *"Fler kan lägga till sig själva"* avstängd godtas bara namn på listan.
 - Är *"Deltagarna kan se varandras svar"* avstängt skickas andras svar aldrig till gästens webbläsare (`toGuestView` i `_lib/server.ts`).
 - Mejladresser skickas aldrig till gäster, och arrangören ser bara om en gäst har lämnat en adress.
 
@@ -135,7 +148,7 @@ Svar som gavs innan namnlåsningen fanns saknar `tokenHash`. De låses första g
 | `_lib/server.ts` | Laddar event, kontrollerar arrangörsnyckeln och bygger vyerna för gäst och arrangör (vad var och en får se). Skickar mejl. |
 | `_lib/logic.ts` | Rena uträkningar: datumformat, flerdagsspann, poäng och bästa datum. Används både i webbläsaren och på servern. |
 | `_lib/i18n.ts` | Alla texter på svenska och engelska. |
-| `actions.ts` | Server actions, det enda sättet att ändra data: `createEvent`, `submitAnswers`, `getMyAnswers`, `openMyLink`, `forgetMe`, `getAdmin`, `setMyAnswers`, `setAnswerFor` (arrangören ändrar någons svar), `askAgain`, `finalize`. |
+| `actions.ts` | Server actions, det enda sättet att ändra data: `createEvent`, `submitAnswers`, `getMyAnswers`, `openMyLink`, `forgetMe`, `getAdmin`, `setAnswerFor` (arrangören ändrar någons svar, även sitt eget), `askAgain`, `finalize`. |
 | `_components/` | Skärmarna (`create`, `guest`, `organizer`) och delade delar (`ui`, `matrix` = svarstabellen, `answers` = Ja/Kanske/Nej-listan). |
 
 ## Konfiguration

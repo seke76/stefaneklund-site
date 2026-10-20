@@ -12,7 +12,6 @@ import {
   CardHead,
   Field,
   Ic,
-  Seg,
   SlotLabel,
   SpanProvider,
   Steps,
@@ -219,14 +218,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 function GuestsStep({
   invitees,
   setInvitees,
-  allowSelfAdd,
-  setAllowSelfAdd,
   emailEnabled,
 }: {
   invitees: Invitee[]
   setInvitees: (v: Invitee[]) => void
-  allowSelfAdd: boolean
-  setAllowSelfAdd: (v: boolean) => void
   emailEnabled: boolean
 }) {
   const { S } = useWW()
@@ -314,9 +309,6 @@ function GuestsStep({
           </ul>
         )}
       </div>
-      {invitees.length > 0 && (
-        <Toggle checked={allowSelfAdd} onChange={setAllowSelfAdd} title={S.self_add} desc={S.self_add_d} />
-      )}
     </>
   )
 }
@@ -338,38 +330,30 @@ function FlowLayout({ step, children }: { step: number; children: ReactNode }) {
 type Draft = {
   title: string
   desc: string
-  dur: string
-  durUnit: DurUnit
+  multi: boolean // spans several days: pick start dates, no clock times
+  days: string
   mode: Mode
   slots: DraftSlot[]
   range: Range
-  allowSuggest: boolean
   invitees: Invitee[]
-  allowSelfAdd: boolean
   organizer: string
-  deadline: string
-  mustAll: boolean
   showOthers: boolean
 }
 
 const EMPTY: Draft = {
   title: '',
   desc: '',
-  dur: '',
-  durUnit: 'h',
+  multi: false,
+  days: '2',
   mode: 'fixed',
   slots: [],
   range: { start: '', end: null },
-  allowSuggest: true,
   invitees: [],
-  allowSelfAdd: true,
   organizer: '',
-  deadline: '',
-  mustAll: true,
   showOthers: true,
 }
 
-type Step = 1 | 2 | 3 | 4
+type Step = 1 | 2 | 3
 
 function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
   const { S, lang } = useWW()
@@ -379,10 +363,13 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(false)
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setEv((e) => ({ ...e, [k]: v }))
-  // Events measured in days pick start dates only; times picked before switching unit are kept aside.
-  const dayMode = isDayEvent(ev)
+  // Duration is only asked for multi-day events; everything else is a single time.
+  const dur = ev.multi ? String(Math.max(2, Number(ev.days) || 2)) : ''
+  const shape = { mode: ev.mode, durUnit: (ev.multi ? 'd' : 'h') as DurUnit, dur }
+  // Multi-day events pick start dates only; times picked before switching are kept aside.
+  const dayMode = isDayEvent(shape)
   const modeSlots = ev.slots.filter((x) => (dayMode ? x.time === null : x.time !== null))
-  const wrap = (n: ReactNode) => <SpanProvider value={spanOf(ev)}>{n}</SpanProvider>
+  const wrap = (n: ReactNode) => <SpanProvider value={spanOf(shape)}>{n}</SpanProvider>
   const go = (s: Step) => {
     setStep(s)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -394,18 +381,14 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
     const res = await createEvent({
       title: ev.title,
       desc: ev.desc,
-      dur: ev.dur,
-      durUnit: ev.durUnit,
+      dur,
+      durUnit: shape.durUnit,
       mode: ev.mode,
       range: ev.mode === 'open' ? ev.range : null,
       slots: ev.mode === 'fixed' ? modeSlots.map(({ date, time }) => ({ date, time })) : [],
-      allowSuggest: ev.allowSuggest,
       organizer: ev.organizer,
-      deadline: ev.deadline || null,
-      mustAll: ev.mustAll,
       showOthers: ev.showOthers,
       invitees: ev.invitees,
-      allowSelfAdd: ev.allowSelfAdd,
       lang,
       origin: window.location.origin,
     }).catch(() => null)
@@ -441,29 +424,22 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
               onChange={(e) => set('desc', e.target.value)}
             />
           </Field>
-          <Field label={S.f_duration} optional>
-            <div className="row">
-              <Seg
-                value={ev.durUnit}
-                onChange={(v) => set('durUnit', v)}
-                options={[
-                  { v: 'h', l: S.hours },
-                  { v: 'd', l: S.days },
-                ]}
-              />
-              <input
-                className="inp inp-num"
-                inputMode="numeric"
-                value={ev.dur}
-                placeholder={S.f_dur_ph}
-                onChange={(e) => set('dur', e.target.value.replace(/\D/g, '').slice(0, 3))}
-              />
-              <span className="muted">{(ev.durUnit === 'h' ? S.hours : S.days).toLowerCase()}</span>
-            </div>
-          </Field>
         </div>
+        <Toggle checked={ev.multi} onChange={(v) => set('multi', v)} title={S.multi_day} desc={S.multi_day_d} />
+        {ev.multi && (
+          <div className="row multi-days">
+            <input
+              className="inp inp-num"
+              inputMode="numeric"
+              aria-label={S.days}
+              value={ev.days}
+              onChange={(e) => set('days', e.target.value.replace(/\D/g, '').slice(0, 2))}
+            />
+            <span className="muted">{S.days.toLowerCase()}</span>
+          </div>
+        )}
         <Actions onNext={() => go(2)} nextDisabled={!ev.title.trim()} />
-      </FlowLayout>
+      </FlowLayout>,
     )
 
   if (step === 2) {
@@ -491,36 +467,18 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
           <WhenCalendar
             slots={modeSlots}
             setSlots={(v) => set('slots', [...ev.slots.filter((x) => !modeSlots.includes(x)), ...v])}
-            days={dayMode ? spanOf(ev) : 0}
+            days={dayMode ? spanOf(shape) : 0}
           />
         ) : (
           <WhenRange range={ev.range} setRange={(r) => set('range', r)} />
         )}
-        {ev.mode === 'fixed' && (
-          <Toggle checked={ev.allowSuggest} onChange={(v) => set('allowSuggest', v)} title={S.allow_suggest} />
-        )}
         <Actions onBack={() => go(1)} onNext={() => go(3)} nextDisabled={!ok} />
-      </FlowLayout>
+      </FlowLayout>,
     )
   }
 
-  if (step === 3)
-    return wrap(
-      <FlowLayout step={3}>
-        <CardHead title={S.guests_title} sub={emailEnabled ? S.guests_sub : S.guests_sub_nomail} />
-        <GuestsStep
-          emailEnabled={emailEnabled}
-          invitees={ev.invitees}
-          setInvitees={(v) => set('invitees', v)}
-          allowSelfAdd={ev.allowSelfAdd}
-          setAllowSelfAdd={(v) => set('allowSelfAdd', v)}
-        />
-        <Actions onBack={() => go(2)} onNext={() => go(4)} />
-      </FlowLayout>
-    )
-
   return wrap(
-    <FlowLayout step={4}>
+    <FlowLayout step={3}>
       <CardHead title={S.who_title} sub={S.who_sub} />
       <div className="fields">
         <Field label={S.f_name}>
@@ -532,48 +490,33 @@ function CreateFlow({ emailEnabled }: { emailEnabled: boolean }) {
             onChange={(e) => set('organizer', e.target.value)}
           />
         </Field>
-        <Field label={S.f_deadline} optional>
-          <input
-            className="inp inp-date"
-            type="date"
-            min={todayIso()}
-            value={ev.deadline}
-            onChange={(e) => set('deadline', e.target.value)}
-          />
-        </Field>
       </div>
-      <Toggle checked={ev.mustAll} onChange={(v) => set('mustAll', v)} title={S.must_all} desc={S.must_all_d} />
+      {/* Optional guest list, folded away so the step stays short. */}
+      <details className="more" open={ev.invitees.length > 0}>
+        <summary>{S.add_guests}</summary>
+        <p className="hint">{emailEnabled ? S.guests_sub : S.add_guests_d}</p>
+        <GuestsStep emailEnabled={emailEnabled} invitees={ev.invitees} setInvitees={(v) => set('invitees', v)} />
+      </details>
       <Toggle
         checked={ev.showOthers}
         onChange={(v) => set('showOthers', v)}
         title={S.show_others}
         desc={S.show_others_d}
       />
-      <div className="how">
-        <span className="lbl">{S.how_title}</span>
-        <ol>
-          {S.how.map((h, i) => (
-            <li key={i}>
-              <span className="n">{i + 1}</span>
-              {h}
-            </li>
-          ))}
-        </ol>
-      </div>
       {err && <p className="err">{S.err}</p>}
       <Actions
-        onBack={() => go(3)}
+        onBack={() => go(2)}
         onNext={create}
         nextLabel={S.create}
         nextDisabled={!ev.organizer.trim() || busy}
       />
-    </FlowLayout>
+    </FlowLayout>,
   )
 }
 
 export default function CreateApp({ emailEnabled }: { emailEnabled: boolean }) {
   return (
-    <WhenworksShell role="organizer">
+    <WhenworksShell>
       <CreateFlow emailEnabled={emailEnabled} />
     </WhenworksShell>
   )

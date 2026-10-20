@@ -28,17 +28,16 @@ export type EventDoc = {
   slots: Slot[] // organizer-proposed slots, all rounds
   removed: string[]
   organizer: string
-  deadline: string | null
-  mustAll: boolean
+  deadline?: string | null // no longer asked; may exist on old events (never shown)
+  mustAll: boolean // always true for new events: aim for a time everyone can make
   showOthers: boolean
-  allowSuggest: boolean
+  allowSuggest: boolean // always true for new events: guests may suggest times
   round: number
   roundNote: string
   finalSlotId: string | null
   finalNote: string
   invitees?: Invitee[] // missing on events created before invitations existed
   invitesSent?: number
-  allowSelfAdd?: boolean // with a guest list: may people not on it add themselves? (default true)
   createdAt: number
   expiresAt: number
 }
@@ -60,7 +59,6 @@ export type EventInfo = {
   durUnit: DurUnit
   mode: Mode
   organizer: string
-  deadline: string | null
   mustAll: boolean
   showOthers: boolean
   allowSuggest: boolean
@@ -81,7 +79,6 @@ export type Me = { name: string; answers: Record<string, Answer>; token: string 
 export type GuestView = EventInfo & {
   responders: GuestResponder[]
   participants: string[]
-  allowSelfAdd: boolean
   emailEnabled: boolean // hide the email field until email can be sent
   me: Me | null
 }
@@ -106,13 +103,9 @@ export type CreateInput = {
   mode: Mode
   range: Range | null
   slots: { date: string; time: string | null }[]
-  allowSuggest: boolean
   organizer: string
-  deadline: string | null
-  mustAll: boolean
   showOthers: boolean
   invitees: Invitee[]
-  allowSelfAdd: boolean
   lang: Lang
   origin: string
 }

@@ -9,7 +9,6 @@ import {
   hashToken,
   loadAdmin,
   loadEvent,
-  mayAnswer,
   nameKey,
   newSlug,
   newToken,
@@ -158,7 +157,6 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
       for (const t of cleanTimes(input.slots)) slots.push({ id: slotKey(t), ...t, round: 1 })
       if (!slots.length) return fail('invalid')
     }
-    const deadline = input.deadline && DATE_RE.test(input.deadline) ? input.deadline : null
     const now = Date.now()
     const token = newToken()
     const ev: EventDoc = {
@@ -173,17 +171,16 @@ export async function createEvent(input: CreateInput): Promise<Result<{ slug: st
       slots,
       removed: [],
       organizer,
-      deadline,
-      mustAll: !!input.mustAll,
+      // Fixed for every event to keep creating one simple: aim for everyone, let guests suggest times.
+      mustAll: true,
       showOthers: !!input.showOthers,
-      allowSuggest: mode === 'open' || !!input.allowSuggest,
+      allowSuggest: true,
       round: 1,
       roundNote: '',
       finalSlotId: null,
       finalNote: '',
       invitees: cleanInvitees(input.invitees).filter((i) => nameKey(i.name) !== nameKey(organizer)),
       invitesSent: 0,
-      allowSelfAdd: input.allowSelfAdd !== false,
       createdAt: now,
       expiresAt: now + TTL_MS,
     }
@@ -243,7 +240,6 @@ export async function submitAnswers(
     const name = str(input.name, 60)
     if (!name) return fail('invalid')
     if (nameKey(name) === nameKey(ev.organizer)) return fail('organizer')
-    if (!mayAnswer(l, name)) return fail('not_listed')
     const emailIn = str(input.email, 200)
     const email = EMAIL_RE.test(emailIn) ? emailIn : ''
 
@@ -303,23 +299,6 @@ export async function getAdmin(slug: string, token: string): Promise<Result<Admi
   })
 }
 
-export async function setMyAnswers(
-  slug: string,
-  token: string,
-  input: Record<string, Answer>,
-): Promise<Result<AdminView>> {
-  return run(async () => {
-    const l = await loadAdmin(slug, token)
-    if (!l) return fail('not_found')
-    const valid = new Set(l.slots.map((s) => s.id))
-    const answers: Record<string, Answer> = {}
-    for (const [id, v] of Object.entries(input ?? {})) if (valid.has(id) && ANSWERS.includes(v)) answers[id] = v
-    await addOrganizerAnswers(l.ev, answers)
-    const reloaded = await loadAdmin(slug, token)
-    return reloaded ? { ok: true, data: toAdminView(reloaded) } : fail('not_found')
-  })
-}
-
 /**
  * The organizer edits anyone's answer straight in the table (including their own).
  * value null clears it. A guest's lock (tokenHash) is kept, so they can still edit their own answers.
@@ -369,7 +348,6 @@ export async function askAgain(
   input: {
     newSlots: { date: string; time: string | null }[]
     removed: string[]
-    allowSuggest: boolean
     note: string
   },
 ): Promise<Result<AdminView>> {
@@ -382,7 +360,6 @@ export async function askAgain(
     const fresh = cleanTimes(input.newSlots)
       .filter((t) => !taken.has(slotKey(t)))
       .map((t) => ({ id: 'r' + next + '_' + slotKey(t), ...t, round: next }))
-    if (!fresh.length && !input.allowSuggest) return fail('invalid')
     const visible = new Set(l.slots.map((s) => s.id))
     const removed = Array.isArray(input.removed) ? input.removed.filter((id) => visible.has(id)) : []
     const updated: EventDoc = {
@@ -390,7 +367,7 @@ export async function askAgain(
       slots: [...ev.slots, ...fresh].slice(0, MAX_SLOTS * 3),
       removed: [...ev.removed, ...removed],
       round: next,
-      allowSuggest: !!input.allowSuggest,
+      allowSuggest: true, // guests can always suggest; a round may just ask them to
       roundNote: str(input.note, 600),
     }
     await getStore().putEvent(updated)
