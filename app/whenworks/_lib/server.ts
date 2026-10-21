@@ -1,4 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+import { track } from '@/lib/stats'
 import { getStore } from './store'
 import { findBest, fmt, spanOf, visibleSlots } from './logic'
 import { WW_STR } from './i18n'
@@ -188,5 +189,7 @@ export async function sendEmails(mails: Mail[]): Promise<number> {
       console.error('Whenworks: email failed', e)
     }
   }
+  await track('whenworks', 'email_sent', sent)
+  await track('whenworks', 'email_failed', mails.length - sent)
   return sent
 }

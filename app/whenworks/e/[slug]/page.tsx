@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
+import PageView from '@/components/PageView'
 import GuestApp from '../../_components/guest'
 import { loadEvent, toGuestView } from '../../_lib/server'
 
@@ -18,5 +19,10 @@ export default async function GuestPage({ params }: Props) {
   if (!l) notFound()
   // A returning guest is recognised by the cookie set when they first answered.
   const me = (await cookies()).get(`ww_me_${slug}`)?.value
-  return <GuestApp initial={toGuestView(l, me)} />
+  return (
+    <>
+      <GuestApp initial={toGuestView(l, me)} />
+      <PageView page="ww_guest" />
+    </>
+  )
 }

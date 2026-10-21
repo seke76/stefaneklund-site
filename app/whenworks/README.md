@@ -163,6 +163,7 @@ Svar som gavs innan namnlåsningen fanns saknar `tokenHash`. De låses första g
 | `_lib/logic.ts` | Rena uträkningar: datumformat, flerdagsspann, poäng och bästa datum. Används både i webbläsaren och på servern. |
 | `_lib/i18n.ts` | Alla texter på svenska och engelska. |
 | `actions.ts` | Server actions, det enda sättet att ändra data: `createEvent`, `submitAnswers`, `getMyAnswers`, `openMyLink`, `forgetMe`, `getAdmin`, `setAnswerFor` (arrangören ändrar någons svar, även sitt eget), `askAgain`, `finalize`. |
+| `@/lib/stats` | Statistik och felloggning till [admin-sidan](../admin/README.md). Bara räknare, inga personuppgifter. |
 | `_components/` | Skärmarna (`create`, `guest`, `organizer`) och delade delar (`ui`, `matrix` = svarstabellen, `answers` = Ja/Kanske/Nej-listan). |
 
 ## Konfiguration

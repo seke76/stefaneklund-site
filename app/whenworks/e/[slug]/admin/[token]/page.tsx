@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import PageView from '@/components/PageView'
 import OrganizerApp from '../../../../_components/organizer'
 import { getOrigin } from '../../../../_lib/origin'
 import { loadAdmin, toAdminView } from '../../../../_lib/server'
@@ -24,5 +25,10 @@ export default async function OrganizerPage({ params, searchParams }: Props) {
     guest: `${origin}/whenworks/e/${slug}`,
     admin: `${origin}/whenworks/e/${slug}/admin/${token}`,
   }
-  return <OrganizerApp initial={toAdminView(l)} token={token} links={links} isNew={isNew === '1'} />
+  return (
+    <>
+      <OrganizerApp initial={toAdminView(l)} token={token} links={links} isNew={isNew === '1'} />
+      <PageView page="ww_org" />
+    </>
+  )
 }
