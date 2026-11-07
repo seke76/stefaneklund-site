@@ -1,0 +1,19 @@
+{
+  "id": "/vemljuger",
+  "name": "Vem ljuger?",
+  "short_name": "Vem ljuger?",
+  "description": "Sällskapsspelet där alla utom spionen får samma hemliga ord. En telefon, 3–12 spelare.",
+  "lang": "sv",
+  "start_url": "/vemljuger",
+  "scope": "/vemljuger",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080808",
+  "theme_color": "#080808",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "/vemljuger/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/vemljuger/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/vemljuger/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

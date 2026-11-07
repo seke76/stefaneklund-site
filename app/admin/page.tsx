@@ -159,6 +159,26 @@ function Site({ d }: { d: Dashboard }) {
   )
 }
 
+function VemLjuger({ d }: { d: Dashboard }) {
+  const v = d.vemljuger
+  return (
+    <section>
+      <div className="sec-head">
+        <h2>Vem ljuger?</h2>
+        <span className="muted small">senaste {d.days} dagarna</span>
+      </div>
+      <div className="grid">
+        <Kpi label="Spelade rundor" m={v.round} days={d.days} />
+        <Kpi label="Besök" m={v.view_landing} days={d.days} />
+      </div>
+      <div className="grid-3" style={{ marginTop: 12 }}>
+        <Bars title="Spelade rundor per dag" dates={d.dates} values={v.round.daily} />
+        <Bars title="Besök per dag" dates={d.dates} values={v.view_landing.daily} />
+      </div>
+    </section>
+  )
+}
+
 function Errors({ d }: { d: Dashboard }) {
   return (
     <section>
@@ -234,6 +254,7 @@ export default async function AdminPage({ searchParams }: Props) {
       </header>
       <Health d={d} />
       <Whenworks d={d} />
+      <VemLjuger d={d} />
       <Site d={d} />
       <Errors d={d} />
     </main>

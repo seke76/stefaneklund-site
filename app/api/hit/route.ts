@@ -6,6 +6,8 @@ const PAGES: Record<string, [AppId, string]> = {
   ww: ['whenworks', 'view_landing'],
   ww_guest: ['whenworks', 'view_guest'],
   ww_org: ['whenworks', 'view_organizer'],
+  vl: ['vemljuger', 'view_landing'],
+  vl_round: ['vemljuger', 'round'],
 }
 
 const BOT = /bot|crawl|spider|slurp|preview|headless|lighthouse/i
