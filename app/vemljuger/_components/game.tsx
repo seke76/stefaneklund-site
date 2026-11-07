@@ -42,13 +42,16 @@ export default function Game() {
 
   return (
     <main className="vl">
-      {s.screen.name === 'setup' || !round ? (
+      {s.screen.name === 'help' ? (
+        <Help onBack={() => set({ screen: round ? { name: 'score' } : { name: 'setup' } })} />
+      ) : s.screen.name === 'setup' || !round ? (
         <Setup
           settings={s.settings}
           results={s.results}
           onChange={(settings) => set({ settings })}
           onStart={start}
           onScore={() => set({ screen: { name: 'score' } })}
+          onHelp={() => set({ screen: { name: 'help' } })}
         />
       ) : s.screen.name === 'pass' ? (
         <Pass
@@ -101,12 +104,14 @@ function Setup({
   onChange,
   onStart,
   onScore,
+  onHelp,
 }: {
   settings: Settings
   results: Result[]
   onChange: (s: Settings) => void
   onStart: () => void
   onScore: () => void
+  onHelp: () => void
 }) {
   const { players, names, categories, spies, mode, hint } = settings
   const [showNames, setShowNames] = useState(names.some((n) => n.trim()))
@@ -129,6 +134,9 @@ function Setup({
           VEM LJUGER?<span className="cursor" />
         </h1>
         <p className="muted">Alla får samma hemliga ord – utom spionen. Hitta den som ljuger.</p>
+        <button className="link" onClick={onHelp}>
+          [?] Så spelar ni
+        </button>
       </header>
 
       {results.length > 0 && <Tally results={results} onClick={onScore} />}
@@ -235,6 +243,9 @@ function Setup({
 
       <footer className="foot">
         <Install />
+        <button className="link center" onClick={onHelp}>
+          [?] Så kör du spelet på din telefon
+        </button>
         <a href="/">← stefaneklund.se</a>
       </footer>
     </>
@@ -476,6 +487,141 @@ function Score({
           {sure ? '[!] Säker? Tryck igen för att nollställa' : '[x] Nollställ poängen'}
         </button>
       )}
+    </>
+  )
+}
+
+/* ───────────────────────── Help ───────────────────────── */
+
+function Help({ onBack }: { onBack: () => void }) {
+  return (
+    <>
+      <div className="bar">
+        <span>Instruktion</span>
+        <button className="link" onClick={onBack}>
+          [← tillbaka]
+        </button>
+      </div>
+      <p className="cmd">&gt; man vem_ljuger</p>
+      <h1>Så kör du spelet på din telefon</h1>
+      <p className="muted">
+        Ni behöver en telefon och 3–12 personer. Ingen app att ladda ner från en butik, inget konto.
+      </p>
+
+      <section className="help">
+        <h2>1. Öppna spelet</h2>
+        <p>
+          Gå till <b>stefaneklund.se/vemljuger</b> i telefonens webbläsare.
+        </p>
+      </section>
+
+      <section className="help">
+        <h2>2. Installera som app (valfritt)</h2>
+        <p>Då får spelet en egen ikon, öppnas i helskärm och fungerar utan internet.</p>
+        <h3>Android (Chrome)</h3>
+        <ol>
+          <li>
+            Tryck på <b>Installera som app</b> längst ner på startskärmen i spelet.
+          </li>
+          <li>
+            Syns inte knappen: tryck på <b>⋮</b> uppe till höger och välj <b>Installera app</b> eller{' '}
+            <b>Lägg till på startskärmen</b>, och sedan <b>Installera</b>.
+          </li>
+        </ol>
+        <h3>iPhone (Safari)</h3>
+        <ol>
+          <li>
+            Tryck på <b>Dela</b> (rutan med en pil uppåt).
+          </li>
+          <li>
+            Välj <b>Lägg till på hemskärmen</b> och tryck <b>Lägg till</b>.
+          </li>
+        </ol>
+        <p className="small">
+          Ikonen är ett grönt <b>?_</b>. Har du väl öppnat spelet en gång fungerar det även i flygplansläge.
+        </p>
+        <div className="help-install">
+          <Install />
+        </div>
+      </section>
+
+      <section className="help">
+        <h2>3. Ställ in spelet</h2>
+        <ul>
+          <li>
+            <b>Spelare:</b> hur många ni är. Namn är frivilliga.
+          </li>
+          <li>
+            <b>Kategori:</b> välj en eller flera, eller låt den slumpas.
+          </li>
+          <li>
+            <b>Spioner:</b> 1–3, eller <i>Slumpa</i> så att ingen vet hur många.
+          </li>
+          <li>
+            <b>Läge:</b> <i>Klassiskt</i> (spionen vet om det och får en ledtråd) eller <i>Fel ord</i> (spionen
+            får ett liknande ord och vet inte själv att hen är spion).
+          </li>
+        </ul>
+        <p>
+          Tryck på <b>Starta spelet</b>.
+        </p>
+      </section>
+
+      <section className="help">
+        <h2>4. Dela ut rollerna</h2>
+        <ol>
+          <li>Ge telefonen till personen vars namn står på skärmen.</li>
+          <li>
+            <b>Håll fingret på rutan</b> för att se din roll. Släpp, så döljs den.
+          </li>
+          <li>
+            Tryck <b>Klar</b> och lämna över till nästa.
+          </li>
+        </ol>
+        <p className="small">Vänd skärmen bort från de andra medan du tittar.</p>
+      </section>
+
+      <section className="help">
+        <h2>5. Spela</h2>
+        <ol>
+          <li>Lägg ner telefonen. Skärmen visar vem som börjar.</li>
+          <li>Säg ett ord eller en kort mening om ordet, en i taget, medsols.</li>
+          <li>Inte för tydligt, då listar spionen ut ordet. Inte för luddigt, då blir du misstänkt.</li>
+          <li>Efter ett eller två varv pekar alla samtidigt på den de tror ljuger.</li>
+          <li>I det klassiska läget får spionen gissa ordet om hen åker fast. Rätt gissning, och spionen vinner ändå.</li>
+        </ol>
+      </section>
+
+      <section className="help">
+        <h2>6. Avslöja och räkna poäng</h2>
+        <ol>
+          <li>
+            Tryck <b>Visa vem som ljög</b> och sedan en gång till för att bekräfta.
+          </li>
+          <li>
+            Välj <b>Gruppen vann</b> eller <b>Spionen vann</b>.
+          </li>
+          <li>
+            Tryck <b>Ny runda</b>. Poängen räknas ihop under hela kvällen.
+          </li>
+        </ol>
+      </section>
+
+      <section className="help">
+        <h2>Bra att veta</h2>
+        <ul>
+          <li>Låses skärmen eller laddas sidan om fortsätter spelet där ni var.</li>
+          <li>
+            <b>[x]</b> uppe till höger avbryter en runda.
+          </li>
+          <li>Samma ord kommer inte igen förrän alla ord i kategorin har spelats.</li>
+          <li>Allt sparas bara i din telefon.</li>
+        </ul>
+      </section>
+
+      <button className="btn primary big" onClick={onBack}>
+        &gt; Tillbaka till spelet
+      </button>
     </>
   )
 }

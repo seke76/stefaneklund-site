@@ -33,6 +33,8 @@ flowchart LR
 
 Rundan kan avbrytas när som helst med **[x]** uppe till höger (två tryck).
 
+**Instruktionen** *Så kör du spelet på din telefon* öppnas med **[?]** på startskärmen. Den förklarar hur man öppnar och installerar spelet (Android och iPhone), ställer in det, delar ut rollerna, spelar och räknar poäng. Den är en skärm i spelet (`Help` i `_components/game.tsx`) och fungerar därför offline. Ändras flödet ska instruktionen uppdateras också.
+
 ## Lägen
 
 - **Klassiskt:** spionen vet att hen är spion och ser **kategorin** och, om det är påslaget, **en ledtråd**. Ledtråden är en av de ledtrådar som står vid ordet i ordlistan, alltså något en vanlig spelare kunde ha sagt. Är det flera spioner får de olika ledtrådar så långt det räcker. Åker spionen fast får hen gissa ordet, och gissar hen rätt vinner spionen ändå.
@@ -87,7 +89,7 @@ Två räknare syns på [adminsidan](../admin/README.md): **besök** (`view_landi
 | Fil | Ansvar |
 |---|---|
 | `page.tsx`, `layout.tsx` | Sidan, egen root-layout (grön terminalstil), metadata för appen |
-| `_components/game.tsx` | Alla skärmar: inställningar, skicka runt, spelet pågår, avslöja, poäng |
+| `_components/game.tsx` | Alla skärmar: inställningar, skicka runt, spelet pågår, avslöja, poäng, instruktion |
 | `_components/install.tsx` | Registrerar service workern och visar *Installera som app* |
 | `_lib/game.ts` | Spellogik: dela ut en runda, antal spioner, slump, spara/läsa |
 | `_lib/words.ts` | Kategorier, ord, liknande ord och ledtrådar |

@@ -68,6 +68,8 @@ export type Screen =
   | { name: 'play' }
   | { name: 'reveal' }
   | { name: 'score' }
+  /** "Så spelar ni": how to install and play. */
+  | { name: 'help' }
 
 /** Everything kept in the browser (localStorage key in game.ts). */
 export type Saved = {

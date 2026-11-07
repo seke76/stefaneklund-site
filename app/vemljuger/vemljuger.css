@@ -261,3 +261,13 @@ h1.who { font-size: clamp(48px, 14vw, 64px); }
 @media (prefers-reduced-motion: reduce) {
   .cursor { animation: none; }
 }
+
+/* ── Instruktion ── */
+.help { display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
+.help h3 { font-size: 15px; font-weight: 400; color: var(--green); margin-top: 6px; }
+.help h3::before { content: '> '; color: var(--green-muted); }
+.help ol, .help ul { padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; color: var(--green-dim); }
+.help li::marker { color: var(--green-muted); }
+.help b { color: var(--green); font-weight: 400; }
+.help-install:empty { display: none; }
+.link.center { align-self: center; text-align: center; }
