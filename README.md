@@ -38,3 +38,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## Whenworks (`/whenworks`)
 
 A scheduling app at [stefaneklund.se/whenworks](https://stefaneklund.se/whenworks). How it works (pages, flows, data model, security and configuration) is documented next to the code in [`app/whenworks/README.md`](app/whenworks/README.md).
+
+## Ekorrhjulet (`/ekorrhjulet`)
+
+A life-simulation game at [stefaneklund.se/ekorrhjulet](https://stefaneklund.se/ekorrhjulet), inspired by *Jones in the Fast Lane*. How it works (rules, files, flow) is documented in [`app/ekorrhjulet/README.md`](app/ekorrhjulet/README.md).
