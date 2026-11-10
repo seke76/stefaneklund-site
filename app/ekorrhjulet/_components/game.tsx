@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { playAiTurn } from '../_lib/ai'
-import { clock, current, endTurn, genitive, moveTo, newGame, perform, travelHours } from '../_lib/engine'
-import { clearGame, loadGame, loadPrefs, saveGame, savePrefs, type Prefs } from '../_lib/save'
+import { clock, current, endTurn, genitive, moveTo, newGame, perform, progress, travelHours } from '../_lib/engine'
+import { addBest, clearGame, loadGame, loadPrefs, saveGame, savePrefs, type Prefs } from '../_lib/save'
 import { playMusic, setTheme, sfx, stopMusic, type Sfx } from '../_lib/sound'
 import type { Action, GameState, PlaceId, PlayerSetup, Settings } from '../_lib/types'
 import Board from './board'
@@ -12,7 +12,7 @@ import Start from './start'
 
 export default function Game() {
   const [s, setS] = useState<GameState | null>(null)
-  const [hasSave, setHasSave] = useState(false)
+  const [saved, setSaved] = useState<GameState | null>(null)
   const [prefs, setPrefs] = useState<Prefs>({ music: true, sfx: true })
   const [walking, setWalking] = useState<{ from: PlaceId; to: PlaceId; key: number } | null>(null)
   const [openPlace, setOpenPlace] = useState<PlaceId | null>(null)
@@ -22,12 +22,24 @@ export default function Game() {
   const toastId = useRef(0)
 
   useEffect(() => {
-    setHasSave(!!loadGame())
+    setSaved(loadGame())
     setPrefs(loadPrefs())
   }, [])
 
   useEffect(() => {
     if (s) saveGame(s)
+  }, [s])
+
+  // A finished game with a human winner goes into "Bästa liv" on the title screen.
+  const recorded = useRef(false)
+  useEffect(() => {
+    if (!s?.over) {
+      recorded.current = false
+      return
+    }
+    const w = s.players.find((p) => p.id === s.winner)
+    if (!recorded.current && w && !w.ai && progress(s, w).total >= 100) addBest({ name: w.name, weeks: s.week, era: s.settings.era })
+    recorded.current = true
   }, [s])
 
   useEffect(() => () => stopMusic(), [])
@@ -79,7 +91,7 @@ export default function Game() {
     [play],
   )
 
-  if (!s) return <Start hasSave={hasSave} onContinue={onContinue} onStart={onStart} />
+  if (!s) return <Start saved={saved} prefs={prefs} onTogglePref={togglePref} onContinue={onContinue} onStart={onStart} />
 
   const p = current(s)
   const busy = !!walking || !!openPlace || !!s.summary || aiBusy || s.over
@@ -151,7 +163,7 @@ export default function Game() {
     clearGame()
     stopMusic()
     setS(null)
-    setHasSave(false)
+    setSaved(null)
   }
 
   const pixel = s.settings.board === 'pixelstaden'

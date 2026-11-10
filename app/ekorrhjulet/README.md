@@ -22,10 +22,10 @@ Spelet har en **egen root-layout** (`layout.tsx`, `ekorrhjulet.css`) och påverk
 | `_lib/ai.ts` | Datorspelaren Egon. |
 | `_lib/data.ts` | Platser, jobb, kurser, prylar, priser, helgtexter och Egons repliker, per tidsepok. |
 | `_lib/rng.ts` | Slumpgenerator med frö. Slumpens tillstånd sparas i spelet, så samma frö ger samma händelser. |
-| `_lib/save.ts` | Sparning i webbläsaren (`localStorage`). |
+| `_lib/save.ts` | Sparning i webbläsaren (`localStorage`): pågående spel, ljudval och Bästa liv. |
 | `_lib/sound.ts` | Ljudeffekter och musik, genererade med Web Audio. Inga ljudfiler. |
 | `_components/game.tsx` | Skärmarna och spelflödet. |
-| `_components/start.tsx` | Startskärmen med inställningar. |
+| `_components/start.tsx` | Titelskärmen i arkadstil: meny, Bästa liv, Hur man spelar och inställningarna för ett nytt spel. |
 | `_components/board.tsx` | Kartan: klickytor över byggnaderna, spelpjäser som går längs ringvägen och mittpanelen. |
 | `_components/boards.ts` | Kartornas grafik (SVG), genererad från designytan: Småstaden = A2, Pixelstaden = B2. |
 | `_components/panels.tsx` | Sidopanelen, platsfönstret, veckosammanfattningen och slutrutan. |
@@ -43,7 +43,8 @@ flowchart LR
   H -- alla mål nådda<br/>eller veckotaket --> X[Slut]
 ```
 
-- **Startskärm:** spelplan (Småstaden eller Pixelstaden), tidsepok (nutid eller 1994), spelare (1–4 plus Egon av/lätt/svår) och spellängd (Kort, Mellan, Lång). Under *Avancerat* finns svårighet, veckotak, startkapital och slumpfrö. Stadsvalen *Full* (20 platser) och *Anpassad* syns men är inte byggda än.
+- **Titelskärm:** en arkadskärm i 1994-stil med stjärnhimmel, den animerade ekorren (`public/ekorrhjulet/ekorre.gif`), ett blinkande *TRYCK START* och en meny: *Nytt liv*, *Fortsätt (vecka X)* om det finns ett sparat spel, *Hur man spelar*, *Musik* och *Ljud*. Menyn går att styra med piltangenterna. Under menyn visas **Bästa liv**: de fem snabbaste vinsterna av människor i den här webbläsaren (vinst genom att nå alla mål, inte genom veckotaket). Längst ner syns Pixelstaden (`public/ekorrhjulet/pixelstaden.png`).
+- **Nytt liv:** tidsepok (1994 eller nutid), spelare (1–4 plus Egon av/lätt/svår) och spellängd (Kort, Mellan, Lång). Under *Avancerat* finns svårighet, veckotak, startkapital och slumpfrö. **Spelplanen är alltid Pixelstaden i första versionen.** Småstaden, och stadsvalen *Full* (20 platser) och *Anpassad*, syns utgråade som "kommer snart". Koden för Småstaden finns kvar, och ett gammalt sparat Småstaden-spel går fortfarande att fortsätta.
 - **Veckan:** spelaren klickar på en byggnad. Pjäsen går dit längs vägen (restiden dras), och platsens fönster öppnas med allt man kan göra där. Varje knapp visar tid, pris och effekt, och det som inte går visar varför.
 - **Helgen:** en sammanfattning per spelare med lön, utgifter, helgaktivitet, veckans händelse och ställningen.
 
@@ -70,4 +71,4 @@ Egon följer en prioritetslista: mat, hälsa, boende, bättre jobb, kläder, bos
 
 ## Inte byggt än
 
-Full stad med 20 platser och anpassad stad, Vårdcentralen och de andra nio nya platserna, egen musik per plats och riktiga musikspår för Småstaden.
+Småstaden som valbar spelplan, full stad med 20 platser och anpassad stad, Vårdcentralen och de andra nio nya platserna, egen musik per plats och riktiga musikspår för Småstaden.

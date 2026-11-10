@@ -44,3 +44,22 @@ export function savePrefs(p: Prefs) {
     localStorage.setItem(PREFS, JSON.stringify(p))
   } catch {}
 }
+
+/** "Bästa liv" on the title screen: the fastest human wins in this browser. */
+const BEST = 'ekorrhjulet-best-v1'
+export type Best = { name: string; weeks: number; era: string }
+
+export function loadBest(): Best[] {
+  try {
+    return (JSON.parse(localStorage.getItem(BEST) ?? '[]') as Best[]).slice(0, 5)
+  } catch {
+    return []
+  }
+}
+
+export function addBest(b: Best) {
+  try {
+    const list = [...loadBest(), b].sort((x, y) => x.weeks - y.weeks).slice(0, 5)
+    localStorage.setItem(BEST, JSON.stringify(list))
+  } catch {}
+}
