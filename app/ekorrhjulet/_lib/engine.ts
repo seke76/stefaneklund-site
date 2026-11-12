@@ -359,26 +359,27 @@ export function actionsAt(s: GameState): Action[] {
       break
     }
     case 'banken': {
-      const big = price(s, 5000)
-      add({ id: 'deposit', group: 'Konto', label: 'Sätt in alla kontanter', hours: 0, cost: 0, note: `Sparränta ${INTEREST[era].save * 100} %/år`, disabled: p.cash <= 0 ? 'Inga kontanter' : undefined })
-      add({ id: 'withdraw', group: 'Konto', label: `Ta ut ${kr(price(s, 1000))}`, hours: 0, cost: 0, disabled: p.bank < price(s, 1000) ? 'För lite på kontot' : undefined })
-      add({ id: 'withdrawbig', group: 'Konto', label: `Ta ut ${kr(big)}`, hours: 0, cost: 0, disabled: p.bank < big ? 'För lite på kontot' : undefined })
-      const maxLoan = job ? p.wage * 160 * 3 : 0
+      const all = (n: number) => Math.max(0, Math.floor(n))
+      add({ id: 'deposit', group: 'Konto', label: 'Sätt in pengar', hours: 0, cost: 0, note: `Sparränta ${INTEREST[era].save * 100} %/år, säkert mot Leffe`, amount: { max: all(p.cash), step: 100 }, disabled: p.cash < 1 ? 'Plånboken är tom' : undefined })
+      add({ id: 'withdraw', group: 'Konto', label: 'Ta ut pengar', hours: 0, cost: 0, note: `Du har ${kr(p.bank)} på banken`, amount: { max: all(p.bank), step: 100 }, disabled: p.bank < 1 ? 'Kontot är tomt' : undefined })
+      const maxLoan = job ? all(p.wage * 160 * 3 - p.loan) : 0
       add({
         id: 'loan',
         group: 'Lån',
-        label: `Låna ${kr(price(s, 10000))}`,
+        label: 'Låna pengar',
         hours: 0.5,
         cost: 0,
-        note: `${INTEREST[era].loan * 100} % ränta/år`,
-        disabled: !job ? 'Banken lånar inte ut till arbetslösa' : p.loan + price(s, 10000) > maxLoan ? 'Du får inte låna mer' : undefined,
+        note: `${INTEREST[era].loan * 100} % ränta/år · högst ${kr(maxLoan)}`,
+        amount: { max: maxLoan, step: 1000 },
+        disabled: !job ? 'Banken lånar inte ut till arbetslösa' : maxLoan < 1000 ? 'Du får inte låna mer' : undefined,
       })
-      add({ id: 'repay', group: 'Lån', label: 'Betala av på lånet', hours: 0, cost: 0, note: `Skuld ${kr(p.loan)}`, disabled: p.loan <= 0 ? 'Inget lån' : p.cash <= 0 ? 'Inga kontanter' : undefined })
+      add({ id: 'repay', group: 'Lån', label: 'Betala av på lånet', hours: 0, cost: 0, note: `Skuld ${kr(p.loan)}`, amount: { max: all(Math.min(p.cash, p.loan)), step: 100 }, disabled: p.loan <= 0 ? 'Inget lån' : p.cash < 1 ? 'Plånboken är tom' : undefined })
       if (p.inkasso > 0) add({ id: 'payinkasso', group: 'Lån', label: `Betala inkassoskulden ${kr(p.inkasso)}`, hours: 0, cost: 0, disabled: p.cash + p.bank <= 0 ? 'Inga pengar' : undefined })
-      add({ id: 'buyindex', group: 'Fonder', label: `Köp indexfond för ${kr(big)}`, hours: 0, cost: big, note: 'Stiger oftast lite, svajar' })
-      add({ id: 'sellindex', group: 'Fonder', label: `Sälj indexfond (${kr(p.indexFund)})`, hours: 0, cost: 0, disabled: p.indexFund <= 0 ? 'Du äger ingen' : undefined })
-      add({ id: 'buytech', group: 'Fonder', label: `Köp ${era === '1994' ? 'IT-aktier' : 'teknikaktier'} för ${kr(big)}`, hours: 0, cost: big, note: 'Kan rusa, kan krascha' })
-      add({ id: 'selltech', group: 'Fonder', label: `Sälj aktierna (${kr(p.techStock)})`, hours: 0, cost: 0, disabled: p.techStock <= 0 ? 'Du äger inga' : undefined })
+      const stock = era === '1994' ? 'IT-aktier' : 'teknikaktier'
+      add({ id: 'buyindex', group: 'Fonder', label: 'Köp indexfond', hours: 0, cost: 0, note: 'Stiger oftast lite, svajar', amount: { max: all(p.cash), step: 100 }, disabled: p.cash < 1 ? 'Plånboken är tom' : undefined })
+      add({ id: 'sellindex', group: 'Fonder', label: 'Sälj indexfond', hours: 0, cost: 0, note: `Värd ${kr(p.indexFund)}`, amount: { max: all(p.indexFund), step: 100 }, disabled: p.indexFund < 1 ? 'Du äger ingen' : undefined })
+      add({ id: 'buytech', group: 'Fonder', label: `Köp ${stock}`, hours: 0, cost: 0, note: 'Kan rusa, kan krascha', amount: { max: all(p.cash), step: 100 }, disabled: p.cash < 1 ? 'Plånboken är tom' : undefined })
+      add({ id: 'selltech', group: 'Fonder', label: `Sälj ${stock}`, hours: 0, cost: 0, note: `Värda ${kr(p.techStock)}`, amount: { max: all(p.techStock), step: 100 }, disabled: p.techStock < 1 ? 'Du äger inga' : undefined })
       add({
         id: 'insurance',
         group: 'Försäkring',
@@ -460,12 +461,14 @@ function restBonus(s: GameState, p: Player) {
   return p.items.reduce((a, id) => a + (itemOf(s, id)?.rest ?? 0), 0) * 0.5
 }
 
-export function perform(state: GameState, id: string): GameState {
+/** Does an action. For actions with an `amount` (bank), `amount` is how much; it defaults to the most possible. */
+export function perform(state: GameState, id: string, amount?: number): GameState {
   const s = clone(state)
   const p = current(s)
   s.log = []
   const a = actionsAt(s).find((x) => x.id === id)
   if (!a || a.disabled) return s
+  const amt = a.amount ? Math.max(1, Math.min(a.amount.max, Math.round(amount ?? a.amount.max))) : 0
   const era = s.settings.era
   const say = (m: string) => s.log.push(m)
   const [verb, arg] = id.split(':')
@@ -551,32 +554,25 @@ export function perform(state: GameState, id: string): GameState {
       break
     }
     case 'deposit':
-      p.bank += p.cash
-      say(`Du satte in ${kr(p.cash)}.`)
-      p.cash = 0
+      p.cash -= amt
+      p.bank += amt
+      say(`Du satte in ${kr(amt)}. På banken: ${kr(p.bank)}.`)
       break
     case 'withdraw':
-    case 'withdrawbig': {
-      const amt = price(s, verb === 'withdraw' ? 1000 : 5000)
       p.bank -= amt
       p.cash += amt
-      say(`Du tog ut ${kr(amt)}.`)
+      say(`Du tog ut ${kr(amt)}. I plånboken: ${kr(p.cash)}.`)
       break
-    }
-    case 'loan': {
-      const amt = price(s, 10000)
+    case 'loan':
       p.loan += amt
       p.cash += amt
       say(`Banken lånade ut ${kr(amt)}. Räntan börjar ticka.`)
       break
-    }
-    case 'repay': {
-      const amt = Math.min(p.cash, p.loan)
+    case 'repay':
       p.cash -= amt
       p.loan -= amt
-      say(`Du betalade av ${kr(amt)}.`)
+      say(p.loan === 0 ? 'Lånet är betalt!' : `Du betalade av ${kr(amt)}. Kvar: ${kr(p.loan)}.`)
       break
-    }
     case 'payinkasso': {
       const fromCash = Math.min(p.cash, p.inkasso)
       p.cash -= fromCash
@@ -590,20 +586,21 @@ export function perform(state: GameState, id: string): GameState {
     }
     case 'buyindex':
     case 'buytech':
-      pay(p, a.cost)
-      if (verb === 'buyindex') p.indexFund += a.cost
-      else p.techStock += a.cost
-      say('Köpt. Nu är du investerare.')
+      p.cash -= amt
+      p.spentThisWeek += amt
+      if (verb === 'buyindex') p.indexFund += amt
+      else p.techStock += amt
+      say(`Du köpte för ${kr(amt)}. Nu är du investerare.`)
       break
     case 'sellindex':
-      p.cash += p.indexFund
-      say(`Du sålde fonden för ${kr(p.indexFund)}.`)
-      p.indexFund = 0
+      p.indexFund -= amt
+      p.cash += amt
+      say(`Du sålde för ${kr(amt)}.`)
       break
     case 'selltech':
-      p.cash += p.techStock
-      say(`Du sålde aktierna för ${kr(p.techStock)}.`)
-      p.techStock = 0
+      p.techStock -= amt
+      p.cash += amt
+      say(`Du sålde för ${kr(amt)}.`)
       break
     case 'insurance':
       p.insurance = !p.insurance

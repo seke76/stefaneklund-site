@@ -152,15 +152,15 @@ export default function Game() {
     setOpenPlace(current(next).location)
   }
 
-  const act = (a: Action) => {
+  const act = (a: Action, amount?: number) => {
     const before = current(s)
-    const next = perform(s, a.id)
+    const next = perform(s, a.id, amount)
     const after = current(next)
     setS(next)
     toast(next.log)
     if (after.jobId !== before.jobId && after.jobId) play('job')
     else if (a.id.startsWith('work')) play('coin')
-    else if (a.cost > 0 || a.id.startsWith('inst')) play('buy')
+    else if (a.cost > 0 || a.id.startsWith('inst') || a.amount) play('buy')
     else play('click')
     if (after.hoursLeft < 0.5) toast(['Veckan är slut! Nu blir det helg.'])
   }

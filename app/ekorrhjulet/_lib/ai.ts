@@ -83,8 +83,7 @@ export function playAiTurn(start: GameState): { state: GameState; steps: AiStep[
         // Short of cash but money on the bank: fetch it first.
         if (a?.disabled === 'Du har inte råd' && current(s).bank >= a.cost) {
           s = moveTo(s, 'banken')
-          const wd = current(s).bank >= a.cost + 5000 ? 'withdrawbig' : 'withdraw'
-          s = perform(s, wd)
+          s = perform(s, 'withdraw', a.cost - current(s).cash + 200)
           steps.push({ place: 'banken', action: 'Tog ut pengar' })
           done = true
           break

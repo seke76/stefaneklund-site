@@ -156,8 +156,9 @@ function useFocusOnOpen() {
 }
 
 /** The window that opens when you arrive at a place. */
-export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; place: PlaceId; onAction: (a: Action) => void; onClose: () => void }) {
+export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; place: PlaceId; onAction: (a: Action, amount?: number) => void; onClose: () => void }) {
   const ref = useFocusOnOpen()
+  const [asking, setAsking] = useState<Action | null>(null)
   const info = PLACES.find((x) => x.id === place)!
   const p = s.players[s.turn]
   // Pair "pay" and "borrow" choices for the same thing into one card (course + CSN, item + instalments).
@@ -171,10 +172,11 @@ export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; pla
   }
   const groups = [...new Set(cards.map((c) => c.group))]
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && (asking ? setAsking(null) : onClose())
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [onClose, asking])
+  const choose = (a: Action) => (a.amount ? setAsking(a) : onAction(a))
   return (
     <div className="overlay" onClick={onClose}>
       <div className="dialog place card" role="dialog" aria-modal="true" aria-labelledby="place-title" tabIndex={-1} ref={ref} onClick={(e) => e.stopPropagation()}>
@@ -185,10 +187,23 @@ export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; pla
           </div>
           <div className="dialog-meta">
             <span className="pill">{p.hoursLeft} h kvar</span>
-            <span className="pill">{kr(p.cash)}</span>
+            <span className="pill">Plånbok {kr(p.cash)}</span>
+            {place === 'banken' && <span className="pill">Banken {kr(p.bank)}</span>}
           </div>
         </header>
-        <div className="actions">
+        {asking && (
+          <AmountPicker
+            key={asking.id}
+            action={actionsAt(s).find((x) => x.id === asking.id) ?? asking}
+            p={p}
+            onDone={(n) => {
+              onAction(asking, n)
+              setAsking(null)
+            }}
+            onCancel={() => setAsking(null)}
+          />
+        )}
+        <div className="actions" hidden={!!asking}>
           {groups.map((g) => (
             <section key={g} className="action-group">
               {g && <h3>{g}</h3>}
@@ -209,18 +224,19 @@ export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; pla
                         </small>
                         <div className="pair">
                           {[main, alt].map((a) => (
-                            <button key={a.id} type="button" disabled={!!a.disabled} onClick={() => onAction(a)} title={a.disabled ?? a.note}>
+                            <button key={a.id} type="button" disabled={!!a.disabled} onClick={() => choose(a)} title={a.disabled ?? a.note}>
                               {a.short ?? a.label}
                             </button>
                           ))}
                         </div>
                       </div>
                     ) : (
-                      <button key={main.id} type="button" className="action" disabled={!!main.disabled} onClick={() => onAction(main)}>
+                      <button key={main.id} type="button" className="action" disabled={!!main.disabled} onClick={() => choose(main)}>
                         <span className="action-label">{main.label}</span>
                         <span className="action-cost">
                           {main.hours > 0 && <span>{main.hours} h</span>}
                           {main.cost > 0 && <span>{kr(main.cost)}</span>}
+                          {main.amount && !main.disabled && <span>Välj belopp</span>}
                         </span>
                         {(main.disabled || main.note) && <small className={main.disabled ? 'why' : ''}>{main.disabled ?? main.note}</small>}
                       </button>
@@ -238,6 +254,79 @@ export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; pla
         </footer>
       </div>
     </div>
+  )
+}
+
+/** Asks how much: quick amounts, "Allt", or an exact number. Shows wallet and bank while choosing. */
+function AmountPicker({ action, p, onDone, onCancel }: { action: Action; p: Player; onDone: (n: number) => void; onCancel: () => void }) {
+  const max = action.amount?.max ?? 0
+  const step = action.amount?.step ?? 100
+  const [n, setN] = useState(Math.min(max, step * 10))
+  const inputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    inputRef.current?.focus()
+    inputRef.current?.select()
+  }, [])
+  const quick = [100, 500, 1000, 5000, 10000, 50000].map((q) => Math.max(step, Math.round(q / step) * step)).filter((q, i, xs) => q < max && xs.indexOf(q) === i)
+  const valid = n >= 1 && n <= max
+  return (
+    <form
+      className="amount"
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (valid) onDone(n)
+      }}
+    >
+      <h3>{action.label}</h3>
+      <div className="amount-have">
+        <span>
+          Plånbok <strong>{kr(p.cash)}</strong>
+        </span>
+        <span>
+          Banken <strong>{kr(p.bank)}</strong>
+        </span>
+        {p.loan > 0 && (
+          <span>
+            Lån <strong>{kr(p.loan)}</strong>
+          </span>
+        )}
+      </div>
+      {action.note && <p className="amount-note">{action.note}</p>}
+      <div className="amount-quick">
+        {quick.map((q) => (
+          <button key={q} type="button" className={n === q ? 'on' : ''} onClick={() => setN(q)}>
+            {kr(q)}
+          </button>
+        ))}
+        <button type="button" className={n === max ? 'on' : ''} onClick={() => setN(max)}>
+          Allt ({kr(max)})
+        </button>
+      </div>
+      <label className="amount-input">
+        <span>Eget belopp</span>
+        <input
+          ref={inputRef}
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={max}
+          step={1}
+          value={Number.isFinite(n) ? n : ''}
+          onChange={(e) => setN(Math.floor(Number(e.target.value)))}
+        />
+        <span>kr</span>
+      </label>
+      <input className="amount-slider" type="range" min={0} max={max} step={step} value={Math.min(n, max)} onChange={(e) => setN(Number(e.target.value))} aria-label="Belopp" />
+      {!valid && <p className="amount-error">Välj ett belopp mellan 1 kr och {kr(max)}.</p>}
+      <div className="amount-actions">
+        <button type="button" className="btn" onClick={onCancel}>
+          Tillbaka
+        </button>
+        <button type="submit" className="btn btn-big" disabled={!valid}>
+          {action.label} · {valid ? kr(n) : '–'}
+        </button>
+      </div>
+    </form>
   )
 }
 

@@ -1712,3 +1712,101 @@ input {
   color: #ff9e9e;
   font-size: 24px;
 }
+
+/* "How much?" inside the place window (bank). */
+.amount {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.amount h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+.amount-have {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.amount-have span {
+  padding: 6px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: #f1eef5;
+}
+.amount-note {
+  margin: 0;
+  color: var(--muted);
+}
+.amount-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.amount-quick button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+.amount-quick button.on {
+  background: #ffd23f;
+}
+.amount-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.amount-input input {
+  width: 10em;
+}
+.amount-slider {
+  width: 100%;
+  accent-color: #f2c94c;
+}
+.amount-error {
+  margin: 0;
+  color: #a3360f;
+}
+.amount-actions {
+  display: flex;
+  gap: 10px;
+}
+.amount-actions .btn-big {
+  flex: 1;
+}
+.theme-pixelstaden .amount h3 {
+  font-size: 30px;
+  font-weight: 400;
+  color: #f2c94c;
+}
+.theme-pixelstaden .amount,
+.theme-pixelstaden .amount-quick button {
+  font-size: 24px;
+}
+.theme-pixelstaden .amount-have span {
+  border-radius: 0;
+  border: 3px solid #fff;
+  background: #1a1a2e;
+}
+.theme-pixelstaden .amount-quick button {
+  border-radius: 0;
+  border: 3px solid #fff;
+  background: #1a1a2e;
+  color: #fff;
+}
+.theme-pixelstaden .amount-quick button.on,
+.theme-pixelstaden .amount-quick button:hover {
+  background: #f2c94c;
+  color: #1a1a2e;
+}
+.theme-pixelstaden .amount-note {
+  color: #c9d3ff;
+}
+.theme-pixelstaden .amount-error {
+  color: #ff9e9e;
+}
