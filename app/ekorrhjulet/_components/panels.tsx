@@ -49,8 +49,8 @@ export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; on
           <strong className="who-name">
             <span className="dot" style={{ background: p.color }} /> {p.name}
           </strong>
-          <span className="job-title">{job ? `${job.name[era]} · nivå ${job.level}` : 'Arbetssökande'}</span>
-          <small>{job ? `${placeName(job.place, era)} · ${kr(p.wage)}/h` : 'Sök jobb på Jobbtorget'}</small>
+          <span className="job-title">{job ? `${job.name[era]} · ${kr(p.wage)}/h` : 'Arbetssökande'}</span>
+          <small>{job ? `Jobbar på ${placeName(job.place, era)}` : 'Sök jobb på Jobbtorget'}</small>
         </div>
         <div className="money">
           <div>
