@@ -10,6 +10,7 @@ import type { Action, GameState, PlaceId, PlayerSetup, Settings } from '../_lib/
 import Birgitta from './birgitta'
 import Board from './board'
 import { OverDialog, PlaceDialog, Sidebar, SummaryDialog, rentDueIn } from './panels'
+import SettingsMenu from './settings-menu'
 import Start from './start'
 
 export default function Game() {
@@ -184,15 +185,7 @@ export default function Game() {
           <span className="dot" style={{ background: p.color }} /> {genitive(p.name)} tur
         </span>
         <span className="hud-right">
-          <button type="button" className="icon-btn" aria-pressed={prefs.music} onClick={() => togglePref('music')} title="Musik">
-            {prefs.music ? 'Musik på' : 'Musik av'}
-          </button>
-          <button type="button" className="icon-btn" aria-pressed={prefs.sfx} onClick={() => togglePref('sfx')} title="Ljudeffekter">
-            {prefs.sfx ? 'Ljud på' : 'Ljud av'}
-          </button>
-          <button type="button" className="icon-btn" onClick={newGameClick}>
-            Nytt spel
-          </button>
+          <SettingsMenu prefs={prefs} onToggle={togglePref} onNewGame={newGameClick} />
         </span>
       </header>
 

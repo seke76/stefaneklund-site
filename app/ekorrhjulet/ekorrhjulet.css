@@ -1325,3 +1325,76 @@ input {
 .theme-pixelstaden .dialog.place .action {
   padding: 6px 12px;
 }
+
+/* Cog menu in the top bar */
+.settings {
+  position: relative;
+}
+.icon-btn.cog {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.settings-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: var(--border);
+  box-shadow: var(--shadow);
+  border-radius: 12px;
+  padding: 6px;
+}
+.settings-menu button {
+  min-height: 44px;
+  text-align: left;
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.settings-menu button:hover,
+.settings-menu button:focus-visible {
+  background: #fff6d5;
+  outline: none;
+}
+.settings-confirm {
+  border-top: 2px solid #e6e1ee;
+  margin-top: 4px;
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+}
+.settings-confirm p {
+  margin: 0 12px 6px;
+}
+.settings-menu .danger {
+  color: #a3360f;
+  font-weight: 700;
+}
+.theme-pixelstaden .settings-menu {
+  border-radius: 0;
+  background: #1e2a6e;
+  font-size: 24px;
+}
+.theme-pixelstaden .settings-menu button:hover,
+.theme-pixelstaden .settings-menu button:focus-visible {
+  background: #f2c94c;
+  color: #1a1a2e;
+}
+.theme-pixelstaden .settings-confirm {
+  border-top-color: #3a4590;
+}
+.theme-pixelstaden .settings-menu .danger {
+  color: #ff9e9e;
+  font-weight: 400;
+}

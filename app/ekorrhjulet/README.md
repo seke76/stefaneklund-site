@@ -82,7 +82,7 @@ Egon följer en prioritetslista: mat, hälsa, boende, bättre jobb, kläder, bos
 ## Sparning och ljud
 
 - Spelet sparas automatiskt i webbläsaren efter varje drag (en sparning åt gången). *Fortsätt sparat spel* visas på startskärmen. Ett avslutat spel raderas.
-- Musik och ljudeffekter kan slås av och på i toppraden, och valet sparas. Musiken startar först efter ett klick, eftersom webbläsare blockerar ljud som spelas automatiskt.
+- Under **kugghjulet** längst upp till höger finns *Musik*, *Ljud* och *Nytt spel* (`_components/settings-menu.tsx`). *Nytt spel* frågar en gång till innan det pågående spelet avslutas och raderas. Ljudvalen sparas, och samma val finns i titelskärmens meny. Musiken startar först efter ett klick, eftersom webbläsare blockerar ljud som spelas automatiskt.
 
 ## Inte byggt än
 
