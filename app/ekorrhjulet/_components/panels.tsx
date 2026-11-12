@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { CLOTHES_NAME, HOURS_PER_WEEK, HOUSING, PLACES, RENT_EVERY, placeName } from '../_lib/data'
+import { CLOTHES_NAME, HOURS_PER_WEEK, PLACES, RENT_EVERY, placeName } from '../_lib/data'
 import { actionsAt, clock, genitive, jobOf, kr, lycka, progress, status, trygghet, utveckling } from '../_lib/engine'
 import type { Action, GameState, PlaceId, Player } from '../_lib/types'
 
@@ -32,23 +32,25 @@ function Bar({ label, value, color, hint, stacked }: { label: string; value: num
   )
 }
 
+const HOUSING_SHORT = { andrahand: 'Andrahand', hyresratt: 'Hyresrätt', bostadsratt: 'Bostadsrätt', soffa: 'Kompisens soffa' } as const
+
+/** When the next rent is due, for the top bar: 0 = this weekend. */
+export const rentDueIn = (s: GameState) => (RENT_EVERY - (s.week % RENT_EVERY)) % RENT_EVERY
+
 /** Goals, meters and the player's situation, next to the board. */
 export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; onEndWeek?: () => void; busy: boolean }) {
   const pr = progress(s, p)
   const job = jobOf(p)
   const era = s.settings.era
-  const rentIn = (RENT_EVERY - (s.week % RENT_EVERY)) % RENT_EVERY
   return (
     <aside className="side">
       <section className="card">
         <div className="who">
-          <span className="avatar" style={{ background: p.color }}>
-            {p.name.slice(0, 2).toUpperCase()}
-          </span>
-          <div>
-            <strong>{p.name}</strong>
-            <small>{job ? `${job.name[era]} · ${kr(p.wage)}/h` : 'Arbetssökande'}</small>
-          </div>
+          <strong className="who-name">
+            <span className="dot" style={{ background: p.color }} /> {p.name}
+          </strong>
+          <span className="job-title">{job ? `${job.name[era]} · nivå ${job.level}` : 'Arbetssökande'}</span>
+          <small>{job ? `${placeName(job.place, era)} · ${kr(p.wage)}/h` : 'Sök jobb på Jobbtorget'}</small>
         </div>
         <div className="money">
           <div>
@@ -85,15 +87,10 @@ export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; on
       <section className="card">
         <dl className="facts">
           <dt>Boende</dt>
-          <dd>{HOUSING[p.housing].name}</dd>
-          {p.housing !== 'soffa' && (
-            <>
-              <dt>Hyra</dt>
-              <dd>
-                {kr(p.rent)}/mån · {rentIn === 0 ? 'dras i helgen' : `om ${rentIn} v`}
-              </dd>
-            </>
-          )}
+          <dd>
+            {HOUSING_SHORT[p.housing]}
+            {p.housing !== 'soffa' && `, ${p.rent.toLocaleString('sv-SE')}/mån`}
+          </dd>
           <dt>Mat hemma</dt>
           <dd className={p.foodWeeks ? '' : 'warn'}>{p.foodWeeks ? `${p.foodWeeks} v` : 'Tomt!'}</dd>
           <dt>Kläder</dt>

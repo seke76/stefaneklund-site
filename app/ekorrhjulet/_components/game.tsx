@@ -7,7 +7,7 @@ import { addBest, clearGame, loadGame, loadPrefs, saveGame, savePrefs, type Pref
 import { playMusic, setTheme, sfx, stopMusic, type Sfx } from '../_lib/sound'
 import type { Action, GameState, PlaceId, PlayerSetup, Settings } from '../_lib/types'
 import Board from './board'
-import { OverDialog, PlaceDialog, Sidebar, SummaryDialog } from './panels'
+import { OverDialog, PlaceDialog, Sidebar, SummaryDialog, rentDueIn } from './panels'
 import Start from './start'
 
 export default function Game() {
@@ -175,6 +175,9 @@ export default function Game() {
       <header className="hud">
         <span className="logo">{pixel ? 'EKORRHJULET' : 'Ekorrhjulet'}</span>
         <span className="pill">Vecka {s.week}{s.settings.weekCap ? ` av ${s.settings.weekCap}` : ''}</span>
+        {p.housing !== 'soffa' && (
+          <span className={`pill${rentDueIn(s) === 0 ? ' pill-warn' : ''}`}>{rentDueIn(s) === 0 ? 'Hyran dras i helgen' : `Hyran om ${rentDueIn(s)} v`}</span>
+        )}
         <span className="pill" style={{ ['--c' as string]: p.color }}>
           <span className="dot" style={{ background: p.color }} /> {genitive(p.name)} tur
         </span>
