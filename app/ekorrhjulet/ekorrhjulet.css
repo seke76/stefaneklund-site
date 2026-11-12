@@ -1398,3 +1398,223 @@ input {
   color: #ff9e9e;
   font-weight: 400;
 }
+
+/* ---------- Life in Pixelstaden: subtle ambient animation ---------- */
+/* Everything is slow, small and repeats calmly. Positions are % of the 1280 × 880 board. */
+
+.ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+.ambient > div {
+  position: absolute;
+}
+.ambient svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Traffic: a red car clockwise in the inner lane, the bus the other way in the outer lane. */
+.amb-car {
+  transform: translate(-50%, -50%);
+}
+.amb-car-red {
+  width: 4.4%;
+  animation: amb-car-red 70s linear infinite;
+}
+@keyframes amb-car-red {
+  0% { left: 16.875%; top: 37.05%; transform: translate(-50%, -50%) rotate(0deg); }
+  36% { left: 82.81%; top: 37.05%; transform: translate(-50%, -50%) rotate(0deg); }
+  36.4% { left: 82.81%; top: 37.05%; transform: translate(-50%, -50%) rotate(90deg); }
+  49.6% { left: 82.81%; top: 74.32%; transform: translate(-50%, -50%) rotate(90deg); }
+  50% { left: 82.81%; top: 74.32%; transform: translate(-50%, -50%) rotate(180deg); }
+  86% { left: 16.875%; top: 74.32%; transform: translate(-50%, -50%) rotate(180deg); }
+  86.4% { left: 16.875%; top: 74.32%; transform: translate(-50%, -50%) rotate(270deg); }
+  99.6% { left: 16.875%; top: 37.05%; transform: translate(-50%, -50%) rotate(270deg); }
+  100% { left: 16.875%; top: 37.05%; transform: translate(-50%, -50%) rotate(360deg); }
+}
+.amb-bus {
+  width: 8.75%;
+  animation: amb-bus 110s linear infinite;
+  animation-delay: -30s;
+}
+@keyframes amb-bus {
+  0% { left: 85.6%; top: 33.41%; transform: translate(-50%, -50%) rotate(180deg); }
+  35% { left: 14.4%; top: 33.41%; transform: translate(-50%, -50%) rotate(180deg); }
+  35.4% { left: 14.4%; top: 33.41%; transform: translate(-50%, -50%) rotate(90deg); }
+  49.6% { left: 14.4%; top: 77.95%; transform: translate(-50%, -50%) rotate(90deg); }
+  50% { left: 14.4%; top: 77.95%; transform: translate(-50%, -50%) rotate(0deg); }
+  85% { left: 85.6%; top: 77.95%; transform: translate(-50%, -50%) rotate(0deg); }
+  85.4% { left: 85.6%; top: 77.95%; transform: translate(-50%, -50%) rotate(-90deg); }
+  99.6% { left: 85.6%; top: 33.41%; transform: translate(-50%, -50%) rotate(-90deg); }
+  100% { left: 85.6%; top: 33.41%; transform: translate(-50%, -50%) rotate(-180deg); }
+}
+
+/* A duck paddles across the pond and back. */
+.amb-duck {
+  width: 1.5%;
+  top: 65.6%;
+  animation: amb-duck 34s ease-in-out infinite;
+}
+@keyframes amb-duck {
+  0%, 8% { left: 70.6%; transform: scaleX(-1); }
+  45% { left: 75.6%; transform: scaleX(-1); }
+  50%, 58% { left: 75.6%; transform: scaleX(1); }
+  95% { left: 70.6%; transform: scaleX(1); }
+  100% { left: 70.6%; transform: scaleX(-1); }
+}
+
+/* Two birds cross the sky now and then (most of the time they're off the board). */
+.amb-bird {
+  width: 1.1%;
+  top: 7%;
+  animation: amb-bird 50s linear infinite;
+}
+.amb-bird-2 {
+  top: 9.5%;
+  width: 0.9%;
+  animation-delay: -1.6s;
+}
+.amb-bird svg {
+  animation: amb-flap 0.6s steps(2) infinite;
+}
+@keyframes amb-bird {
+  0% { left: -3%; }
+  30%, 100% { left: 104%; }
+}
+@keyframes amb-flap {
+  50% { transform: scaleY(-1); }
+}
+
+/* A butterfly near the flowers in the park. */
+.amb-butterfly {
+  width: 0.8%;
+  animation: amb-butterfly 16s ease-in-out infinite;
+}
+.amb-butterfly svg {
+  animation: amb-wings 0.4s steps(2) infinite;
+}
+@keyframes amb-butterfly {
+  0%, 100% { left: 25.4%; top: 66.5%; }
+  25% { left: 27.6%; top: 64.6%; }
+  50% { left: 29%; top: 67.2%; }
+  75% { left: 26.6%; top: 68.6%; }
+}
+@keyframes amb-wings {
+  50% { transform: scaleX(0.4); }
+}
+
+/* Soft cloud shadows drifting over the town. */
+.amb-cloud {
+  width: 26%;
+  height: 16%;
+  top: 18%;
+  background: rgba(16, 20, 46, 0.06);
+  clip-path: polygon(8% 30%, 30% 30%, 30% 0, 70% 0, 70% 20%, 92% 20%, 92% 60%, 100% 60%, 100% 100%, 0 100%, 0 60%, 8% 60%);
+  animation: amb-cloud 170s linear infinite;
+}
+.amb-cloud-2 {
+  top: 58%;
+  width: 20%;
+  height: 12%;
+  animation-duration: 230s;
+  animation-delay: -120s;
+}
+@keyframes amb-cloud {
+  from { left: -30%; }
+  to { left: 110%; }
+}
+
+/* Parts of the drawing itself (classes added in boards.ts). Units are the drawing's own pixels. */
+.board-art .amb-bob { animation: amb-bob 2.4s steps(1) infinite; }
+@keyframes amb-bob { 50% { transform: translateY(-3px); } }
+
+.board-art .amb-wobble,
+.board-art .amb-swing,
+.board-art .amb-sway,
+.board-art .amb-blink {
+  transform-box: fill-box;
+}
+.board-art .amb-wobble { transform-origin: 50% 100%; animation: amb-wobble 6s ease-in-out infinite; }
+@keyframes amb-wobble { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+
+.board-art .amb-lift { animation: amb-lift 5s steps(1) infinite; }
+@keyframes amb-lift { 50% { transform: translateY(-4px); } }
+
+.board-art .amb-swing { transform-origin: 50% 0; animation: amb-swing 4s ease-in-out infinite; }
+@keyframes amb-swing { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
+.board-art .amb-blink { transform-origin: 50% 50%; animation: amb-blink 7s infinite; }
+@keyframes amb-blink { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+
+.board-art .amb-lamp { animation: amb-lamp 37s steps(1) infinite; }
+@keyframes amb-lamp { 0% { fill: #ffd95a; } 55% { fill: #8fe3ff; } }
+
+.board-art .amb-glow { animation: amb-glow 3s ease-in-out infinite alternate; }
+@keyframes amb-glow { from { opacity: 1; } to { opacity: 0.75; } }
+
+.board-art .amb-shimmer { animation: amb-shimmer 3.2s steps(1) infinite; }
+@keyframes amb-shimmer { 50% { transform: translateX(4px); } }
+
+.board-art .amb-sway { transform-origin: 50% 100%; animation: amb-sway 7s ease-in-out infinite; }
+@keyframes amb-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
+
+.board-art .amb-twinkle { animation: amb-twinkle 9s infinite; }
+@keyframes amb-twinkle { 0%, 44%, 56%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Waiting players stroll clockwise along the pavement around town. */
+.wanderer {
+  position: absolute;
+  width: 3.6%;
+  z-index: 3;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  left: 13.7%;
+  top: 30.9%;
+  transform: translate(-50%, -88%);
+  animation: amb-stroll 140s linear infinite;
+}
+.wanderer .token-name {
+  opacity: 0.85;
+  font-size: max(9px, 1cqw);
+}
+.wanderer-face {
+  width: 100%;
+  animation: amb-face 140s linear infinite;
+}
+.wanderer-hop {
+  animation: amb-hop 0.5s steps(1) infinite;
+}
+@keyframes amb-stroll {
+  0% { left: 13.7%; top: 30.9%; }
+  33.9% { left: 86.3%; top: 30.9%; }
+  50% { left: 86.3%; top: 80.9%; }
+  83.9% { left: 13.7%; top: 80.9%; }
+  100% { left: 13.7%; top: 30.9%; }
+}
+@keyframes amb-face {
+  0%, 49.9% { transform: scaleX(-1); }
+  50%, 100% { transform: scaleX(1); }
+}
+@keyframes amb-hop {
+  50% { transform: translateY(-6%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient,
+  .ambient *,
+  .board-art [class*='amb-'],
+  .wanderer,
+  .wanderer * {
+    animation: none !important;
+  }
+  .ambient {
+    display: none;
+  }
+}

@@ -18,7 +18,7 @@ export function birgittaTip(s: GameState): Tip {
   const urgent = (text: string): Tip => ({ text, urgent: true })
   const hint = (text: string): Tip => ({ text, urgent: false })
 
-  if (p.hoursLeft <= 0) return hint('Veckan är slut. Tryck på Avsluta veckan så räknar vi ihop helgen.')
+  if (p.hoursLeft < 0.5) return hint('Veckan är slut! Nu blir det helg.')
 
   // Survival first.
   if (p.health < 25) return urgent('Du ser helt slut ut! Gå hem till Lägenheten och sov, annars blir du sjuk och förlorar en hel vecka.')

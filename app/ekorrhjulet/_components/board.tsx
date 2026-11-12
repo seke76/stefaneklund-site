@@ -137,25 +137,102 @@ export default function Board(props: BoardProps) {
           />
         )
       })}
+      {board === 'pixelstaden' && <Ambient />}
       {players.map((p) => {
         const active = p.id === activeId
-        const [x, y] = active && pos ? pos : STAND[p.location]
-        // Waiting players stand beside the road point, alternating left and right of it.
-        const k = players.filter((q) => q.id !== activeId && q.id < p.id).length
-        const dx = active ? 0 : (k % 2 ? 1 : -1) * (62 + 34 * Math.floor(k / 2))
+        if (!active) {
+          // Waiting players stroll slowly along the pavement around town, spread out along the loop.
+          const k = players.filter((q) => q.id !== activeId && q.id < p.id).length
+          const delay = { animationDelay: `-${20 + k * 47}s` }
+          return (
+            <div key={p.id} className="wanderer" style={delay} aria-hidden="true">
+              <div className="wanderer-face" style={delay}>
+                <div className="wanderer-hop">
+                  <Squirrel color={p.color} pixel={board === 'pixelstaden'} />
+                </div>
+              </div>
+              <span className="token-name">{p.name}</span>
+            </div>
+          )
+        }
+        const [x, y] = pos ?? STAND[p.location]
         return (
-          <div
-            key={p.id}
-            className={`token${active ? ' token-active' : ''}`}
-            style={{ left: pct(x + dx, W), top: pct(y + (active ? 0 : 22), H), ['--c' as string]: p.color }}
-            aria-hidden="true"
-          >
-            {active ? <Squirrel color={p.color} pixel={board === 'pixelstaden'} /> : <span className="pin">{p.name.slice(0, 2).toUpperCase()}</span>}
-            {active && <span className="token-name">{p.name}</span>}
+          <div key={p.id} className="token token-active" style={{ left: pct(x, W), top: pct(y, H), ['--c' as string]: p.color }} aria-hidden="true">
+            <Squirrel color={p.color} pixel={board === 'pixelstaden'} />
+            <span className="token-name">{p.name}</span>
           </div>
         )
       })}
       <div className="board-center">{center}</div>
+    </div>
+  )
+}
+
+/*
+ * Quiet life in Pixelstaden: traffic, a duck, birds, a butterfly and drifting cloud shadows.
+ * Positions are in % of the 1280 × 880 board; the motion itself is CSS (ekorrhjulet.css, "amb-").
+ */
+function Ambient() {
+  return (
+    <div className="ambient" aria-hidden="true">
+      <div className="amb-cloud" />
+      <div className="amb-cloud amb-cloud-2" />
+      <div className="amb-car amb-car-red">
+        <svg viewBox="0 0 56 32" shapeRendering="crispEdges">
+          <rect width="56" height="32" fill="#1A1A2E" />
+          <rect x="4" y="4" width="48" height="24" fill="#E04848" />
+          <rect x="36" y="6" width="8" height="20" fill="#8FE3FF" />
+          <rect x="10" y="6" width="6" height="20" fill="#8FE3FF" />
+          <rect x="52" y="6" width="4" height="4" fill="#FFD95A" />
+          <rect x="52" y="22" width="4" height="4" fill="#FFD95A" />
+        </svg>
+      </div>
+      <div className="amb-car amb-bus">
+        <svg viewBox="0 0 112 40" shapeRendering="crispEdges">
+          <rect width="112" height="40" fill="#1A1A2E" />
+          <rect x="4" y="4" width="104" height="32" fill="#F2C94C" />
+          <rect x="4" y="22" width="104" height="6" fill="#E04848" />
+          {[12, 28, 44, 60, 76, 92].map((x) => (
+            <rect key={x} x={x} y="8" width="10" height="10" fill="#8FE3FF" />
+          ))}
+          <rect x="108" y="6" width="4" height="4" fill="#FFD95A" />
+          <rect x="108" y="30" width="4" height="4" fill="#FFD95A" />
+        </svg>
+      </div>
+      <div className="amb-duck">
+        <svg viewBox="0 0 12 8" shapeRendering="crispEdges">
+          <rect x="2" y="3" width="8" height="4" fill="#FFFFFF" />
+          <rect x="1" y="1" width="3" height="3" fill="#FFFFFF" />
+          <rect x="0" y="2" width="1" height="1" fill="#F2A23B" />
+          <rect x="2" y="1" width="1" height="1" fill="#1A1A2E" />
+          <rect x="9" y="3" width="2" height="2" fill="#FFFFFF" />
+        </svg>
+      </div>
+      <div className="amb-bird">
+        <svg viewBox="0 0 10 4" shapeRendering="crispEdges">
+          <rect x="0" y="0" width="2" height="2" fill="#1A1A2E" />
+          <rect x="2" y="2" width="2" height="2" fill="#1A1A2E" />
+          <rect x="4" y="1" width="2" height="2" fill="#1A1A2E" />
+          <rect x="6" y="2" width="2" height="2" fill="#1A1A2E" />
+          <rect x="8" y="0" width="2" height="2" fill="#1A1A2E" />
+        </svg>
+      </div>
+      <div className="amb-bird amb-bird-2">
+        <svg viewBox="0 0 10 4" shapeRendering="crispEdges">
+          <rect x="0" y="0" width="2" height="2" fill="#1A1A2E" />
+          <rect x="2" y="2" width="2" height="2" fill="#1A1A2E" />
+          <rect x="4" y="1" width="2" height="2" fill="#1A1A2E" />
+          <rect x="6" y="2" width="2" height="2" fill="#1A1A2E" />
+          <rect x="8" y="0" width="2" height="2" fill="#1A1A2E" />
+        </svg>
+      </div>
+      <div className="amb-butterfly">
+        <svg viewBox="0 0 6 4" shapeRendering="crispEdges">
+          <rect x="0" y="0" width="2" height="3" fill="#F07B9A" />
+          <rect x="4" y="0" width="2" height="3" fill="#F07B9A" />
+          <rect x="2" y="1" width="2" height="3" fill="#1A1A2E" />
+        </svg>
+      </div>
     </div>
   )
 }

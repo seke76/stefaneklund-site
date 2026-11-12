@@ -94,6 +94,21 @@ export default function Game() {
     [play],
   )
 
+  // When the week's hours are used up, go straight to the weekend (after a short pause to read the last result).
+  useEffect(() => {
+    if (!s || s.summary || s.over || aiBusy || walking) return
+    const p = current(s)
+    if (p.ai || p.hoursLeft >= 0.5) return
+    const t = setTimeout(() => {
+      setOpenPlace(null)
+      const next = endTurn(s)
+      setS(next)
+      play(next.over ? 'win' : 'week')
+      toast(next.log)
+    }, 1400)
+    return () => clearTimeout(t)
+  }, [s, walking, aiBusy, play, toast])
+
   if (!s) return <Start saved={saved} prefs={prefs} onTogglePref={togglePref} onContinue={onContinue} onStart={onStart} />
 
   const p = current(s)
@@ -139,10 +154,7 @@ export default function Game() {
     else if (a.id.startsWith('work')) play('coin')
     else if (a.cost > 0 || a.id.startsWith('inst')) play('buy')
     else play('click')
-    if (after.hoursLeft <= 0) {
-      setOpenPlace(null)
-      toast(['Veckan är slut. Dags att gå hem.'])
-    }
+    if (after.hoursLeft < 0.5) toast(['Veckan är slut! Nu blir det helg.'])
   }
 
   const endWeek = () => {

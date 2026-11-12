@@ -29,7 +29,7 @@ Spelet har en **egen root-layout** (`layout.tsx`, `ekorrhjulet.css`) och påverk
 | `_components/game.tsx` | Skärmarna och spelflödet. |
 | `_components/start.tsx` | Titelskärmen i arkadstil: meny, Bästa liv, Hur man spelar och inställningarna för ett nytt spel. |
 | `_components/board.tsx` | Kartan: klickytor över byggnaderna, spelpjäser som går längs ringvägen och mittpanelen. |
-| `_components/boards.ts` | Kartornas grafik (SVG), genererad från designytan: Småstaden = A2, Pixelstaden = B2. |
+| `_components/boards.ts` | Kartornas grafik (SVG), genererad från designytan: Småstaden = A2, Pixelstaden = B2. I Pixelstaden har delar som ska röra sig fått klasser `amb-*`, och de parkerade bilarna är borttagna. |
 | `_components/panels.tsx` | Sidopanelen, platsfönstret, veckosammanfattningen och slutrutan. |
 
 ## Spelflöde
@@ -50,6 +50,7 @@ flowchart LR
 - **Spelarrutan** högst upp till höger visar namn, jobb och timlön samt var man jobbar (*Jobbar på Kvickköp*) (eller *Arbetssökande*). Toppraden visar veckan, när hyran dras nästa gång (röd när den dras i helgen) och vems tur det är.
 - **Skärmen på datorn** är exakt lika hög som fönstret och skrollar aldrig: kartan blir så stor som får plats på höjden och bredden, och sidopanelen är kompakt (blir skärmen lägre än cirka 750 pixlar skrollar bara panelen). I Pixelstaden ligger knappen *Avsluta veckan* i Birgittas ruta i parken, se *Birgitta* nedan. På mobilen staplas kartan och panelen under varandra.
 - **Veckan:** spelaren klickar på en byggnad. Pjäsen går dit längs vägen (restiden dras), och platsens fönster öppnas med allt man kan göra där. Varje knapp visar tid, pris och effekt, och det som inte går visar varför. Platsfönstret är brett med knapparna i ett rutnät och skrollar inte; *Gå ut på gatan* syns alltid. Kurser och prylar visas som ett kort med två val: *Betala* eller *CSN-lån*, *Köp* eller *Avbetala*.
+- **När timmarna tar slut** (mindre än en halvtimme kvar) går spelet automatiskt till helgen efter en kort paus. Man kan också avsluta veckan tidigare själv.
 - **Helgen:** en sammanfattning per spelare med lön, utgifter, helgaktivitet, veckans händelse och ställningen.
 
 ## Regler i korthet
@@ -63,6 +64,17 @@ flowchart LR
 - **Ekonomi:** kontanter, bank (sparränta), indexfond, teknikaktier (kan krascha), privatlån, CSN och avbetalning. 1994 har högre räntor och priser på cirka 60 % av nutidens.
 - **Elakheter:** Långfingrade Leffe snor kontanter utanför banken och prylar ur andrahandslägenheter (hemförsäkring skyddar). Svält, utbrändhet, sjukdom, uppbrott, varsel under kris och hyreshöjningar finns också. Svårigheten ändrar sannolikheterna (Snäll ×0,5, Elak ×1,5).
 - **Helgen:** kontanter i fickan äts av en slumpad helgaktivitet. Pengar på banken är säkra.
+
+## Liv i staden
+
+Pixelstaden rör sig lite hela tiden, men lugnt och i små steg så att det inte stör (`Ambient` i `_components/board.tsx` och avsnittet *Life in Pixelstaden* i `ekorrhjulet.css`):
+
+- **Trafik:** en röd bil kör medurs i inre filen och bussen moturs i yttre filen.
+- **Natur:** ankan simmar fram och tillbaka i dammen, två fåglar flyger förbi ibland, en fjäril fladdrar vid blommorna, blommorna glimmar, dammen skimrar, träden vajar och molnskuggor glider över staden.
+- **Husen:** utropstecknet på Jobbtorget studsar, ekollonet på banken gungar, hanteln på Gymmet lyfts, pubskylten svänger, tv:n på Prylpalatset blinkar, pubens fönster lyser varmt och lampor tänds och släcks i Lägenheten och på Bostadsbolaget.
+- **De som väntar på sin tur** (till exempel Egon) är små ekorrar som strövar medurs längs trottoaren runt staden. Den som spelar står på vägen som vanligt.
+
+Har datorn inställningen *minska rörelse* (`prefers-reduced-motion`) stängs allt detta av.
 
 ## Birgitta
 
