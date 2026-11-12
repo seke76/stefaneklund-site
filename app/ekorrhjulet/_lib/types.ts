@@ -137,5 +137,6 @@ export type Action = {
   cost: number // kr, positive = pay, negative = earn
   note?: string // effects shown under the button
   disabled?: string // why it can't be done right now
+  short?: string // button text when shown as one of two choices on a card (Betala / CSN-lån, Köp / Avbetala)
   group?: string
 }

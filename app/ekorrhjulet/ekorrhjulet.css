@@ -1208,3 +1208,90 @@ input {
     row-gap: 1px;
   }
 }
+
+/* Place dialog: wide, actions in a grid, header and footer always visible. */
+.dialog.place {
+  width: min(1180px, 100%);
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dialog.place .actions {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto; /* last resort on very small windows; the footer stays put */
+  margin-top: 6px;
+}
+.dialog.place .dialog-foot {
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 8px;
+}
+.action-grid .action {
+  margin-bottom: 0;
+  min-height: 0;
+  align-content: start;
+}
+.action-group h3 {
+  margin: 10px 0 6px;
+}
+.action-group:first-child h3 {
+  margin-top: 0;
+}
+.action-pair {
+  cursor: default;
+}
+.action-pair.is-disabled {
+  background: #f3f1f5;
+  color: #6b6475;
+}
+.pair {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 4px;
+}
+.pair button {
+  min-height: 40px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: #fff6d5;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pair button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.theme-pixelstaden .action-pair.is-disabled {
+  background: #2a2f52;
+  color: #9aa3cf;
+}
+.theme-pixelstaden .pair button {
+  border-radius: 0;
+  border: 3px solid #fff;
+  background: #2d3a8c;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 400;
+}
+.theme-pixelstaden .pair button:hover:not(:disabled) {
+  background: #f2c94c;
+  color: #1a1a2e;
+}
+.theme-pixelstaden .dialog.place .action-label,
+.theme-pixelstaden .dialog.place .action-cost {
+  font-size: 22px;
+}
+.theme-pixelstaden .dialog.place .action small {
+  font-size: 19px;
+}
+.theme-pixelstaden .dialog.place .action {
+  padding: 6px 12px;
+}

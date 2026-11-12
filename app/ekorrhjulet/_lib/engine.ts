@@ -344,7 +344,7 @@ export function actionsAt(s: GameState): Action[] {
             ? 'Du läser redan en kurs'
             : undefined
         const fee = price(s, c.fee)
-        add({ id: `enroll:${c.id}`, group: 'Kurser', label: `${c.name} (${c.hours} h)`, hours: 1, cost: fee, note: `Avgift ${kr(fee)}`, disabled: blocked })
+        add({ id: `enroll:${c.id}`, group: 'Kurser', label: `${c.name} (${c.hours} h)`, hours: 1, cost: fee, note: `Avgift ${kr(fee)}`, disabled: blocked, short: `Betala ${kr(fee)}` })
         add({
           id: `csn:${c.id}`,
           group: 'Kurser',
@@ -353,6 +353,7 @@ export function actionsAt(s: GameState): Action[] {
           cost: 0,
           note: `Lånar avgiften + ${kr(price(s, 1200))}/vecka när du pluggar 20 h`,
           disabled: blocked,
+          short: 'CSN-lån',
         })
       }
       break
@@ -403,10 +404,10 @@ export function actionsAt(s: GameState): Action[] {
         const effects = [`Status +${it.status}`, it.happy ? `trivsel +${it.happy}` : '', it.rest ? 'bättre vila' : '', it.travel ? 'kortare restid' : '']
           .filter(Boolean)
           .join(', ')
-        add({ id: `buy:${it.id}`, group: 'Köp', label: `${it.name}`, hours: 0.5, cost: pr, note: effects, disabled: owned })
+        add({ id: `buy:${it.id}`, group: 'Köp', label: `${it.name}`, hours: 0.5, cost: pr, note: effects, disabled: owned, short: `Köp ${kr(pr)}` })
         if (p.location === 'pryl') {
           const weekly = round((pr * 1.2) / 24 + price(s, 39))
-          add({ id: `inst:${it.id}`, group: 'Avbetalning', label: `${it.name} på avbetalning`, hours: 0.5, cost: 0, note: `0 kr idag, ${kr(weekly)}/vecka i 24 veckor`, disabled: owned })
+          add({ id: `inst:${it.id}`, group: 'Avbetalning', label: `${it.name} på avbetalning`, hours: 0.5, cost: 0, note: `0 kr idag, ${kr(weekly)}/vecka i 24 veckor`, disabled: owned, short: `Avbetala ${kr(weekly)}/v` })
         }
       }
       break

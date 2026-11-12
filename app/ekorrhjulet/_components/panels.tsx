@@ -138,9 +138,17 @@ function useFocusOnOpen() {
 export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; place: PlaceId; onAction: (a: Action) => void; onClose: () => void }) {
   const ref = useFocusOnOpen()
   const info = PLACES.find((x) => x.id === place)!
-  const actions = actionsAt(s)
-  const groups = [...new Set(actions.map((a) => a.group ?? ''))]
   const p = s.players[s.turn]
+  // Pair "pay" and "borrow" choices for the same thing into one card (course + CSN, item + instalments).
+  const cards: { group: string; main: Action; alt?: Action }[] = []
+  for (const a of actionsAt(s)) {
+    const [verb, arg] = a.id.split(':')
+    const partner = verb === 'csn' ? `enroll:${arg}` : verb === 'inst' ? `buy:${arg}` : null
+    const card = partner && cards.find((c) => c.main.id === partner)
+    if (card) card.alt = a
+    else cards.push({ group: a.group ?? '', main: a })
+  }
+  const groups = [...new Set(cards.map((c) => c.group))]
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -148,7 +156,7 @@ export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; pla
   }, [onClose])
   return (
     <div className="overlay" onClick={onClose}>
-      <div className="dialog card" role="dialog" aria-modal="true" aria-labelledby="place-title" tabIndex={-1} ref={ref} onClick={(e) => e.stopPropagation()}>
+      <div className="dialog place card" role="dialog" aria-modal="true" aria-labelledby="place-title" tabIndex={-1} ref={ref} onClick={(e) => e.stopPropagation()}>
         <header className="dialog-head">
           <div>
             <h2 id="place-title">{placeName(place, s.settings.era)}</h2>
@@ -161,23 +169,46 @@ export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; pla
         </header>
         <div className="actions">
           {groups.map((g) => (
-            <div key={g} className="action-group">
+            <section key={g} className="action-group">
               {g && <h3>{g}</h3>}
-              {actions
-                .filter((a) => (a.group ?? '') === g)
-                .map((a) => (
-                  <button key={a.id} type="button" className="action" disabled={!!a.disabled} onClick={() => onAction(a)}>
-                    <span className="action-label">{a.label}</span>
-                    <span className="action-cost">
-                      {a.hours > 0 && <span>{a.hours} h</span>}
-                      {a.cost > 0 && <span>{kr(a.cost)}</span>}
-                    </span>
-                    {(a.disabled || a.note) && <small className={a.disabled ? 'why' : ''}>{a.disabled ?? a.note}</small>}
-                  </button>
-                ))}
-            </div>
+              <div className="action-grid">
+                {cards
+                  .filter((c) => c.group === g)
+                  .map(({ main, alt }) =>
+                    alt ? (
+                      <div key={main.id} className={`action action-pair${main.disabled && alt.disabled ? ' is-disabled' : ''}`}>
+                        <span className="action-label">{main.label}</span>
+                        <span className="action-cost">{main.hours > 0 && <span>{main.hours} h</span>}</span>
+                        <small className={main.disabled && alt.disabled ? 'why' : ''}>
+                          {main.disabled && main.disabled === alt.disabled
+                            ? main.disabled
+                            : [main.note, main.disabled?.toLowerCase(), alt.disabled && `${alt.short?.split(' ')[0].toLowerCase()}: ${alt.disabled.toLowerCase()}`]
+                                .filter(Boolean)
+                                .join(' · ')}
+                        </small>
+                        <div className="pair">
+                          {[main, alt].map((a) => (
+                            <button key={a.id} type="button" disabled={!!a.disabled} onClick={() => onAction(a)} title={a.disabled ?? a.note}>
+                              {a.short ?? a.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <button key={main.id} type="button" className="action" disabled={!!main.disabled} onClick={() => onAction(main)}>
+                        <span className="action-label">{main.label}</span>
+                        <span className="action-cost">
+                          {main.hours > 0 && <span>{main.hours} h</span>}
+                          {main.cost > 0 && <span>{kr(main.cost)}</span>}
+                        </span>
+                        {(main.disabled || main.note) && <small className={main.disabled ? 'why' : ''}>{main.disabled ?? main.note}</small>}
+                      </button>
+                    ),
+                  )}
+              </div>
+            </section>
           ))}
-          {!actions.length && <p>Här finns inget att göra just nu.</p>}
+          {!cards.length && <p>Här finns inget att göra just nu.</p>}
         </div>
         <footer className="dialog-foot">
           <button type="button" className="btn" onClick={onClose}>
