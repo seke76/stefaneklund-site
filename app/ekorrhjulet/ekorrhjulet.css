@@ -1618,3 +1618,70 @@ input {
     display: none;
   }
 }
+
+/* On desktop the place window covers only the board, so the sidebar's bars stay visible while you act. */
+@media (min-width: 961px) {
+  .board-wrap > .overlay {
+    position: absolute;
+    inset: 0;
+    padding: 8px;
+    background: rgba(30, 24, 45, 0.35);
+    align-items: flex-start;
+  }
+  .board-wrap > .overlay .dialog.place {
+    max-height: 100%;
+  }
+  .board-wrap > .toasts {
+    z-index: 25;
+  }
+}
+
+/* "+4" / "−2" next to a meter that just moved. */
+.bar-row {
+  position: relative;
+}
+.bar-delta {
+  position: absolute;
+  right: 3.4em;
+  top: -0.35em;
+  font-weight: 700;
+  pointer-events: none;
+  animation: bar-delta 2.4s ease-out forwards;
+}
+.bar-delta.up {
+  color: #2f8f5b;
+}
+.bar-delta.down {
+  color: #c0392b;
+}
+.theme-pixelstaden .bar-delta {
+  font-weight: 400;
+  text-shadow: 2px 2px 0 #000;
+}
+.theme-pixelstaden .bar-delta.up {
+  color: #8ccb4f;
+}
+.theme-pixelstaden .bar-delta.down {
+  color: #ff7a7a;
+}
+@keyframes bar-delta {
+  0% { opacity: 0; transform: translateY(4px); }
+  12% { opacity: 1; transform: translateY(0); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+.bar-track.bar-changed {
+  box-shadow: 0 0 0 2px #f2c94c;
+}
+.bar-fill {
+  transition: width 0.6s ease-out;
+}
+.theme-pixelstaden .bar-delta {
+  font-size: 24px;
+  line-height: 1;
+  top: -0.25em;
+  right: 3.2em;
+  padding: 0 4px;
+  background: #1a1a2e;
+  border: 2px solid currentColor;
+}

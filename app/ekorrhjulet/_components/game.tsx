@@ -236,6 +236,7 @@ export default function Game() {
               )
             }
           />
+          {openPlace && <PlaceDialog s={s} place={openPlace} onAction={act} onClose={() => setOpenPlace(null)} />}
           <div className="toasts" aria-live="polite">
             {toasts.map((t) => (
               <div key={t.id} className="toast">
@@ -244,10 +245,9 @@ export default function Game() {
             ))}
           </div>
         </div>
-        <Sidebar s={s} p={p} onEndWeek={pixel ? undefined : endWeek} busy={busy} />
+        <Sidebar key={p.id} s={s} p={p} onEndWeek={pixel ? undefined : endWeek} busy={busy} />
       </div>
 
-      {openPlace && <PlaceDialog s={s} place={openPlace} onAction={act} onClose={() => setOpenPlace(null)} />}
       {s.summary && <SummaryDialog s={s} onNext={closeSummary} />}
       {!s.summary && s.over && <OverDialog s={s} onNew={newGameClick} />}
     </div>

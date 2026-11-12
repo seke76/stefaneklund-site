@@ -1,15 +1,31 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CLOTHES_NAME, HOURS_PER_WEEK, PLACES, RENT_EVERY, placeName } from '../_lib/data'
 import { actionsAt, clock, genitive, jobOf, kr, lycka, progress, status, trygghet, utveckling } from '../_lib/engine'
 import type { Action, GameState, PlaceId, Player } from '../_lib/types'
 
+/** Shows how much a meter just moved, for a couple of seconds. The sidebar is re-mounted per player. */
+function useDelta(v: number) {
+  const prev = useRef(v)
+  const [d, setD] = useState<{ n: number; key: number } | null>(null)
+  useEffect(() => {
+    const n = v - prev.current
+    prev.current = v
+    if (!n) return
+    setD({ n, key: Date.now() })
+    const t = setTimeout(() => setD(null), 2400)
+    return () => clearTimeout(t)
+  }, [v])
+  return d
+}
+
 /** A meter. In the sidebar it's one compact row (label · bar · value); `stacked` puts the label above. */
 function Bar({ label, value, color, hint, stacked }: { label: string; value: number; color: string; hint?: string; stacked?: boolean }) {
   const v = Math.round(value)
+  const delta = useDelta(v)
   const track = (
-    <div className="bar-track" role="progressbar" aria-label={label} aria-valuenow={v} aria-valuemin={0} aria-valuemax={100}>
+    <div className={`bar-track${delta ? ' bar-changed' : ''}`} role="progressbar" aria-label={label} aria-valuenow={v} aria-valuemin={0} aria-valuemax={100}>
       <div className="bar-fill" style={{ width: `${Math.max(0, Math.min(100, v))}%`, background: color }} />
     </div>
   )
@@ -28,6 +44,11 @@ function Bar({ label, value, color, hint, stacked }: { label: string; value: num
       <span className="bar-label">{label}</span>
       {track}
       <span className="bar-value">{hint ?? `${v} %`}</span>
+      {delta && (
+        <span key={delta.key} className={`bar-delta ${delta.n > 0 ? 'up' : 'down'}`} aria-hidden="true">
+          {delta.n > 0 ? `+${delta.n}` : `−${-delta.n}`}
+        </span>
+      )}
     </div>
   )
 }
