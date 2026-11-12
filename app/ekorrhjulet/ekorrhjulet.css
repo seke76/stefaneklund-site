@@ -1685,3 +1685,30 @@ input {
   background: #1a1a2e;
   border: 2px solid currentColor;
 }
+
+.settings-note {
+  margin: 2px 12px 6px;
+  font-size: 0.85em;
+  opacity: 0.85;
+  max-width: 260px;
+}
+.settings-note.warn {
+  color: #a3360f;
+  opacity: 1;
+}
+.theme-pixelstaden .settings-note.warn {
+  color: #ff9e9e;
+}
+.settings-sep {
+  height: 2px;
+  margin: 4px 0;
+  background: #e6e1ee;
+}
+.theme-pixelstaden .settings-sep {
+  background: #3a4590;
+}
+.arcade-error {
+  margin: 4px 0 0;
+  color: #ff9e9e;
+  font-size: 24px;
+}

@@ -94,8 +94,14 @@ Egon följer en prioritetslista: mat, hälsa, boende, bättre jobb, kläder, bos
 
 ## Sparning och ljud
 
-- Spelet sparas automatiskt i webbläsaren efter varje drag (en sparning åt gången). *Fortsätt sparat spel* visas på startskärmen. Ett avslutat spel raderas.
-- Under **kugghjulet** längst upp till höger finns *Musik*, *Ljud* och *Nytt spel* (`_components/settings-menu.tsx`). *Nytt spel* frågar en gång till innan det pågående spelet avslutas och raderas. Ljudvalen sparas, och samma val finns i titelskärmens meny. Musiken startar först efter ett klick, eftersom webbläsare blockerar ljud som spelas automatiskt.
+**Spelet sparas i webbläsaren** (`localStorage`, se `_lib/save.ts`). Ingenting skickas till någon server och det finns inga konton.
+
+- **Automatiskt:** efter varje drag sparas hela spelet. Stänger man fliken och kommer tillbaka finns *Fortsätt (vecka X)* på titelskärmen.
+- **Spara spelet** (i kugghjulsmenyn) sparar direkt och bekräftar *Sparat i den här webbläsaren*. Tillåter inte webbläsaren sparning (till exempel privat läge eller blockerad lagring) står det i stället att man ska ladda ner en sparfil.
+- **Spara och avsluta** sparar och går till titelskärmen. Spelet kan fortsättas därifrån.
+- **Ladda ner sparfil** ger en fil (`ekorrhjulet-vecka-X.json`). Med *Ladda sparfil* på titelskärmen kan den läsas in igen, även i en annan webbläsare eller på en annan dator. Filen kontrolleras först, och en felaktig fil ger ett meddelande i stället för att starta.
+- **Begränsningar:** sparningen finns bara i den webbläsare och på den enhet där man spelar. Rensar man webbplatsdata, eller spelar i privat läge, försvinner den. Det finns en sparplats: ett nytt spel ersätter den. *Nytt spel* frågar först och raderar sedan det sparade spelet. Ett avslutat spel raderas.
+- **Ljud:** under kugghjulet finns *Musik*, *Ljud* och *Nytt spel* (`_components/settings-menu.tsx`). Ljudvalen sparas, och samma val finns i titelskärmens meny. Musiken startar först efter ett klick, eftersom webbläsare blockerar ljud som spelas automatiskt.
 
 ## Inte byggt än
 

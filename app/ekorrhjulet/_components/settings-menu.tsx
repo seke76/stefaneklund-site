@@ -3,15 +3,29 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Prefs } from '../_lib/save'
 
-/** The cog in the top bar: music, sound effects and "Nytt spel" (which asks once more before ending the game). */
-export default function SettingsMenu({ prefs, onToggle, onNewGame }: { prefs: Prefs; onToggle: (k: keyof Prefs) => void; onNewGame: () => void }) {
+type Props = {
+  prefs: Prefs
+  onToggle: (k: keyof Prefs) => void
+  onSave: () => boolean
+  onSaveAndQuit: () => void
+  onDownload: () => void
+  onNewGame: () => void
+}
+
+/**
+ * The cog in the top bar. The game also saves itself in the browser after every move; "Spara spelet"
+ * does it right away and says so. "Nytt spel" asks once more before ending the game.
+ */
+export default function SettingsMenu({ prefs, onToggle, onSave, onSaveAndQuit, onDownload, onNewGame }: Props) {
   const [open, setOpen] = useState(false)
   const [confirm, setConfirm] = useState(false)
+  const [saved, setSaved] = useState<null | boolean>(null)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) {
       setConfirm(false)
+      setSaved(null)
       return
     }
     const onDown = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false)
@@ -26,7 +40,7 @@ export default function SettingsMenu({ prefs, onToggle, onNewGame }: { prefs: Pr
 
   return (
     <div className="settings" ref={ref}>
-      <button type="button" className="icon-btn cog" aria-label="Inställningar" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button type="button" className="icon-btn cog" aria-label="Meny" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(!open)}>
         <svg viewBox="0 0 16 16" width="24" height="24" shapeRendering="crispEdges" aria-hidden="true">
           <path
             fill="currentColor"
@@ -36,19 +50,35 @@ export default function SettingsMenu({ prefs, onToggle, onNewGame }: { prefs: Pr
       </button>
       {open && (
         <div className="settings-menu" role="menu">
+          <button type="button" role="menuitem" onClick={() => setSaved(onSave())}>
+            Spara spelet
+          </button>
+          {saved !== null && (
+            <p className={`settings-note${saved ? '' : ' warn'}`} role="status">
+              {saved ? 'Sparat i den här webbläsaren.' : 'Webbläsaren tillåter inte sparning (privat läge?). Ladda ner en sparfil i stället.'}
+            </p>
+          )}
+          <button type="button" role="menuitem" onClick={onSaveAndQuit}>
+            Spara och avsluta
+          </button>
+          <button type="button" role="menuitem" onClick={onDownload}>
+            Ladda ner sparfil
+          </button>
+          <div className="settings-sep" />
           <button type="button" role="menuitemcheckbox" aria-checked={prefs.music} onClick={() => onToggle('music')}>
             Musik: {prefs.music ? 'PÅ' : 'AV'}
           </button>
           <button type="button" role="menuitemcheckbox" aria-checked={prefs.sfx} onClick={() => onToggle('sfx')}>
             Ljud: {prefs.sfx ? 'PÅ' : 'AV'}
           </button>
+          <div className="settings-sep" />
           {!confirm ? (
             <button type="button" role="menuitem" onClick={() => setConfirm(true)}>
               Nytt spel…
             </button>
           ) : (
             <div className="settings-confirm">
-              <p>Avsluta spelet? Det kan inte fortsättas sen.</p>
+              <p>Avsluta spelet? Det sparade spelet raderas.</p>
               <button type="button" role="menuitem" className="danger" onClick={onNewGame}>
                 Ja, avsluta
               </button>
@@ -57,6 +87,7 @@ export default function SettingsMenu({ prefs, onToggle, onNewGame }: { prefs: Pr
               </button>
             </div>
           )}
+          <p className="settings-note">Spelet sparas också automatiskt efter varje drag.</p>
         </div>
       )}
     </div>

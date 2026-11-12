@@ -14,12 +14,41 @@ export function loadGame(): GameState | null {
   }
 }
 
-export function saveGame(s: GameState) {
+/** Saves to this browser. Returns false if the browser refused (private mode, storage full or blocked). */
+export function saveGame(s: GameState): boolean {
   try {
     if (s.over) localStorage.removeItem(KEY)
     else localStorage.setItem(KEY, JSON.stringify(s))
+    return true
   } catch {
-    /* private mode or full storage: the game still works, it just isn't saved */
+    return false // the game still works, it just isn't saved
+  }
+}
+
+/** Downloads the game as a file, to keep it or move it to another browser or computer. */
+export function downloadSave(s: GameState) {
+  const blob = new Blob([JSON.stringify(s)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `ekorrhjulet-vecka-${s.week}.json`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+/** Reads a save file. Returns the game, or an error message in Swedish. */
+export function parseSave(text: string): GameState | string {
+  try {
+    const s = JSON.parse(text) as GameState
+    const ok =
+      s && s.version === 1 && typeof s.week === 'number' && Array.isArray(s.players) && s.players.length > 0 && !!s.settings && typeof s.turn === 'number'
+    if (!ok) return 'Det där ser inte ut som en sparfil från Ekorrhjulet.'
+    if (s.over) return 'Det spelet är redan slut.'
+    return s
+  } catch {
+    return 'Filen gick inte att läsa.'
   }
 }
 

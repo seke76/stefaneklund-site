@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { playAiTurn } from '../_lib/ai'
 import { clock, current, endTurn, genitive, moveTo, newGame, perform, progress, travelHours } from '../_lib/engine'
-import { addBest, clearGame, loadGame, loadPrefs, saveGame, savePrefs, type Prefs } from '../_lib/save'
+import { addBest, clearGame, downloadSave, loadGame, loadPrefs, parseSave, saveGame, savePrefs, type Prefs } from '../_lib/save'
 import { birgittaTip } from '../_lib/tips'
 import { playMusic, setTheme, sfx, stopMusic, type Sfx } from '../_lib/sound'
 import type { Action, GameState, PlaceId, PlayerSetup, Settings } from '../_lib/types'
@@ -73,6 +73,14 @@ export default function Game() {
     if (g) begin(g)
   }
 
+  const onImport = async (file: File) => {
+    const g = parseSave(await file.text())
+    if (typeof g === 'string') return g
+    saveGame(g)
+    begin(g)
+    return null
+  }
+
   const togglePref = (k: keyof Prefs) => {
     const next = { ...prefs, [k]: !prefs[k] }
     setPrefs(next)
@@ -109,7 +117,7 @@ export default function Game() {
     return () => clearTimeout(t)
   }, [s, walking, aiBusy, play, toast])
 
-  if (!s) return <Start saved={saved} prefs={prefs} onTogglePref={togglePref} onContinue={onContinue} onStart={onStart} />
+  if (!s) return <Start saved={saved} prefs={prefs} onTogglePref={togglePref} onContinue={onContinue} onImport={onImport} onStart={onStart} />
 
   const p = current(s)
   const busy = !!walking || !!openPlace || !!s.summary || aiBusy || s.over
@@ -174,6 +182,13 @@ export default function Game() {
     if (!next.over && current(next).ai) runAi(next)
   }
 
+  const saveAndQuit = () => {
+    saveGame(s)
+    stopMusic()
+    setSaved(s)
+    setS(null)
+  }
+
   const newGameClick = () => {
     clearGame()
     stopMusic()
@@ -197,7 +212,7 @@ export default function Game() {
           <span className="dot" style={{ background: p.color }} /> {genitive(p.name)} tur
         </span>
         <span className="hud-right">
-          <SettingsMenu prefs={prefs} onToggle={togglePref} onNewGame={newGameClick} />
+          <SettingsMenu prefs={prefs} onToggle={togglePref} onSave={() => saveGame(s)} onSaveAndQuit={saveAndQuit} onDownload={() => downloadSave(s)} onNewGame={newGameClick} />
         </span>
       </header>
 

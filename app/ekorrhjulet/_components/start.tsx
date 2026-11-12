@@ -11,14 +11,17 @@ type Props = {
   prefs: Prefs
   onTogglePref: (k: keyof Prefs) => void
   onContinue: () => void
+  onImport: (file: File) => Promise<string | null> // error message, or null when the game started
   onStart: (s: Settings, players: PlayerSetup[]) => void
 }
 
 type View = 'menu' | 'new' | 'how'
 
 /** Title screen in 1994 arcade style: a menu, "Bästa liv", and the new-game setup. */
-export default function Start({ saved, prefs, onTogglePref, onContinue, onStart }: Props) {
+export default function Start({ saved, prefs, onTogglePref, onContinue, onImport, onStart }: Props) {
   const [view, setView] = useState<View>('menu')
+  const [importError, setImportError] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
   const [best, setBest] = useState<Best[]>([])
   useEffect(() => setBest(loadBest()), [])
 
@@ -38,11 +41,28 @@ export default function Start({ saved, prefs, onTogglePref, onContinue, onStart 
               items={[
                 { label: 'NYTT LIV', onClick: () => setView('new') },
                 ...(saved ? [{ label: `FORTSÄTT (VECKA ${saved.week})`, onClick: onContinue }] : []),
+                { label: 'LADDA SPARFIL', onClick: () => fileRef.current?.click() },
                 { label: 'HUR MAN SPELAR', onClick: () => setView('how') },
                 { label: `MUSIK: ${prefs.music ? 'PÅ' : 'AV'}`, onClick: () => onTogglePref('music') },
                 { label: `LJUD: ${prefs.sfx ? 'PÅ' : 'AV'}`, onClick: () => onTogglePref('sfx') },
               ]}
             />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json,.json"
+              hidden
+              onChange={async (e) => {
+                const f = e.target.files?.[0]
+                e.target.value = ''
+                if (f) setImportError(await onImport(f))
+              }}
+            />
+            {importError && (
+              <p className="arcade-error" role="alert">
+                {importError}
+              </p>
+            )}
             <div className="arcade-boxes">
               <div className="arcade-box arcade-box-gold">
                 <p className="arcade-box-title">BÄSTA LIV</p>
