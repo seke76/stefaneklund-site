@@ -212,6 +212,9 @@ export default function Game() {
                       ? 'Egon springer runt i stan och köper möbler…'
                       : (lastMsg ?? (p.hoursLeft > 0 ? `${c.label}. ${p.hoursLeft} timmar kvar, ${p.name}. Vart vill du gå?` : 'Veckan är slut. Tryck på Avsluta veckan.'))}
                   </span>
+                  <button type="button" className="btn btn-big end-week" onClick={endWeek} disabled={busy}>
+                    Avsluta veckan
+                  </button>
                 </div>
               ) : (
                 <div className="flower-clock" aria-live="polite">
@@ -229,7 +232,7 @@ export default function Game() {
             ))}
           </div>
         </div>
-        <Sidebar s={s} p={p} onEndWeek={endWeek} busy={busy} />
+        <Sidebar s={s} p={p} onEndWeek={pixel ? undefined : endWeek} busy={busy} />
       </div>
 
       {openPlace && <PlaceDialog s={s} place={openPlace} onAction={act} onClose={() => setOpenPlace(null)} />}

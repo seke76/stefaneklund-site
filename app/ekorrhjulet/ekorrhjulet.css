@@ -690,9 +690,33 @@ input {
   height: 100%;
   transition: width 0.3s;
 }
-.facts p {
-  margin: 0 0 6px;
-  font-size: 0.9rem;
+.bar-row {
+  display: grid;
+  grid-template-columns: 6.6em minmax(0, 1fr) 3.4em;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+.bar-row .bar-track {
+  height: 10px;
+}
+.bar-value {
+  text-align: right;
+  white-space: nowrap;
+}
+.facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 10px;
+  font-size: 0.85rem;
+}
+.facts dt {
+  font-weight: 700;
+}
+.facts dd {
+  margin: 0;
 }
 .facts .warn {
   color: #a3360f;
@@ -978,7 +1002,8 @@ input {
 
 /* VT323 runs small: bump the text sizes that are set in rem elsewhere. */
 .theme-pixelstaden .bar-head,
-.theme-pixelstaden .facts p,
+.theme-pixelstaden .bar-row,
+.theme-pixelstaden .facts,
 .theme-pixelstaden .action small,
 .theme-pixelstaden .dialog-head p,
 .theme-pixelstaden .lines li,
@@ -1028,6 +1053,47 @@ input {
   font-weight: 400;
 }
 
+/* ---------- Desktop: the game screen fills the window exactly, no page scroll ---------- */
+
+@media (min-width: 961px) {
+  .game {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .hud {
+    flex-shrink: 0;
+  }
+  .play {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .board-wrap {
+    container-type: size;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  /* As large as fits both the width and the height of the space left. */
+  .board {
+    width: min(100cqw, calc(100cqh * 1280 / 880));
+    flex-shrink: 0;
+  }
+  .side {
+    min-height: 0;
+    overflow-y: auto;
+    gap: 10px;
+  }
+  .side .card {
+    padding: 10px 14px;
+  }
+  .side .btn-big {
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+}
+
 /* ---------- Small screens ---------- */
 
 @media (max-width: 960px) {
@@ -1040,5 +1106,67 @@ input {
   }
   .hud .logo {
     font-size: 1.2rem;
+  }
+}
+
+@media (min-width: 961px) {
+  .side {
+    width: 360px;
+  }
+  .theme-pixelstaden .bar-row {
+    grid-template-columns: 5em minmax(0, 1fr) 3em;
+  }
+}
+
+/* "Avsluta veckan" lives in Birgitta's box in the park (Pixelstaden). */
+.pixel-dialog {
+  position: relative;
+  pointer-events: auto;
+  padding-bottom: calc(44px + 2.4cqw);
+}
+.theme-pixelstaden .pixel-dialog .end-week {
+  position: absolute;
+  right: 1.2cqw;
+  bottom: 1.2cqw;
+  width: auto;
+  min-height: 44px;
+  height: 4.2cqw;
+  padding: 0 1.6cqw;
+  font-size: max(16px, 2cqw);
+}
+
+@media (min-width: 961px) {
+  .side .card {
+    padding: 8px 12px;
+  }
+  .side h3 {
+    margin-bottom: 4px;
+  }
+  .theme-pixelstaden .side h3,
+  .theme-pixelstaden .who strong {
+    font-size: 23px;
+  }
+  .who {
+    margin-bottom: 6px;
+  }
+  .side .avatar {
+    width: 34px;
+    height: 34px;
+    font-size: 0.8rem;
+  }
+  .money {
+    margin-bottom: 6px;
+  }
+  .money div {
+    padding: 3px 10px;
+  }
+  .theme-pixelstaden .money strong {
+    font-size: 22px;
+  }
+  .bar-row {
+    margin-bottom: 2px;
+  }
+  .side .bar {
+    margin-bottom: 0;
   }
 }

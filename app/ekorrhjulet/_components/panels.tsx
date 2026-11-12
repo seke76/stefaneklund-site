@@ -5,23 +5,35 @@ import { CLOTHES_NAME, HOURS_PER_WEEK, HOUSING, PLACES, RENT_EVERY, placeName } 
 import { actionsAt, clock, genitive, jobOf, kr, lycka, progress, status, trygghet, utveckling } from '../_lib/engine'
 import type { Action, GameState, PlaceId, Player } from '../_lib/types'
 
-function Bar({ label, value, color, hint }: { label: string; value: number; color: string; hint?: string }) {
+/** A meter. In the sidebar it's one compact row (label · bar · value); `stacked` puts the label above. */
+function Bar({ label, value, color, hint, stacked }: { label: string; value: number; color: string; hint?: string; stacked?: boolean }) {
   const v = Math.round(value)
+  const track = (
+    <div className="bar-track" role="progressbar" aria-label={label} aria-valuenow={v} aria-valuemin={0} aria-valuemax={100}>
+      <div className="bar-fill" style={{ width: `${Math.max(0, Math.min(100, v))}%`, background: color }} />
+    </div>
+  )
+  if (stacked)
+    return (
+      <div className="bar">
+        <div className="bar-head">
+          <span>{label}</span>
+          <span>{hint ?? `${v} %`}</span>
+        </div>
+        {track}
+      </div>
+    )
   return (
-    <div className="bar">
-      <div className="bar-head">
-        <span>{label}</span>
-        <span>{hint ?? `${v} %`}</span>
-      </div>
-      <div className="bar-track" role="progressbar" aria-label={label} aria-valuenow={v} aria-valuemin={0} aria-valuemax={100}>
-        <div className="bar-fill" style={{ width: `${Math.max(0, Math.min(100, v))}%`, background: color }} />
-      </div>
+    <div className="bar-row">
+      <span className="bar-label">{label}</span>
+      {track}
+      <span className="bar-value">{hint ?? `${v} %`}</span>
     </div>
   )
 }
 
 /** Goals, meters and the player's situation, next to the board. */
-export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; onEndWeek: () => void; busy: boolean }) {
+export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; onEndWeek?: () => void; busy: boolean }) {
   const pr = progress(s, p)
   const job = jobOf(p)
   const era = s.settings.era
@@ -48,14 +60,14 @@ export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; on
             <strong>{kr(p.bank)}</strong>
           </div>
         </div>
-        <Bar label={clock(p.hoursLeft).label} value={(p.hoursLeft / HOURS_PER_WEEK) * 100} color="var(--accent)" hint={`${p.hoursLeft} h kvar`} />
+        <Bar label={clock(p.hoursLeft).label} value={(p.hoursLeft / HOURS_PER_WEEK) * 100} color="var(--accent)" hint={`${p.hoursLeft} h kvar`} stacked />
       </section>
 
       <section className="card">
         <h3>Mina mål · {pr.total} %</h3>
         <Bar label="Pengar" value={pr.money} color="#8BD45E" />
-        <Bar label="Utbildning" value={pr.education} color="#FFD23F" hint={`${p.degrees.length} av ${s.settings.goals.education} examina`} />
-        <Bar label="Karriär" value={pr.career} color="#6EC1FF" hint={`nivå ${job?.level ?? 0} av ${s.settings.goals.career}`} />
+        <Bar label="Utbildning" value={pr.education} color="#FFD23F" hint={`${p.degrees.length}/${s.settings.goals.education}`} />
+        <Bar label="Karriär" value={pr.career} color="#6EC1FF" hint={`${job?.level ?? 0}/${s.settings.goals.career}`} />
         <Bar label="Relationer" value={pr.relations} color="#FF9EC7" />
         <Bar label="Lycka" value={pr.happiness} color="#B48CF2" />
       </section>
@@ -70,37 +82,49 @@ export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; on
         <Bar label="Lycka" value={lycka(s, p)} color="#B48CF2" hint={`${lycka(s, p)}`} />
       </section>
 
-      <section className="card facts">
-        <p>
-          <strong>Boende:</strong> {HOUSING[p.housing].name}
-          {p.rent ? `, ${kr(p.rent)}/mån` : ''}
-          {p.housing !== 'soffa' && ` · hyran dras ${rentIn === 0 ? 'i helgen' : `om ${rentIn} veckor`}`}
-        </p>
-        <p>
-          <strong>Mat hemma:</strong> {p.foodWeeks ? `${p.foodWeeks} veckor` : 'Kylskåpet är tomt!'}
-        </p>
-        <p>
-          <strong>Kläder:</strong> {CLOTHES_NAME[p.clothes]}
-          {p.clothes > 0 ? ` (håller ${p.clothesWeeksLeft} v till)` : ''}
-        </p>
-        <p>
-          <strong>Erfarenhet:</strong> {p.experience} veckor · <strong>Pålitlighet:</strong> {p.dependability}
-        </p>
-        {p.inQueue && (
-          <p>
-            <strong>Bostadskö:</strong> {p.queuePoints} poäng
-          </p>
-        )}
-        {(p.loan > 0 || p.csnDebt > 0 || p.inkasso > 0) && (
-          <p className="warn">
-            <strong>Skulder:</strong> {[p.loan && `lån ${kr(p.loan)}`, p.csnDebt && `CSN ${kr(p.csnDebt)}`, p.inkasso && `inkasso ${kr(p.inkasso)}`].filter(Boolean).join(', ')}
-          </p>
-        )}
+      <section className="card">
+        <dl className="facts">
+          <dt>Boende</dt>
+          <dd>{HOUSING[p.housing].name}</dd>
+          {p.housing !== 'soffa' && (
+            <>
+              <dt>Hyra</dt>
+              <dd>
+                {kr(p.rent)}/mån · {rentIn === 0 ? 'dras i helgen' : `om ${rentIn} v`}
+              </dd>
+            </>
+          )}
+          <dt>Mat hemma</dt>
+          <dd className={p.foodWeeks ? '' : 'warn'}>{p.foodWeeks ? `${p.foodWeeks} v` : 'Tomt!'}</dd>
+          <dt>Kläder</dt>
+          <dd>
+            {CLOTHES_NAME[p.clothes]}
+            {p.clothes > 0 ? ` (${p.clothesWeeksLeft} v)` : ''}
+          </dd>
+          <dt>Erfarenhet</dt>
+          <dd>
+            {p.experience} v · pålitlighet {p.dependability}
+          </dd>
+          {p.inQueue && (
+            <>
+              <dt>Bostadskö</dt>
+              <dd>{p.queuePoints} poäng</dd>
+            </>
+          )}
+          {(p.loan > 0 || p.csnDebt > 0 || p.inkasso > 0) && (
+            <>
+              <dt>Skulder</dt>
+              <dd className="warn">{[p.loan && `lån ${kr(p.loan)}`, p.csnDebt && `CSN ${kr(p.csnDebt)}`, p.inkasso && `inkasso ${kr(p.inkasso)}`].filter(Boolean).join(', ')}</dd>
+            </>
+          )}
+        </dl>
       </section>
 
-      <button type="button" className="btn btn-big" onClick={onEndWeek} disabled={busy}>
-        Avsluta veckan
-      </button>
+      {onEndWeek && (
+        <button type="button" className="btn btn-big" onClick={onEndWeek} disabled={busy}>
+          Avsluta veckan
+        </button>
+      )}
     </aside>
   )
 }
