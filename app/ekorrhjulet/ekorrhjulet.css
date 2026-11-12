@@ -1118,21 +1118,51 @@ input {
   }
 }
 
-/* "Avsluta veckan" lives in Birgitta's box in the park (Pixelstaden). */
+/* Birgitta's box in the park (Pixelstaden): portrait, clock, advice and "Avsluta veckan". */
+.theme-pixelstaden .board-center {
+  top: 43%;
+}
 .pixel-dialog {
-  position: relative;
   pointer-events: auto;
-  padding-bottom: calc(44px + 2.4cqw);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 1.2cqw;
+  align-items: start;
+  min-height: 0;
+  padding: 1cqw 1.2cqw;
+}
+.pixel-dialog .portrait {
+  width: 8.5cqw;
+  min-width: 48px;
+  height: auto;
+  aspect-ratio: 1;
+  border: 3px solid #fff;
+  image-rendering: pixelated;
+  background: #5b8fd9;
+  display: block;
+}
+.pixel-dialog-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3cqw;
+}
+.pixel-clock {
+  color: #c9d3ff;
+}
+.tip-urgent {
+  color: #f2c94c;
+}
+.tip-urgent::before {
+  content: '! ';
 }
 .theme-pixelstaden .pixel-dialog .end-week {
-  position: absolute;
-  right: 1.2cqw;
-  bottom: 1.2cqw;
+  align-self: end;
   width: auto;
   min-height: 44px;
   height: 4.2cqw;
   padding: 0 1.6cqw;
   font-size: max(16px, 2cqw);
+  white-space: nowrap;
 }
 
 @media (min-width: 961px) {

@@ -23,6 +23,8 @@ Spelet har en **egen root-layout** (`layout.tsx`, `ekorrhjulet.css`) och påverk
 | `_lib/data.ts` | Platser, jobb, kurser, prylar, priser, helgtexter och Egons repliker, per tidsepok. |
 | `_lib/rng.ts` | Slumpgenerator med frö. Slumpens tillstånd sparas i spelet, så samma frö ger samma händelser. |
 | `_lib/save.ts` | Sparning i webbläsaren (`localStorage`): pågående spel, ljudval och Bästa liv. |
+| `_lib/tips.ts` | Birgittas råd: väljer det viktigaste tipset för spelaren just nu. |
+| `_components/birgitta.tsx` | Birgittas pixelporträtt (16 × 16). |
 | `_lib/sound.ts` | Ljudeffekter och musik, genererade med Web Audio. Inga ljudfiler. |
 | `_components/game.tsx` | Skärmarna och spelflödet. |
 | `_components/start.tsx` | Titelskärmen i arkadstil: meny, Bästa liv, Hur man spelar och inställningarna för ett nytt spel. |
@@ -46,7 +48,7 @@ flowchart LR
 - **Titelskärm:** en arkadskärm i 1994-stil med stjärnhimmel, den animerade ekorren (`public/ekorrhjulet/ekorre.gif`), ett blinkande *TRYCK START* och en meny: *Nytt liv*, *Fortsätt (vecka X)* om det finns ett sparat spel, *Hur man spelar*, *Musik* och *Ljud*. Menyn går att styra med piltangenterna. Under menyn visas **Bästa liv**: de fem snabbaste vinsterna av människor i den här webbläsaren (vinst genom att nå alla mål, inte genom veckotaket). Längst ner syns Pixelstaden (`public/ekorrhjulet/pixelstaden.png`).
 - **Nytt liv:** tidsepok (1994 eller nutid), spelare (1–4 plus Egon av/lätt/svår) och spellängd (Kort, Mellan, Lång). Under *Avancerat* finns svårighet, veckotak, startkapital och slumpfrö. **Spelplanen är alltid Pixelstaden i första versionen.** Småstaden, och stadsvalen *Full* (20 platser) och *Anpassad*, syns utgråade som "kommer snart". Koden för Småstaden finns kvar, och ett gammalt sparat Småstaden-spel går fortfarande att fortsätta.
 - **Spelarrutan** högst upp till höger visar namn, jobb och timlön samt var man jobbar (*Jobbar på Kvickköp*) (eller *Arbetssökande*). Toppraden visar veckan, när hyran dras nästa gång (röd när den dras i helgen) och vems tur det är.
-- **Skärmen på datorn** är exakt lika hög som fönstret och skrollar aldrig: kartan blir så stor som får plats på höjden och bredden, och sidopanelen är kompakt (blir skärmen lägre än cirka 750 pixlar skrollar bara panelen). I Pixelstaden ligger knappen *Avsluta veckan* i Birgittas ruta i parken. På mobilen staplas kartan och panelen under varandra.
+- **Skärmen på datorn** är exakt lika hög som fönstret och skrollar aldrig: kartan blir så stor som får plats på höjden och bredden, och sidopanelen är kompakt (blir skärmen lägre än cirka 750 pixlar skrollar bara panelen). I Pixelstaden ligger knappen *Avsluta veckan* i Birgittas ruta i parken, se *Birgitta* nedan. På mobilen staplas kartan och panelen under varandra.
 - **Veckan:** spelaren klickar på en byggnad. Pjäsen går dit längs vägen (restiden dras), och platsens fönster öppnas med allt man kan göra där. Varje knapp visar tid, pris och effekt, och det som inte går visar varför. Platsfönstret är brett med knapparna i ett rutnät och skrollar inte; *Gå ut på gatan* syns alltid. Kurser och prylar visas som ett kort med två val: *Betala* eller *CSN-lån*, *Köp* eller *Avbetala*.
 - **Helgen:** en sammanfattning per spelare med lön, utgifter, helgaktivitet, veckans händelse och ställningen.
 
@@ -61,6 +63,17 @@ flowchart LR
 - **Ekonomi:** kontanter, bank (sparränta), indexfond, teknikaktier (kan krascha), privatlån, CSN och avbetalning. 1994 har högre räntor och priser på cirka 60 % av nutidens.
 - **Elakheter:** Långfingrade Leffe snor kontanter utanför banken och prylar ur andrahandslägenheter (hemförsäkring skyddar). Svält, utbrändhet, sjukdom, uppbrott, varsel under kris och hyreshöjningar finns också. Svårigheten ändrar sannolikheterna (Snäll ×0,5, Elak ×1,5).
 - **Helgen:** kontanter i fickan äts av en slumpad helgaktivitet. Pengar på banken är säkra.
+
+## Birgitta
+
+Birgitta från Jobbtorget sitter i rutan i parken med sitt porträtt, klockan och ett råd. Hon tittar på spelarens läge och säger det viktigaste just nu, i prioritetsordning (se `_lib/tips.ts`):
+
+1. **Akut** (gul text med utropstecken): helt slut i kroppen (sov), tomt kylskåp, vräkt, hyran går inte ihop, inkasso, låg hälsa, inte varit på jobbet.
+2. **Nybörjarhjälp:** välkomsttext första veckan, sök jobb, gå till ditt första jobb.
+3. **Inför helgen:** sätt in kontanter, hemförsäkring, slitna kläder, ensamhet.
+4. **Långsiktigt:** bostadskön, nästa utbildning, plugga på den kurs man läser, gym.
+
+Resultatet av det man gör (lön, inbrott och så vidare) visas som korta meddelanden längst ner på kartan. Under Egons tur visas Egon i rutan.
 
 ## Egon
 

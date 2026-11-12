@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { playAiTurn } from '../_lib/ai'
 import { clock, current, endTurn, genitive, moveTo, newGame, perform, progress, travelHours } from '../_lib/engine'
 import { addBest, clearGame, loadGame, loadPrefs, saveGame, savePrefs, type Prefs } from '../_lib/save'
+import { birgittaTip } from '../_lib/tips'
 import { playMusic, setTheme, sfx, stopMusic, type Sfx } from '../_lib/sound'
 import type { Action, GameState, PlaceId, PlayerSetup, Settings } from '../_lib/types'
+import Birgitta from './birgitta'
 import Board from './board'
 import { OverDialog, PlaceDialog, Sidebar, SummaryDialog, rentDueIn } from './panels'
 import Start from './start'
@@ -168,7 +170,7 @@ export default function Game() {
 
   const pixel = s.settings.board === 'pixelstaden'
   const c = clock(p.hoursLeft)
-  const lastMsg = toasts.at(-1)?.text
+  const tip = birgittaTip(s)
 
   return (
     <div className={`game theme-${s.settings.board}`}>
@@ -209,12 +211,14 @@ export default function Game() {
             center={
               pixel ? (
                 <div className="pixel-dialog">
-                  <strong>{aiBusy ? 'EGON' : 'BIRGITTA'}</strong>
-                  <span>
-                    {aiBusy
-                      ? 'Egon springer runt i stan och köper möbler…'
-                      : (lastMsg ?? (p.hoursLeft > 0 ? `${c.label}. ${p.hoursLeft} timmar kvar, ${p.name}. Vart vill du gå?` : 'Veckan är slut. Tryck på Avsluta veckan.'))}
-                  </span>
+                  {aiBusy ? <img className="portrait" src="/ekorrhjulet/ekorre.gif" alt="Egon" /> : <Birgitta />}
+                  <div className="pixel-dialog-text" aria-live="polite">
+                    <strong>{aiBusy ? 'EGON' : 'BIRGITTA'}</strong>
+                    <span className="pixel-clock">{p.hoursLeft > 0 ? `${c.label} · ${p.hoursLeft} h kvar` : 'Veckan är slut'}</span>
+                    <span className={tip.urgent ? 'tip tip-urgent' : 'tip'}>
+                      {aiBusy ? 'Egon springer runt i stan och köper möbler…' : tip.text}
+                    </span>
+                  </div>
                   <button type="button" className="btn btn-big end-week" onClick={endWeek} disabled={busy}>
                     Avsluta veckan
                   </button>
