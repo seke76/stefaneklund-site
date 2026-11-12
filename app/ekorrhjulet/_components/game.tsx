@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { playAiTurn } from '../_lib/ai'
 import { clock, current, endTurn, genitive, moveTo, newGame, perform, progress, travelHours } from '../_lib/engine'
 import { addBest, clearGame, downloadSave, loadGame, loadPrefs, parseSave, saveGame, savePrefs, type Prefs } from '../_lib/save'
-import { birgittaTip } from '../_lib/tips'
+import { birgittaGreeting, birgittaTip } from '../_lib/tips'
 import { playMusic, setTheme, sfx, stopMusic, type Sfx } from '../_lib/sound'
 import type { Action, GameState, PlaceId, PlayerSetup, Settings } from '../_lib/types'
 import Birgitta from './birgitta'
@@ -117,12 +117,17 @@ export default function Game() {
     return () => clearTimeout(t)
   }, [s, walking, aiBusy, play, toast])
 
+  // A player's week is "fresh" until they do something: Birgitta greets them instead of warning.
+  const [fresh, setFresh] = useState(true)
+  useEffect(() => setFresh(true), [s?.week, s?.turn])
+
   if (!s) return <Start saved={saved} prefs={prefs} onTogglePref={togglePref} onContinue={onContinue} onImport={onImport} onStart={onStart} />
 
   const p = current(s)
   const busy = !!walking || !!openPlace || !!s.summary || aiBusy || s.over
 
   const pick = (id: PlaceId) => {
+    setFresh(false)
     if (busy) return
     play('click')
     if (p.location === id) {
@@ -153,6 +158,7 @@ export default function Game() {
   }
 
   const act = (a: Action, amount?: number) => {
+    setFresh(false)
     const before = current(s)
     const next = perform(s, a.id, amount)
     const after = current(next)
@@ -235,11 +241,12 @@ export default function Game() {
                   <div className="pixel-dialog-text" aria-live="polite">
                     <strong>{aiBusy ? 'EGON' : 'BIRGITTA'}</strong>
                     <span className="pixel-clock">{p.hoursLeft > 0 ? `${c.label} · ${p.hoursLeft} h kvar` : 'Veckan är slut'}</span>
-                    <span className={tip.urgent ? 'tip tip-urgent' : 'tip'}>
+                    {fresh && !aiBusy && <span className="greeting">{birgittaGreeting(s)}</span>}
+                    <span className={tip.urgent && !fresh ? 'tip tip-urgent' : 'tip'}>
                       {aiBusy ? 'Egon springer runt i stan och köper möbler…' : tip.text}
                     </span>
                   </div>
-                  <button type="button" className="btn btn-big end-week" onClick={endWeek} disabled={busy}>
+                  <button type="button" className={`btn btn-big end-week${p.hoursLeft > 10 ? ' end-week-quiet' : ''}`} onClick={endWeek} disabled={busy}>
                     Avsluta veckan
                   </button>
                 </div>

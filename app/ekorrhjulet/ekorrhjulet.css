@@ -1810,3 +1810,21 @@ input {
 .theme-pixelstaden .amount-error {
   color: #ff9e9e;
 }
+
+/* Start of the week: a cheerful hello, and "Avsluta veckan" stays quiet until the last 10 hours. */
+.greeting {
+  color: #8ccb4f;
+}
+.theme-pixelstaden .pixel-dialog .end-week.end-week-quiet {
+  background: transparent;
+  color: #c9d3ff;
+  border: 2px solid #5b6aa8;
+  box-shadow: none;
+  font-size: max(13px, 1.5cqw);
+  height: auto;
+  min-height: 36px;
+}
+.theme-pixelstaden .pixel-dialog .end-week.end-week-quiet:hover:not(:disabled) {
+  color: #fff;
+  border-color: #fff;
+}

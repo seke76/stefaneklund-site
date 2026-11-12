@@ -62,3 +62,18 @@ export function birgittaTip(s: GameState): Tip {
   if (p.health < 60 && !p.gymCard) return hint('Träning på Gymmet ger hälsa. Ett årskort lönar sig om du går ofta.')
   return hint('Det går bra! Tänk på alla fem målen: pengar, utbildning, karriär, relationer och lycka.')
 }
+
+const GREETINGS = [
+  (n: string, h: number) => `God morgon, ${n}! En ny vecka och ${h} fräscha timmar.`,
+  (n: string) => `Ny vecka, nya möjligheter, ${n}!`,
+  (n: string) => `Hej ${n}! Solen skiner över Pixelstaden i dag.`,
+  (n: string) => `Måndag igen, ${n}. Kaffet är nybryggt!`,
+  (n: string, h: number) => `Välkommen tillbaka, ${n}! ${h} timmar att fylla med något bra.`,
+  (n: string) => `Upp och hoppa, ${n}! Hjulet snurrar och du med det.`,
+]
+
+/** Birgitta's cheerful hello at the start of a player's week. */
+export function birgittaGreeting(s: GameState): string {
+  const p = current(s)
+  return GREETINGS[(s.week + p.id) % GREETINGS.length](p.name, p.hoursLeft)
+}

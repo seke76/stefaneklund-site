@@ -80,7 +80,7 @@ Har datorn inställningen *minska rörelse* (`prefers-reduced-motion`) stängs a
 
 ## Birgitta
 
-Birgitta från Jobbtorget sitter i rutan i parken med sitt porträtt, klockan och ett råd. Hon tittar på spelarens läge och säger det viktigaste just nu, i prioritetsordning (se `_lib/tips.ts`):
+Birgitta från Jobbtorget sitter i rutan i parken med sitt porträtt, klockan och ett råd. När en spelares vecka börjar hälsar hon glatt (grön text, varierar från vecka till vecka) och visar tipset lugnt, utan varningsfärg, tills spelaren har gjort något. Knappen *Avsluta veckan* är diskret (tunn ram) så länge mer än 10 timmar återstår och blir gul och tydlig mot slutet av veckan. Hon tittar på spelarens läge och säger det viktigaste just nu, i prioritetsordning (se `_lib/tips.ts`):
 
 1. **Akut** (gul text med utropstecken): helt slut i kroppen (sov), tomt kylskåp, vräkt, hyran går inte ihop, inkasso, låg hälsa, inte varit på jobbet.
 2. **Nybörjarhjälp:** välkomsttext första veckan, sök jobb, gå till ditt första jobb.
