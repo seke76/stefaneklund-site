@@ -47,7 +47,7 @@ export function birgittaTip(s: GameState): Tip {
   if (p.housing === 'andrahand' && p.items.length && !p.insurance)
     return hint(`Långfingrade Leffe gillar andrahandslägenheter. En hemförsäkring på banken kostar ${kr(price(s, INSURANCE_WEEKLY))} i veckan.`)
   if (p.clothes > 0 && p.clothesWeeksLeft <= 1) return hint('Kläderna är snart utslitna. Nya finns på Kvickköp.')
-  if (p.relations < 30) return hint('Du har inte träffat någon på länge. Ring familjen hemifrån eller gå till Gyllene Ekorren efter 16.')
+  if (p.relations < 30) return hint('Du har inte träffat någon på länge. Ring familjen hemifrån eller gå till Puben efter 16.')
 
   // Long-term goals.
   if (!p.inQueue) return hint(`Ställ dig i bostadskön på Bostadsbolaget. Efter ${QUEUE_POINTS_NEEDED} veckor får du en egen hyresrätt.`)

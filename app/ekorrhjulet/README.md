@@ -57,6 +57,8 @@ flowchart LR
 
 ## Regler i korthet
 
+- **Namn:** platserna heter samma sak som skyltarna på kartan (Lägenheten, Jobbtorget, Högskolan, Banken, Kvickköp, Möbelmagasinet, Prylpalatset, Bostadsbolaget, Puben, Gymmet). Smeknamnen Ekollonbanken, Gyllene Ekorren och Gymmet Svettis står i platsens undertext.
+
 - **Tid:** 60 timmar per vecka (måndag–fredag 08–20). Ett steg längs ringen tar 0,5 h, och man går alltid den kortaste vägen. Cykel sparar 25 %. Hälsa under 25 gör att allt tar 25 % längre tid. Jobbtorget stänger 17, puben öppnar 16.
 - **Behovstrappan:** fem mätare enligt Maslow: Hälsa, Trygghet, Relationer, Status och Utveckling. Hälsa och Relationer ändras direkt av det man gör. Trygghet, Status och Utveckling räknas fram ur boende, buffert, jobb, kläder, prylar och examina.
 - **Lycka** = 30 % Hälsa + 25 % Trygghet + 20 % Relationer + 15 % Status + 10 % Utveckling, plus trivsel från prylar och partner. Är en nivå under 40 räknas alla nivåer ovanför till hälften.

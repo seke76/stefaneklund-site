@@ -14,17 +14,18 @@ export const PLACES: PlaceInfo[] = [
   { id: 'lagenheten', name: 'Lägenheten', short: 'Hem', tagline: 'Sov, ät och vila.' },
   { id: 'jobbtorget', name: 'Jobbtorget', short: 'Jobb', tagline: 'Sök jobb. Kaffet är gratis, hoppet kostar extra.', closes: 17 },
   { id: 'hogskolan', name: 'Högskolan', short: 'Plugg', tagline: 'Kurser och examina. Pengarna kommer, skulden består.' },
-  { id: 'banken', name: 'Ekollonbanken', short: 'Bank', tagline: 'Spara, låna och fonder. Räntan är rörlig, mest uppåt.' },
+  { id: 'banken', name: 'Banken', short: 'Bank', tagline: 'Ekollonbanken: spara, låna och fonder. Räntan är rörlig, mest uppåt.' },
   { id: 'kvickkop', name: 'Kvickköp', short: 'Mat', tagline: 'Mat för veckan. Gå inte hit hungrig.' },
   { id: 'mobel', name: 'Möbelmagasinet', short: 'Möbler', tagline: 'Platta paket. En insexnyckel blir alltid över.' },
-  { id: 'pryl', name: 'Prylpalatset', short: 'Prylar', tagline: '0 kr idag, resten för alltid.' },
+  { id: 'pryl', name: 'Prylpalatset', short: 'Prylar', tagline: 'Elektronik och prylar. 0 kr idag, resten för alltid.' },
   { id: 'bostad', name: 'Bostadsbolaget', short: 'Bostad', tagline: 'Bostadskö och kontrakt.' },
-  { id: 'puben', name: 'Gyllene Ekorren', short: 'Pub', tagline: 'Afterwork, quiz och vänner.', opens: 16 },
-  { id: 'gymmet', name: 'Gymmet Svettis', short: 'Gym', tagline: 'Träna bort stressen.' },
+  { id: 'puben', name: 'Puben', short: 'Pub', tagline: 'Gyllene Ekorren: afterwork, quiz och vänner. Öppnar 16.', opens: 16 },
+  { id: 'gymmet', name: 'Gymmet', short: 'Gym', tagline: 'Gymmet Svettis: träna bort stressen.' },
 ]
 
-export const placeName = (id: PlaceId, era: Era) =>
-  id === 'pryl' && era === '1994' ? 'Video & Hemelektronik' : PLACES.find((p) => p.id === id)!.name
+/** The name players see; it matches the sign on the board. (`era` is kept for places that may differ later.) */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const placeName = (id: PlaceId, era?: Era) => PLACES.find((p) => p.id === id)!.name
 
 export type Job = {
   id: string
