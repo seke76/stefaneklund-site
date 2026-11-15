@@ -1828,3 +1828,6 @@ input {
   color: #fff;
   border-color: #fff;
 }
+
+.board-art .amb-steam { animation: amb-steam 3s steps(3) infinite; }
+@keyframes amb-steam { 0% { opacity: 0.9; transform: translateY(0); } 66% { opacity: 0.5; transform: translateY(-4px); } 100% { opacity: 0; transform: translateY(-8px); } }

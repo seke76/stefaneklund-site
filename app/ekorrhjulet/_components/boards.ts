@@ -347,6 +347,18 @@ export const PIXELSTADEN_SVG = `<svg width="100%" height="100%" preserveAspectRa
 <rect x="70" y="80" width="24" height="24" fill="#1A1A2E"></rect><rect x="74" y="84" width="16" height="16" fill="#8FE3FF"></rect><rect x="74" y="84" width="6" height="6" fill="#FFFFFF"></rect>
 <rect x="40" y="86" width="26" height="40" fill="#1A1A2E"></rect><rect x="44" y="90" width="18" height="36" fill="#3A2560"></rect><rect x="56" y="106" width="4" height="4" fill="#F2C94C"></rect>
 </g>
+<g transform="translate(1136,216)">
+<rect x="96" y="-14" width="14" height="18" fill="#1A1A2E"></rect><rect x="99" y="-11" width="8" height="14" fill="#5A3A22"></rect>
+<g class="amb-steam"><rect x="100" y="-24" width="4" height="4" fill="#FFFFFF"></rect><rect x="104" y="-32" width="4" height="4" fill="#FFFFFF"></rect><rect x="99" y="-40" width="4" height="4" fill="#FFFFFF"></rect></g>
+<rect x="0" y="0" width="128" height="130" fill="#1A1A2E"></rect><rect x="4" y="4" width="120" height="32" fill="#7A1F2B"></rect><rect x="4" y="4" width="120" height="8" fill="#9B2C3B"></rect>
+<rect x="4" y="36" width="120" height="90" fill="#EAD9B6"></rect><rect x="100" y="36" width="24" height="90" fill="#CDB98F"></rect>
+<rect x="10" y="44" width="100" height="26" fill="#FFF4D6"></rect><rect x="10" y="66" width="100" height="4" fill="#D9C9A3"></rect>
+<text x="60" y="63" text-anchor="middle" font-family="VT323" font-size="20" fill="#1A1A2E">BISTRO</text>
+<rect x="4" y="72" width="96" height="8" fill="#FFFFFF"></rect><rect x="4" y="72" width="16" height="8" fill="#2F7A2A"></rect><rect x="36" y="72" width="16" height="8" fill="#2F7A2A"></rect><rect x="68" y="72" width="16" height="8" fill="#2F7A2A"></rect>
+<rect x="12" y="84" width="24" height="24" fill="#1A1A2E"></rect><rect x="16" y="88" width="16" height="16" fill="#FFD95A" class="amb-glow"></rect><rect x="22" y="94" width="4" height="4" fill="#E04848"></rect>
+<rect x="70" y="84" width="24" height="24" fill="#1A1A2E"></rect><rect x="74" y="88" width="16" height="16" fill="#FFD95A" class="amb-glow" style="animation-delay:-1.5s"></rect><rect x="80" y="94" width="4" height="4" fill="#E04848"></rect>
+<rect x="40" y="86" width="26" height="40" fill="#1A1A2E"></rect><rect x="44" y="90" width="18" height="36" fill="#5A1F28"></rect><rect x="56" y="106" width="4" height="4" fill="#F2C94C"></rect>
+</g>
 <g transform="translate(1136,380)">
 <rect x="0" y="0" width="128" height="130" fill="#1A1A2E"></rect><rect x="4" y="4" width="120" height="32" fill="#8F3520"></rect><rect x="4" y="4" width="120" height="8" fill="#A9452C"></rect>
 <rect x="4" y="36" width="120" height="90" fill="#F07B5A"></rect><rect x="100" y="36" width="24" height="90" fill="#C95A3C"></rect>

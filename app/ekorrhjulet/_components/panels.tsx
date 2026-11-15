@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { CLOTHES_NAME, HOURS_PER_WEEK, PLACES, RENT_EVERY, placeName } from '../_lib/data'
-import { actionsAt, clock, genitive, jobOf, kr, lycka, progress, status, trygghet, utveckling } from '../_lib/engine'
+import { CLOTHES_NAME, HOURS_PER_WEEK, MEALS_PER_WEEK, PLACES, RENT_EVERY, placeName } from '../_lib/data'
+import { actionsAt, clock, genitive, hasFridge, jobOf, kr, lycka, progress, status, trygghet, utveckling } from '../_lib/engine'
 import type { Action, GameState, PlaceId, Player } from '../_lib/types'
 
 /** Shows how much a meter just moved, for a couple of seconds. The sidebar is re-mounted per player. */
@@ -112,8 +112,10 @@ export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; on
             {HOUSING_SHORT[p.housing]}
             {p.housing !== 'soffa' && `, ${p.rent.toLocaleString('sv-SE')}/mån`}
           </dd>
-          <dt>Mat hemma</dt>
-          <dd className={p.foodWeeks ? '' : 'warn'}>{p.foodWeeks ? `${p.foodWeeks} v` : 'Tomt!'}</dd>
+          <dt>Mat</dt>
+          <dd className={p.mealsThisWeek + p.foodPortions < MEALS_PER_WEEK ? 'warn' : ''}>
+            {p.mealsThisWeek}/{MEALS_PER_WEEK} ätit · {hasFridge(s, p) ? `${p.foodPortions} hemma` : 'ej kylskåp'}
+          </dd>
           <dt>Kläder</dt>
           <dd>
             {CLOTHES_NAME[p.clothes]}

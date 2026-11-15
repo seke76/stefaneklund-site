@@ -19,6 +19,7 @@ const HOTSPOTS: Record<BoardId, Record<PlaceId, Box>> = {
     jobbtorget: TOP(422, 72, 184),
     hogskolan: TOP(662, 84, 172),
     banken: TOP(902, 84, 172),
+    bistro: { x: 1124, y: 236, w: 142, h: 150 }, // not drawn on Småstaden yet (Småstaden is not playable)
     kvickkop: { x: 1124, y: 404, w: 142, h: 150 },
     mobel: TOP(902, 696, 170),
     pryl: TOP(662, 696, 170),
@@ -31,6 +32,7 @@ const HOTSPOTS: Record<BoardId, Record<PlaceId, Box>> = {
     jobbtorget: TOP(426, 78, 178),
     hogskolan: TOP(666, 118, 138),
     banken: TOP(906, 82, 174),
+    bistro: { x: 1132, y: 228, w: 136, h: 166 },
     kvickkop: { x: 1132, y: 416, w: 136, h: 138 },
     mobel: TOP(906, 728, 138),
     pryl: TOP(666, 728, 138),
@@ -46,6 +48,7 @@ const STAND: Record<PlaceId, [number, number]> = {
   jobbtorget: [505, 310],
   hogskolan: [745, 310],
   banken: [985, 310],
+  bistro: [1080, 352],
   kvickkop: [1080, 490],
   mobel: [985, 670],
   pryl: [745, 670],
@@ -56,7 +59,7 @@ const STAND: Record<PlaceId, [number, number]> = {
 
 /** Corners walked through between two neighbours on the ring. */
 const CORNER: Partial<Record<string, [number, number]>> = {
-  'banken>kvickkop': [1072, 320],
+  'banken>bistro': [1072, 320],
   'kvickkop>mobel': [1072, 660],
   'puben>gymmet': [208, 660],
   'gymmet>lagenheten': [208, 320],

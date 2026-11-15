@@ -57,9 +57,11 @@ flowchart LR
 
 ## Regler i korthet
 
-- **Namn:** platserna heter samma sak som skyltarna på kartan (Lägenheten, Jobbtorget, Högskolan, Banken, Kvickköp, Möbelmagasinet, Prylpalatset, Bostadsbolaget, Puben, Gymmet). Smeknamnen Ekollonbanken, Gyllene Ekorren och Gymmet Svettis står i platsens undertext.
+- **Namn:** platserna heter samma sak som skyltarna på kartan (Lägenheten, Jobbtorget, Högskolan, Banken, Bistron, Kvickköp, Möbelmagasinet, Prylpalatset, Bostadsbolaget, Puben, Gymmet). Smeknamnen Ekollonbanken, Gyllene Ekorren och Gymmet Svettis står i platsens undertext.
 
-- **Tid:** 60 timmar per vecka (måndag–fredag 08–20). Ett steg längs ringen tar 0,5 h, och man går alltid den kortaste vägen. Cykel sparar 25 %. Hälsa under 25 gör att allt tar 25 % längre tid. Jobbtorget stänger 17, puben öppnar 16.
+- **Mat:** man behöver 5 måltider i veckan (en per vardag). Man äter ute på **Bistron** (dagens lunch, middag eller lunchkort för tre luncher) eller tar smårätter på **Puben** efter 16. Med ett **kylskåp** (köps på Prylpalatset, kan inte stjälas) kan man köpa matkassar på Kvickköp (5 portioner, högst 15 i kylen). Maten hemma äts **automatiskt** i helgen för de måltider man inte ätit ute; man behöver inte laga den. Man börjar utan kylskåp, så de första veckorna äter man ute. Varje måltid som saknas ger Hälsa −4, och saknas tre eller fler förlorar man 6 timmar nästa vecka.
+- **Sömn:** man sover automatiskt på nätterna, eftersom veckans 60 timmar är vaken tid. *Vila* och *Lång vila* i Lägenheten är extra vila för den som är trött.
+- **Tid:** 60 timmar per vecka (måndag–fredag 08–20). Bistron ligger mellan Banken och Kvickköp, så ringen har 11 platser. Ett steg längs ringen tar 0,5 h, och man går alltid den kortaste vägen. Cykel sparar 25 %. Hälsa under 25 gör att allt tar 25 % längre tid. Jobbtorget stänger 17, puben öppnar 16.
 - **Behovstrappan:** fem mätare enligt Maslow: Hälsa, Trygghet, Relationer, Status och Utveckling. Hälsa och Relationer ändras direkt av det man gör. Trygghet, Status och Utveckling räknas fram ur boende, buffert, jobb, kläder, prylar och examina.
 - **Lycka** = 30 % Hälsa + 25 % Trygghet + 20 % Relationer + 15 % Status + 10 % Utveckling, plus trivsel från prylar och partner. Är en nivå under 40 räknas alla nivåer ovanför till hälften.
 - **Mål:** pengar (nettoförmögenhet), antal examina, karriärnivå (1–9), Relationer och Lycka. Alla fem på 100 % vinner. Med veckotak vinner den med högst snitt när taket nås.
@@ -108,4 +110,4 @@ Egon följer en prioritetslista: mat, hälsa, boende, bättre jobb, kläder, bos
 
 ## Inte byggt än
 
-Småstaden som valbar spelplan, full stad med 20 platser och anpassad stad, Vårdcentralen och de andra nio nya platserna, egen musik per plats och riktiga musikspår för Småstaden.
+Småstaden som valbar spelplan (där är Bistron inte ritad än), full stad med 20 platser och anpassad stad, Vårdcentralen och de andra nio nya platserna, egen musik per plats och riktiga musikspår för Småstaden.

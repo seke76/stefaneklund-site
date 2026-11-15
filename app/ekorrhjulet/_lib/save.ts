@@ -1,3 +1,4 @@
+import { migrate } from './engine'
 import type { GameState } from './types'
 
 /** The game is saved in the browser after every move. Only one saved game at a time. */
@@ -8,7 +9,7 @@ export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(KEY)
     const s = raw ? (JSON.parse(raw) as GameState) : null
-    return s && s.version === 1 && !s.over ? s : null
+    return s && s.version === 1 && !s.over ? migrate(s) : null
   } catch {
     return null
   }
@@ -46,7 +47,7 @@ export function parseSave(text: string): GameState | string {
       s && s.version === 1 && typeof s.week === 'number' && Array.isArray(s.players) && s.players.length > 0 && !!s.settings && typeof s.turn === 'number'
     if (!ok) return 'Det där ser inte ut som en sparfil från Ekorrhjulet.'
     if (s.over) return 'Det spelet är redan slut.'
-    return s
+    return migrate(s)
   } catch {
     return 'Filen gick inte att läsa.'
   }

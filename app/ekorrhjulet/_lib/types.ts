@@ -12,6 +12,7 @@ export type PlaceId =
   | 'jobbtorget'
   | 'hogskolan'
   | 'banken'
+  | 'bistro'
   | 'kvickkop'
   | 'mobel'
   | 'pryl'
@@ -93,8 +94,8 @@ export type Player = {
   mortgage: number
   items: string[] // item ids
   insurance: boolean
-  foodWeeks: number // weeks of groceries at home
-  ateThisWeek: boolean // ate a cooked meal or fast food this week
+  foodPortions: number // groceries at home (needs a fridge); eaten automatically at the weekend
+  mealsThisWeek: number // meals eaten out this week (Bistron, Puben)
   gymCard: boolean
   sickHoursNextWeek: number
   funThisWeek: number // pub/date etc. used by weekend events

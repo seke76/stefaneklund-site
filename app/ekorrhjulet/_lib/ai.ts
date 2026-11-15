@@ -1,5 +1,5 @@
-import { COURSES, JOBS, QUEUE_POINTS_NEEDED, RENT_EVERY } from './data'
-import { actionsAt, clock, current, endTurn, jobOf, meetsJob, moveTo, perform, travelHours } from './engine'
+import { COURSES, JOBS, MEALS_PER_WEEK, QUEUE_POINTS_NEEDED, RENT_EVERY } from './data'
+import { actionsAt, clock, current, endTurn, hasFridge, jobOf, meetsJob, moveTo, perform, travelHours } from './engine'
 import { nextRandom } from './rng'
 import type { GameState, PlaceId } from './types'
 
@@ -22,7 +22,12 @@ function wishes(s: GameState): Plan[] {
   const out: Plan[] = []
   const w = (place: PlaceId, action: string) => out.push({ place, action })
 
-  if (p.foodWeeks === 0) w('kvickkop', 'food')
+  // Eat: food at home if there's a fridge, otherwise lunch out. Buy a fridge once it's affordable.
+  const needMeals = MEALS_PER_WEEK - p.mealsThisWeek - p.foodPortions
+  if (needMeals > 0 && hasFridge(s, p)) w('kvickkop', 'food')
+  if (needMeals >= 3 && !hasFridge(s, p)) w('bistro', 'lunchx3')
+  if (needMeals > 0) w('bistro', 'lunch')
+  if (!hasFridge(s, p) && p.cash > 6000) w('pryl', 'buy:kylskap')
   if (p.health < 40) w('lagenheten', 'sleep4')
   if (p.housing === 'soffa') {
     if (p.queuePoints >= QUEUE_POINTS_NEEDED) w('bostad', 'hyresratt')

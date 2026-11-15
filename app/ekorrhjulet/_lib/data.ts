@@ -15,6 +15,7 @@ export const PLACES: PlaceInfo[] = [
   { id: 'jobbtorget', name: 'Jobbtorget', short: 'Jobb', tagline: 'Sök jobb. Kaffet är gratis, hoppet kostar extra.', closes: 17 },
   { id: 'hogskolan', name: 'Högskolan', short: 'Plugg', tagline: 'Kurser och examina. Pengarna kommer, skulden består.' },
   { id: 'banken', name: 'Banken', short: 'Bank', tagline: 'Ekollonbanken: spara, låna och fonder. Räntan är rörlig, mest uppåt.' },
+  { id: 'bistro', name: 'Bistron', short: 'Mat', tagline: 'Bistro Ekollon: dagens lunch och en riktig middag.' },
   { id: 'kvickkop', name: 'Kvickköp', short: 'Mat', tagline: 'Mat för veckan. Gå inte hit hungrig.' },
   { id: 'mobel', name: 'Möbelmagasinet', short: 'Möbler', tagline: 'Platta paket. En insexnyckel blir alltid över.' },
   { id: 'pryl', name: 'Prylpalatset', short: 'Prylar', tagline: 'Elektronik och prylar. 0 kr idag, resten för alltid.' },
@@ -70,11 +71,13 @@ export type Item = {
   status: number // adds to Status
   happy?: number // adds directly to Lycka (comfort)
   rest?: number // extra health per rest hour at home
+  fridge?: boolean // lets you keep groceries at home
   travel?: number // fraction of walking time saved
 }
 
 export const ITEMS: Record<Era, Item[]> = {
   nutid: [
+    { id: 'kylskap', name: 'Kylskåp', price: 4000, place: 'pryl', status: 1, fridge: true },
     { id: 'smartphone', name: 'Smartphone', price: 12000, place: 'pryl', status: 10 },
     { id: 'tv', name: 'Stor tv med streaming', price: 8000, place: 'pryl', status: 6, happy: 4 },
     { id: 'konsol', name: 'Spelkonsol', price: 6000, place: 'pryl', status: 4, happy: 5 },
@@ -85,6 +88,7 @@ export const ITEMS: Record<Era, Item[]> = {
     { id: 'tavla', name: 'Tavla med älg', price: 900, place: 'mobel', status: 2, happy: 1 },
   ],
   '1994': [
+    { id: 'kylskap', name: 'Kylskåp', price: 4000, place: 'pryl', status: 1, fridge: true },
     { id: 'mobil', name: 'Mobiltelefon (stor)', price: 15000, place: 'pryl', status: 12 },
     { id: 'tv', name: 'Färg-tv med text-tv', price: 8000, place: 'pryl', status: 5, happy: 4 },
     { id: 'video', name: 'Videobandspelare', price: 6000, place: 'pryl', status: 4, happy: 5 },
@@ -113,7 +117,10 @@ export const QUEUE_POINTS_NEEDED = 30
 export const BRF_PRICE = 2_000_000
 export const BRF_DOWN = 0.15
 
-export const FOOD_PRICE = 900
+export const FOOD_PRICE = 900 // a bag of groceries: FOOD_PORTIONS meals at home
+export const FOOD_PORTIONS = 5
+export const MEALS_PER_WEEK = 5 // one meal a day, Monday to Friday
+export const FRIDGE_PORTIONS = 15 // how much the fridge holds
 export const GYM_CARD = 3000
 export const GYM_DAYPASS = 120
 export const INSURANCE_WEEKLY = 149

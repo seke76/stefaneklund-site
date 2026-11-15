@@ -6,7 +6,10 @@ import {
   COURSES,
   EGON_QUIPS,
   ERA_PRICE,
+  FOOD_PORTIONS,
   FOOD_PRICE,
+  FRIDGE_PORTIONS,
+  MEALS_PER_WEEK,
   GYM_CARD,
   GYM_DAYPASS,
   HOURS_PER_STEP,
@@ -57,6 +60,20 @@ export const current = (s: GameState) => s.players[s.turn]
 export const jobOf = (p: Player): Job | null => JOBS.find((j) => j.id === p.jobId) ?? null
 export const items = (s: GameState) => ITEMS[s.settings.era]
 const itemOf = (s: GameState, id: string): Item | undefined => items(s).find((i) => i.id === id)
+export const hasFridge = (s: GameState, p: Player) => p.items.some((id) => itemOf(s, id)?.fridge)
+
+/** Brings a game saved by an older version up to date (missing fields get sensible values). */
+export function migrate(s: GameState): GameState {
+  for (const p of s.players as (Player & { foodWeeks?: number })[]) {
+    if (p.mealsThisWeek === undefined) p.mealsThisWeek = 0
+    if (p.foodPortions === undefined) {
+      p.foodPortions = (p.foodWeeks ?? 0) * FOOD_PORTIONS
+      if (p.foodPortions > 0 && !p.items.includes('kylskap')) p.items.push('kylskap') // they had food at home
+    }
+    delete p.foodWeeks
+  }
+  return s
+}
 
 /* ---------- Setup ---------- */
 
@@ -116,8 +133,8 @@ export function newGame(settings: Settings, setups: PlayerSetup[]): GameState {
     mortgage: 0,
     items: [],
     insurance: false,
-    foodWeeks: 1,
-    ateThisWeek: false,
+    foodPortions: 0, // no fridge yet: eat out to begin with
+    mealsThisWeek: 0,
     gymCard: false,
     sickHoursNextWeek: 0,
     funThisWeek: 0,
@@ -305,9 +322,9 @@ export function actionsAt(s: GameState): Action[] {
   switch (p.location) {
     case 'lagenheten': {
       const rest = 2 + restBonus(s, p)
-      add({ id: 'rest2', label: 'Vila 2 h', hours: 2, cost: 0, note: `Hälsa +${rest * 2}` })
-      add({ id: 'sleep4', label: 'Sov ut 4 h', hours: 4, cost: 0, note: `Hälsa +${rest * 4}` })
-      add({ id: 'cook', label: 'Laga en riktig middag', hours: 1, cost: 0, note: 'Hälsa +4', disabled: p.foodWeeks > 0 ? undefined : 'Kylskåpet är tomt' })
+      // Nights are slept automatically; resting here is extra.
+      add({ id: 'rest2', label: 'Vila 2 h', hours: 2, cost: 0, note: `Extra vila · Hälsa +${rest * 2}` })
+      add({ id: 'sleep4', label: 'Lång vila 4 h', hours: 4, cost: 0, note: `Extra vila · Hälsa +${rest * 4}` })
       add({ id: 'call', label: era === '1994' ? 'Ring mamma från fasta telefonen' : 'Ring familjen', hours: 0.5, cost: 0, note: 'Relationer +4' })
       break
     }
@@ -390,8 +407,24 @@ export function actionsAt(s: GameState): Action[] {
       })
       break
     }
+    case 'bistro': {
+      const full = p.mealsThisWeek >= MEALS_PER_WEEK ? 'Du har redan ätit dig mätt den här veckan' : undefined
+      add({ id: 'lunch', group: 'Mat', label: 'Dagens lunch', hours: 1, cost: price(s, 120), note: `1 måltid · Hälsa +2 · ${p.mealsThisWeek}/${MEALS_PER_WEEK} i veckan`, disabled: full })
+      add({ id: 'dinner', group: 'Mat', label: 'Middag i lugn och ro', hours: 2, cost: price(s, 280), note: '1 måltid · Hälsa +4 · Relationer +2', disabled: full })
+      add({ id: 'lunchx3', group: 'Mat', label: 'Lunchkort, 3 luncher', hours: 2, cost: price(s, 330), note: '3 måltider på en gång, lite billigare', disabled: p.mealsThisWeek + 3 > MEALS_PER_WEEK ? 'Du behöver inte så många måltider till' : undefined })
+      break
+    }
     case 'kvickkop': {
-      add({ id: 'food', group: 'Mat', label: 'Handla mat för en vecka', hours: 0.5, cost: price(s, FOOD_PRICE), note: p.foodWeeks ? `Du har mat för ${p.foodWeeks} veckor` : 'Kylskåpet är tomt!' })
+      const fridge = hasFridge(s, p)
+      add({
+        id: 'food',
+        group: 'Mat',
+        label: `Matkasse, ${FOOD_PORTIONS} portioner`,
+        hours: 0.5,
+        cost: price(s, FOOD_PRICE),
+        note: fridge ? `Hemma: ${p.foodPortions} portioner · äts automatiskt` : 'Maten äts hemma automatiskt',
+        disabled: !fridge ? 'Du behöver ett kylskåp (Prylpalatset)' : p.foodPortions + FOOD_PORTIONS > FRIDGE_PORTIONS ? 'Kylskåpet är fullt' : undefined,
+      })
       for (const c of CLOTHES) {
         add({ id: `clothes:${c.level}`, group: 'Kläder', label: `Köp ${c.name.toLowerCase()}`, hours: 0.5, cost: price(s, c.price), note: `Håller ca ${c.weeks} veckor` })
       }
@@ -443,6 +476,7 @@ export function actionsAt(s: GameState): Action[] {
         add({ id: 'wait16', label: 'Vänta tills puben öppnar 16:00', hours: Math.round((16 - hour) * 4) / 4, cost: 0 })
         break
       }
+      add({ id: 'snacks', label: 'Smårätter i baren', hours: 0.5, cost: price(s, 90), note: '1 måltid · Hälsa −1 (fet mat)', disabled: p.mealsThisWeek >= MEALS_PER_WEEK ? 'Du är mätt' : undefined })
       add({ id: 'afterwork', label: 'Afterwork med kollegor', hours: 3, cost: price(s, 400), note: 'Relationer +10, Hälsa −2' })
       add({ id: 'quiz', label: 'Pubquiz', hours: 2, cost: price(s, 150), note: 'Relationer +6' })
       add({ id: 'date', label: p.partner ? 'Dejt med din partner' : 'Gå på dejt', hours: 3, cost: price(s, 600), note: 'Relationer +12' })
@@ -507,11 +541,23 @@ export function perform(state: GameState, id: string, amount?: number): GameStat
       say(verb === 'rest2' ? 'Du vilade i soffan.' : 'Du sov som en stock.')
       break
     }
-    case 'cook':
-      p.health = clamp(p.health + 4)
-      p.ateThisWeek = true
-      say('Riktig mat! Kroppen tackar.')
+    case 'lunch':
+    case 'dinner':
+    case 'lunchx3':
+    case 'snacks': {
+      pay(p, a.cost)
+      const n = verb === 'lunchx3' ? 3 : 1
+      p.mealsThisWeek = Math.min(MEALS_PER_WEEK, p.mealsThisWeek + n)
+      if (verb === 'lunch') p.health = clamp(p.health + 2)
+      if (verb === 'dinner') {
+        p.health = clamp(p.health + 4)
+        p.relations = clamp(p.relations + 2)
+      }
+      if (verb === 'snacks') p.health = clamp(p.health - 1)
+      const what = { lunch: 'Dagens lunch var pannbiff. Gott!', dinner: 'En lång middag. Du pratade med servitören om livet.', lunchx3: 'Lunchkort köpt och tre luncher uppätna i förväg. Smart.', snacks: 'Pommes och ostbågar. Inte nyttigt, men mätt.' }[verb as 'lunch']
+      say(`${what} Måltider i veckan: ${p.mealsThisWeek}/${MEALS_PER_WEEK}.`)
       break
+    }
     case 'call':
       p.relations = clamp(p.relations + 4)
       say('Mamma undrade när du ska skaffa ett riktigt jobb. Men det var trevligt.')
@@ -608,8 +654,8 @@ export function perform(state: GameState, id: string, amount?: number): GameStat
       break
     case 'food':
       pay(p, a.cost)
-      p.foodWeeks += 1
-      say('Kylskåpet är fyllt.')
+      p.foodPortions += FOOD_PORTIONS
+      say(`Kylskåpet är fyllt: ${p.foodPortions} portioner hemma. Du äter av dem automatiskt.`)
       break
     case 'clothes': {
       const c = CLOTHES.find((x) => x.level === Number(arg))!
@@ -721,12 +767,21 @@ export function endTurn(state: GameState): GameState {
     return amount - fromCash - fromBank
   }
 
-  // Food
-  if (p.foodWeeks > 0) p.foodWeeks -= 1
-  else if (!p.ateThisWeek) {
-    p.health = clamp(p.health - 15)
-    p.sickHoursNextWeek += 6
-    add('Du hade ingen mat hemma och svalt. Hälsa −15', undefined, 'bad')
+  // Food: 5 meals a week. Meals eaten out count first, then food at home is eaten automatically.
+  let missing = Math.max(0, MEALS_PER_WEEK - p.mealsThisWeek)
+  const fromHome = Math.min(missing, p.foodPortions)
+  if (fromHome) {
+    p.foodPortions -= fromHome
+    missing -= fromHome
+    add(`Du åt hemma ${fromHome} ${fromHome === 1 ? 'gång' : 'gånger'} (${p.foodPortions} portioner kvar)`, undefined, 'neutral')
+  }
+  if (missing > 0) {
+    p.health = clamp(p.health - 4 * missing)
+    add(`Du hoppade över ${missing} ${missing === 1 ? 'måltid' : 'måltider'}. Hälsa −${4 * missing}`, undefined, 'bad')
+    if (missing >= 3) {
+      p.sickHoursNextWeek += 6
+      add('Du var så hungrig att du tappade 6 timmar nästa vecka.', undefined, 'bad')
+    }
   }
 
   // Body and relations
@@ -838,8 +893,9 @@ export function endTurn(state: GameState): GameState {
   if (p.inQueue) p.queuePoints += 1
 
   // Långfingrade Leffe at home
-  if ((p.housing === 'andrahand' || p.housing === 'soffa') && p.items.length && chance(s, 0.1 * mul)) {
-    const stolen = pick(s, p.items)
+  const stealable = p.items.filter((id) => !itemOf(s, id)?.fridge) // a fridge is too heavy to carry off
+  if ((p.housing === 'andrahand' || p.housing === 'soffa') && stealable.length && chance(s, 0.1 * mul)) {
+    const stolen = pick(s, stealable)
     const name = itemOf(s, stolen)?.name ?? stolen
     if (p.insurance) add(`Långfingrade Leffe stal din ${name.toLowerCase()}, men försäkringen ersatte den.`, undefined, 'neutral')
     else {
@@ -882,7 +938,7 @@ export function endTurn(state: GameState): GameState {
   p.sickHoursNextWeek = 0
   p.workedThisWeek = 0
   p.studiedThisWeek = 0
-  p.ateThisWeek = false
+  p.mealsThisWeek = 0
   p.askedRaiseThisWeek = false
   p.funThisWeek = 0
   p.earnedThisWeek = 0
