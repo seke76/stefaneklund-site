@@ -117,10 +117,8 @@ export const QUEUE_POINTS_NEEDED = 30
 export const BRF_PRICE = 2_000_000
 export const BRF_DOWN = 0.15
 
-export const FOOD_PRICE = 900 // a bag of groceries: FOOD_PORTIONS meals at home
-export const FOOD_PORTIONS = 5
-export const MEALS_PER_WEEK = 5 // one meal a day, Monday to Friday
-export const FRIDGE_PORTIONS = 15 // how much the fridge holds
+export const FOOD_PRICE = 900 // a bag of groceries: food for one week at home
+export const FRIDGE_WEEKS = 4 // how many weeks of food the fridge holds
 export const GYM_CARD = 3000
 export const GYM_DAYPASS = 120
 export const INSURANCE_WEEKLY = 149

@@ -280,7 +280,7 @@ function How({ onBack }: { onBack: () => void }) {
         <li>Varje tur är en vecka med 60 timmar. Klicka på ett hus för att gå dit. Att gå tar tid.</li>
         <li>Inne i huset väljer du vad du gör: jobba, plugga, handla, träffa folk. Knapparna visar vad det kostar.</li>
         <li>Tryck Avsluta veckan när du är klar. I helgen dras hyra och mat, och något händer alltid.</li>
-        <li>Du behöver 5 måltider i veckan. Ät på Bistron eller Puben. Med ett kylskåp (Prylpalatset) kan du handla mat hem på Kvickköp, och den äter du automatiskt.</li>
+        <li>Du behöver äta en gång i veckan: på Bistron eller Puben. Med ett kylskåp (Prylpalatset) kan du handla mat hem på Kvickköp, och den äter du automatiskt de veckor du inte äter ute.</li>
         <li>Du sover automatiskt på nätterna. Är du trött kan du vila extra hemma eller träna på Gymmet.</li>
         <li>Håll koll på hälsan och kontanterna. Långfingrade Leffe gillar fulla plånböcker.</li>
         <li>Först att nå alla fem målen vinner: pengar, utbildning, karriär, relationer och lycka.</li>

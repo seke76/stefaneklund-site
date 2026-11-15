@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { CLOTHES_NAME, HOURS_PER_WEEK, MEALS_PER_WEEK, PLACES, RENT_EVERY, placeName } from '../_lib/data'
+import { CLOTHES_NAME, HOURS_PER_WEEK, PLACES, RENT_EVERY, placeName } from '../_lib/data'
 import { actionsAt, clock, genitive, hasFridge, jobOf, kr, lycka, progress, status, trygghet, utveckling } from '../_lib/engine'
 import type { Action, GameState, PlaceId, Player } from '../_lib/types'
 
@@ -113,8 +113,8 @@ export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; on
             {p.housing !== 'soffa' && `, ${p.rent.toLocaleString('sv-SE')}/mån`}
           </dd>
           <dt>Mat</dt>
-          <dd className={p.mealsThisWeek + p.foodPortions < MEALS_PER_WEEK ? 'warn' : ''}>
-            {p.mealsThisWeek}/{MEALS_PER_WEEK} ätit · {hasFridge(s, p) ? `${p.foodPortions} hemma` : 'ej kylskåp'}
+          <dd className={p.mealsThisWeek === 0 && p.foodPortions === 0 ? 'warn' : ''}>
+            {p.mealsThisWeek > 0 ? 'Ätit i veckan' : 'Inte ätit'} · {hasFridge(s, p) ? `${p.foodPortions} v hemma` : 'ej kylskåp'}
           </dd>
           <dt>Kläder</dt>
           <dd>

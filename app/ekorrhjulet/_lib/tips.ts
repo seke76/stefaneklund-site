@@ -1,4 +1,4 @@
-import { COURSES, INSURANCE_WEEKLY, MEALS_PER_WEEK, QUEUE_POINTS_NEEDED, RENT_EVERY, placeName } from './data'
+import { COURSES, INSURANCE_WEEKLY, QUEUE_POINTS_NEEDED, RENT_EVERY, placeName } from './data'
 import { current, hasFridge, jobOf, kr, price } from './engine'
 import type { GameState } from './types'
 
@@ -22,12 +22,12 @@ export function birgittaTip(s: GameState): Tip {
 
   // Survival first.
   if (p.health < 25) return urgent('Du ser helt slut ut! Gå hem till Lägenheten och vila, annars blir du sjuk och förlorar en hel vecka.')
-  const mealsLeft = MEALS_PER_WEEK - p.mealsThisWeek - p.foodPortions
-  if (mealsLeft > 0 && p.hoursLeft <= 30)
+  const hungry = p.mealsThisWeek === 0 && p.foodPortions === 0
+  if (hungry && p.hoursLeft <= 30)
     return urgent(
       hasFridge(s, p)
-        ? `Du har mat för ${MEALS_PER_WEEK - mealsLeft} av ${MEALS_PER_WEEK} måltider. Köp en matkasse på Kvickköp eller ät på Bistron.`
-        : `Du har bara ätit ${p.mealsThisWeek} av ${MEALS_PER_WEEK} måltider. Ät på Bistron (eller smårätter på Puben) innan helgen.`,
+        ? 'Du har inte ätit och kylskåpet är tomt. Köp en matkasse på Kvickköp eller ät på Bistron innan helgen.'
+        : 'Du har inte ätit något den här veckan. Ät på Bistron (eller smårätter på Puben) innan helgen.',
     )
   if (p.housing === 'soffa') return urgent('Du sover på en kompis soffa. Gå till Bostadsbolaget och hyr något nytt så fort du kan.')
   if (rentIn <= 1 && money < p.rent) {
@@ -54,7 +54,7 @@ export function birgittaTip(s: GameState): Tip {
     return hint(`Långfingrade Leffe gillar andrahandslägenheter. En hemförsäkring på banken kostar ${kr(price(s, INSURANCE_WEEKLY))} i veckan.`)
   if (!hasFridge(s, p) && p.cash >= price(s, 6000))
     return hint(`Ett kylskåp på Prylpalatset (${kr(price(s, 4000))}) gör att du kan handla mat hem. Det är billigare än att äta ute.`)
-  if (mealsLeft > 0) return hint(`Du behöver ${MEALS_PER_WEEK} måltider i veckan. Ät på Bistron eller Puben${hasFridge(s, p) ? ', eller fyll kylskåpet på Kvickköp' : ''}.`)
+  if (hungry) return hint(`Du behöver äta en gång i veckan. Ät på Bistron eller Puben${hasFridge(s, p) ? ', eller fyll kylskåpet på Kvickköp' : ''}.`)
   if (p.clothes > 0 && p.clothesWeeksLeft <= 1) return hint('Kläderna är snart utslitna. Nya finns på Kvickköp.')
   if (p.relations < 30) return hint('Du har inte träffat någon på länge. Ring familjen hemifrån eller gå till Puben efter 16.')
 

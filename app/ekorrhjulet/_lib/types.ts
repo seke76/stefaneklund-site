@@ -94,8 +94,8 @@ export type Player = {
   mortgage: number
   items: string[] // item ids
   insurance: boolean
-  foodPortions: number // groceries at home (needs a fridge); eaten automatically at the weekend
-  mealsThisWeek: number // meals eaten out this week (Bistron, Puben)
+  foodPortions: number // weeks of food at home (needs a fridge); one is eaten automatically if you didn't eat out
+  mealsThisWeek: number // 1 when the player has eaten out this week (Bistron, Puben); one meal a week is enough
   gymCard: boolean
   sickHoursNextWeek: number
   funThisWeek: number // pub/date etc. used by weekend events
@@ -116,6 +116,7 @@ export type WeekSummary = {
 
 export type GameState = {
   version: 1
+  foodVersion?: 2 // 2 = one meal a week (older saves counted 5 meals a week)
   settings: Settings
   week: number
   turn: number // index into players
