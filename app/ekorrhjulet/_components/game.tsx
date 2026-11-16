@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { playAiTurn } from '../_lib/ai'
 import { clock, current, endTurn, genitive, moveTo, newGame, perform, progress, travelHours } from '../_lib/engine'
 import { addBest, clearGame, downloadSave, loadGame, loadPrefs, parseSave, saveGame, savePrefs, type Prefs } from '../_lib/save'
+import { HOURS_PER_WEEK } from '../_lib/data'
 import { birgittaGreeting, birgittaTip } from '../_lib/tips'
 import { playMusic, setTheme, sfx, stopMusic, type Sfx } from '../_lib/sound'
 import type { Action, GameState, PlaceId, PlayerSetup, Settings } from '../_lib/types'
@@ -246,9 +247,12 @@ export default function Game() {
                       {aiBusy ? 'Egon springer runt i stan och köper möbler…' : tip.text}
                     </span>
                   </div>
-                  <button type="button" className={`btn btn-big end-week${p.hoursLeft > 10 ? ' end-week-quiet' : ''}`} onClick={endWeek} disabled={busy}>
-                    Avsluta veckan
-                  </button>
+                  {/* Only in the last quarter of the week; before that there's no reason to end early. */}
+                  {p.hoursLeft <= HOURS_PER_WEEK / 4 && (
+                    <button type="button" className="btn btn-big end-week" onClick={endWeek} disabled={busy}>
+                      Avsluta veckan
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="flower-clock" aria-live="polite">
