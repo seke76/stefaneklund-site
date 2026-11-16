@@ -25,7 +25,8 @@ Spelet har en **egen root-layout** (`layout.tsx`, `ekorrhjulet.css`) och påverk
 | `_lib/save.ts` | Sparning i webbläsaren (`localStorage`): pågående spel, ljudval och Bästa liv. |
 | `_lib/tips.ts` | Birgittas råd: väljer det viktigaste tipset för spelaren just nu. |
 | `_components/birgitta.tsx` | Birgittas pixelporträtt (16 × 16). |
-| `_lib/sound.ts` | Ljudeffekter och musik, genererade med Web Audio. Inga ljudfiler. |
+| `_lib/sound.ts` | Ljud och musik, genererade med Web Audio (inga ljudfiler): ljudeffekter och en liten fyrkanals-tracker i gammal konsolstil (pulsvågsmelodi, ackord/arpeggio, bas och brustrummor). `renderSong()` spelar in en låt offline för att lyssna och kontrollera nivåer. |
+| `_lib/songs.ts` | Spelets musik: en egen låt per plats plus titelskärmen och kartan, skrivna som noter, ackord och trummönster. |
 | `_components/game.tsx` | Skärmarna och spelflödet. |
 | `_components/start.tsx` | Titelskärmen i arkadstil: meny, Bästa liv, Hur man spelar och inställningarna för ett nytt spel. |
 | `_components/board.tsx` | Kartan: klickytor över byggnaderna, spelpjäser som går längs ringvägen och mittpanelen. |
@@ -96,6 +97,28 @@ Resultatet av det man gör (lön, inbrott och så vidare) visas som korta meddel
 ## Egon
 
 Egon följer en prioritetslista: mat, hälsa, boende, bättre jobb, kläder, bostadskö, jobb, relationer, plugg och sist möbler. Det sista är hans svaghet. *Lätt* går till puben ibland i stället, *Svår* sparar på banken. Han spelar sin vecka direkt och visas i sammanfattningen med en replik.
+
+## Musik
+
+Varje plats har en egen chiptune-låt som passar stället, och den byts med en mjuk övertoning när man går in eller ut. Titelskärmen och kartan har egna låtar.
+
+| Låt | Plats | Stil |
+|---|---|---|
+| Insert Coin | Titelskärmen | Hjältefanfar |
+| En vanlig måndag | Kartan | Glad stadsmelodi |
+| Söndagsmorgon | Lägenheten | Lo-fi-vaggvisa med maj7-ackord |
+| Ditt samtal är viktigt för oss | Jobbtorget | Telefonkömusik, bossanova |
+| Menuett för en student | Högskolan | Barock menuett i 3/4 |
+| Räntan tickar | Banken | Allvarlig moll med tickande klocka |
+| Valse du Bistro | Bistron | Fransk cafévals med dragspelsvibrato |
+| Erbjudanden i gång 3 | Kvickköp | Butiksjingel |
+| Polska för platta paket | Möbelmagasinet | Svensk folkton i dorisk moll |
+| Noll kronor i dag | Prylpalatset | 80-talssynth med oktavbas |
+| Din plats i kön | Bostadsbolaget | Byråkratisk väntrumsmusik |
+| Fredagsboogie på Gyllene Ekorren | Puben | Boogie-shuffle, tolvtaktsblues |
+| En repetition till | Gymmet | Pumpande träningsbeat |
+
+Ny låt: lägg till den i `_lib/songs.ts` (formatet står överst i filen). Varje takt ska ha `steps / res` toner.
 
 ## Sparning och ljud
 

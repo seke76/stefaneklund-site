@@ -7,6 +7,7 @@ import { loadBest, type Best, type Prefs } from '../_lib/save'
 import type { Difficulty, Era, GameState, GoalPreset, PlayerSetup, Settings } from '../_lib/types'
 
 type Props = {
+  onInteract: () => void // first click on the title screen: start the title music
   saved: GameState | null
   prefs: Prefs
   onTogglePref: (k: keyof Prefs) => void
@@ -18,7 +19,7 @@ type Props = {
 type View = 'menu' | 'new' | 'how'
 
 /** Title screen in 1994 arcade style: a menu, "Bästa liv", and the new-game setup. */
-export default function Start({ saved, prefs, onTogglePref, onContinue, onImport, onStart }: Props) {
+export default function Start({ onInteract, saved, prefs, onTogglePref, onContinue, onImport, onStart }: Props) {
   const [view, setView] = useState<View>('menu')
   const [importError, setImportError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -26,7 +27,7 @@ export default function Start({ saved, prefs, onTogglePref, onContinue, onImport
   useEffect(() => setBest(loadBest()), [])
 
   return (
-    <main className="theme-pixelstaden arcade">
+    <main className="theme-pixelstaden arcade" onPointerDown={onInteract} onKeyDown={onInteract}>
       <section className="arcade-main">
         <img className="arcade-squirrel" src="/ekorrhjulet/ekorre.gif" alt="En ekorre springer i ett ekorrhjul" width={229} height={231} />
         <h1 className="arcade-title">EKORRHJULET</h1>

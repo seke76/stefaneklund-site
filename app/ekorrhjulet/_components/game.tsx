@@ -6,7 +6,7 @@ import { clock, current, endTurn, genitive, moveTo, newGame, perform, progress, 
 import { addBest, clearGame, downloadSave, loadGame, loadPrefs, parseSave, saveGame, savePrefs, type Prefs } from '../_lib/save'
 import { HOURS_PER_WEEK } from '../_lib/data'
 import { birgittaGreeting, birgittaTip } from '../_lib/tips'
-import { playMusic, setTheme, sfx, stopMusic, type Sfx } from '../_lib/sound'
+import { playSong, setTheme, sfx, stopMusic, type Sfx } from '../_lib/sound'
 import type { Action, GameState, PlaceId, PlayerSetup, Settings } from '../_lib/types'
 import Birgitta from './birgitta'
 import Board from './board'
@@ -48,6 +48,11 @@ export default function Game() {
 
   useEffect(() => () => stopMusic(), [])
 
+  // Music: the town theme on the map, each place's own song inside it (see _lib/songs.ts).
+  useEffect(() => {
+    if (s) playSong(openPlace ?? 'town', prefs.music)
+  }, [s === null, openPlace, prefs.music]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const play = useCallback((x: Sfx) => sfx(x, prefs.sfx), [prefs.sfx])
 
   const toast = useCallback((lines: string[]) => {
@@ -60,7 +65,6 @@ export default function Game() {
   const begin = (game: GameState) => {
     setS(game)
     setTheme(game.settings.board)
-    playMusic(game.settings.board, prefs.music)
   }
 
   const onStart = (settings: Settings, players: PlayerSetup[]) => {
@@ -86,7 +90,7 @@ export default function Game() {
     const next = { ...prefs, [k]: !prefs[k] }
     setPrefs(next)
     savePrefs(next)
-    if (k === 'music' && s) playMusic(s.settings.board, next.music)
+    if (k === 'music' && !s) playSong('title', next.music) // in a game, the effect below picks the song
   }
 
   // An AI player's turn starts as soon as the previous summary is closed.
@@ -122,7 +126,7 @@ export default function Game() {
   const [fresh, setFresh] = useState(true)
   useEffect(() => setFresh(true), [s?.week, s?.turn])
 
-  if (!s) return <Start saved={saved} prefs={prefs} onTogglePref={togglePref} onContinue={onContinue} onImport={onImport} onStart={onStart} />
+  if (!s) return <Start onInteract={() => playSong('title', prefs.music)} saved={saved} prefs={prefs} onTogglePref={togglePref} onContinue={onContinue} onImport={onImport} onStart={onStart} />
 
   const p = current(s)
   const busy = !!walking || !!openPlace || !!s.summary || aiBusy || s.over
@@ -191,14 +195,14 @@ export default function Game() {
 
   const saveAndQuit = () => {
     saveGame(s)
-    stopMusic()
+    playSong('title', prefs.music)
     setSaved(s)
     setS(null)
   }
 
   const newGameClick = () => {
     clearGame()
-    stopMusic()
+    playSong('title', prefs.music)
     setS(null)
     setSaved(null)
   }
