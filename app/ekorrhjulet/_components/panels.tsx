@@ -114,7 +114,7 @@ export function Sidebar({ s, p, onEndWeek, busy }: { s: GameState; p: Player; on
           </dd>
           <dt>Mat</dt>
           <dd className={p.mealsThisWeek === 0 && p.foodPortions === 0 ? 'warn' : ''}>
-            {p.mealsThisWeek > 0 ? 'Ätit i veckan' : 'Inte ätit'} · {hasFridge(s, p) ? `${p.foodPortions} v hemma` : 'ej kylskåp'}
+            {p.mealsThisWeek > 0 ? 'Ätit i veckan' : 'Inte ätit'} · {hasFridge(s, p) || p.foodPortions ? `${p.foodPortions} v hemma` : 'ej kylskåp'}
           </dd>
           <dt>Kläder</dt>
           <dd>

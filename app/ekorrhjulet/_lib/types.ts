@@ -95,6 +95,7 @@ export type Player = {
   items: string[] // item ids
   insurance: boolean
   foodPortions: number // weeks of food at home (needs a fridge); one is eaten automatically if you didn't eat out
+  spoiledWeek?: number // the week food went bad at home for lack of a fridge (Birgitta mentions it)
   mealsThisWeek: number // 1 when the player has eaten out this week (Bistron, Puben); one meal a week is enough
   gymCard: boolean
   sickHoursNextWeek: number

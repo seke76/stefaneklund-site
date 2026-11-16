@@ -37,6 +37,9 @@ export function birgittaTip(s: GameState): Tip {
   if (p.inkasso > 0) return urgent(`Du har ${kr(p.inkasso)} hos inkasso. Betala på banken när du kan, hälften av lönen försvinner tills dess.`)
   if (p.health < 40) return urgent('Du är trött. Vila hemma i Lägenheten eller träna på Gymmet, annars kan du bli sjuk.')
 
+  if (!hasFridge(s, p) && p.spoiledWeek !== undefined && s.week - p.spoiledWeek <= 1)
+    return hint(`Maten blev dålig förra veckan, va? Utan kylskåp håller den inte. Ett kylskåp finns på Prylpalatset (${kr(price(s, 4000))}).`)
+
   // A new player: explain the basics.
   if (s.week === 1 && p.hoursLeft === 60 && !job)
     return hint('Välkommen! Klicka på ett hus för att gå dit. Börja med Jobbtorget, och glöm inte att äta på Bistron. Du har inget kylskåp än.')

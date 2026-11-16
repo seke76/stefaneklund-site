@@ -424,8 +424,9 @@ export function actionsAt(s: GameState): Action[] {
         label: 'Matkasse för en vecka',
         hours: 0.5,
         cost: price(s, FOOD_PRICE),
-        note: fridge ? `Hemma: mat för ${p.foodPortions} v · äts automatiskt` : 'Maten äts hemma automatiskt',
-        disabled: !fridge ? 'Du behöver ett kylskåp (Prylpalatset)' : p.foodPortions >= FRIDGE_WEEKS ? 'Kylskåpet är fullt' : undefined,
+        note: p.foodPortions ? `Hemma: mat för ${p.foodPortions} v · äts automatiskt` : 'Maten äts hemma automatiskt',
+        // No fridge? You may still buy it: it goes bad at the weekend. Players learn the hard way.
+        disabled: p.foodPortions >= FRIDGE_WEEKS ? (fridge ? 'Kylskåpet är fullt' : 'Du har redan mat hemma') : undefined,
       })
       for (const c of CLOTHES) {
         add({ id: `clothes:${c.level}`, group: 'Kläder', label: `Köp ${c.name.toLowerCase()}`, hours: 0.5, cost: price(s, c.price), note: `Håller ca ${c.weeks} veckor` })
@@ -769,6 +770,13 @@ export function endTurn(state: GameState): GameState {
   }
 
   // Food: one meal a week. Eating out counts; otherwise a week of food at home is eaten automatically.
+  // Without a fridge, food at home goes bad before the weekend and is thrown out.
+  if (p.foodPortions > 0 && !hasFridge(s, p)) {
+    const wasted = p.foodPortions * price(s, FOOD_PRICE)
+    add(`Utan kylskåp blev maten dålig och fick slängas (${kr(wasted)} i soporna).`, undefined, 'bad')
+    p.foodPortions = 0
+    p.spoiledWeek = s.week
+  }
   if (p.mealsThisWeek === 0) {
     if (p.foodPortions > 0) {
       p.foodPortions -= 1
