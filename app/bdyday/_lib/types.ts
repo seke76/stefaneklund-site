@@ -81,3 +81,49 @@ export type Exercise = {
   /** Where the exercise comes from, for the README and future credits. */
   source?: 'outside' | 'runnersworld' | 'bdy'
 }
+
+/* ---------- Workout planning (see _lib/plan.ts) ---------- */
+
+export type Minutes = 5 | 10 | 15 | 20
+/** How the body feels today. Picks easier or harder versions and the number of sets. */
+export type Energy = 'low' | 'normal' | 'high'
+/** What is available besides the floor. Filters exercises by `needs`. */
+export type Place = 'floor' | 'bar' | 'step' | 'both'
+
+/** The answers to the "what do you want to train today?" questions. */
+export type Answers = { minutes: Minutes; focus: Focus; energy: Energy; place: Place }
+
+/** timer: fixed work/rest intervals. sets: sets × reps at your own pace with timed rest. */
+export type Mode = 'timer' | 'sets'
+export type TimerSettings = { work: number; rest: number } // seconds
+export type SetSettings = { sets: number; rest: number } // rest between sets, seconds
+
+/** A proposed workout. Both modes are always prepared so the user can switch freely. */
+export type Plan = {
+  answers: Answers
+  /** Ranked exercise ids. Each mode takes as many from the top as fit in the time. */
+  pool: string[]
+  mode: Mode
+  timer: TimerSettings
+  sets: SetSettings
+  warmup: boolean
+}
+
+export type Side = 'L' | 'R'
+
+/** One step in the workout player. */
+export type Step =
+  | { kind: 'ready'; secs: number; next: string; nextSide?: Side }
+  | {
+      kind: 'work'
+      ex: string
+      side?: Side
+      /** Timed (timer mode, warm-up and holds) when set; otherwise the user taps "done". */
+      secs?: number
+      /** Set mode: reps, or seconds for holds. Per side for one-sided exercises without `side`. */
+      target?: number
+      set?: number
+      sets?: number
+      warmup?: boolean
+    }
+  | { kind: 'rest'; secs: number; next: string; nextSide?: Side; switchSide?: boolean }

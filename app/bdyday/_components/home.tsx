@@ -24,9 +24,9 @@ export default function Home() {
           <span className="stat">{S.week(0, 3)}</span>
         </div>
         <div className="cta">
-          <button className="btn btn-primary btn-block" disabled>
-            {S.train} · {S.soon}
-          </button>
+          <a className="btn btn-primary btn-block" href="/bdyday/trana">
+            {S.train}
+          </a>
           <a className="btn btn-ghost btn-block" href="/bdyday/ovningar">
             {S.library}
           </a>

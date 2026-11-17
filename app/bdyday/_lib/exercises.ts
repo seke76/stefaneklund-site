@@ -334,7 +334,7 @@ export const EXERCISES: Exercise[] = [
     id: 'burpee', family: 'burpee', level: 3, role: 'main', source: 'bdy', tempo: 'explosive',
     name: tx('Burpee', 'Burpee'),
     cue: tx('Ner med händerna, hoppa bak till planka, in igen och hoppa upp med armarna i luften.', 'Hands down, jump back to a plank, back in and jump up with your arms overhead.'),
-    focus: ['power', 'legs', 'upper'], metric: 'reps', sides: 'both', view: 'side',
+    focus: ['power', 'legs'], metric: 'reps', sides: 'both', view: 'side',
     frames: [STAND, { t: 125, n: [105, -45], an: [0, 0] }, PUSH_HIGH, { t: 125, n: [105, -45], an: [0, 0] }, JUMP],
   },
 

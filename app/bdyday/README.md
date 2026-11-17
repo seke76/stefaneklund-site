@@ -10,23 +10,78 @@ Idén är **"Vad vill du träna idag?"**: man svarar på några snabba frågor o
 
 Version 1 byggs i steg. Det som finns nu:
 
-- **Startsidan** (`/bdyday`): rubriken, streak och veckomål (fortfarande 0, eftersom pass inte loggas än) och knappen *Träna*. Knappen är avstängd tills passflödet finns.
+- **Startsidan** (`/bdyday`): rubriken, streak och veckomål (fortfarande 0, eftersom pass inte loggas än) och knappen *Träna*.
+- **Träna** (`/bdyday/trana`): fyra frågor, ett passförslag och passläget (se *Passflödet* nedan).
 - **Övningsbiblioteket** (`/bdyday/ovningar`): alla övningar med animerade figurer, filter per fokus och ett blad med instruktion och länkar till lättare och svårare varianter.
 - **PWA**: manifest och ikoner. Appen kan läggas till på hemskärmen.
 
-Kvar till v1: frågorna och passgeneratorn, passläget med timer, loggning av reps, progression, historik och inställningar.
+Kvar till v1: loggning av reps efter passet, progression, historik och inställningar.
 
 ## Sidor
 
 | Adress | Vad | Fil |
 |---|---|---|
 | `/bdyday` | Startsidan "Idag" | `page.tsx` → `_components/home.tsx` |
+| `/bdyday/trana` | Frågor → passförslag → passläge | `trana/page.tsx` → `_components/train.tsx`, `_components/player.tsx` |
 | `/bdyday/ovningar` | Övningsbiblioteket | `ovningar/page.tsx` → `_components/library.tsx` |
 | `/bdyday/manifest.webmanifest` | PWA-manifestet | `public/bdyday/manifest.webmanifest` |
 | `/bdyday/pwa-icon/192`, `/512` | Appikoner till manifestet | `pwa-icon/[size]/route.tsx` |
 | `/bdyday/apple-icon` | Ikon för iPhone-hemskärmen | `apple-icon.tsx` |
 
 BDY Day har en **egen root-layout** (`layout.tsx`, `bdyday.css`), precis som Whenworks. Huvudsajtens stil påverkar den alltså inte.
+
+## Passflödet
+
+```mermaid
+flowchart LR
+  A[Hur länge?] --> B[Fokus] --> C[Hur känns kroppen?] --> D[Vad har du att träna med?]
+  D --> E[Passförslag<br/>timer eller set × reps]
+  E -->|Byt övning / Nytt förslag| E
+  E --> F[Passläge] --> G[Bra jobbat!]
+```
+
+Allt sker på en sida och i minnet, så inget behöver sparas. Logiken finns i [`_lib/plan.ts`](_lib/plan.ts).
+
+**Frågorna** (ett tryck per fråga):
+- **Tid:** 5, 10, 15 eller 20 min.
+- **Fokus:** helkropp, ben, överkropp, core, explosivt eller löparstyrka.
+- **Hur kroppen känns:**
+  - *Trött* ger lättare varianter, inga hopp (utom vid fokus explosivt) och färre set.
+  - *Som vanligt* ger nivå 2.
+  - *Pigg* ger svårare varianter.
+- **Utrustning:** bara golvet, räck/gren, trappa/kant eller båda. Styr vilka övningar som får vara med.
+
+**Generatorn** rangordnar övningarna:
+1. En övning per familj, den nivå som ligger närmast dagens energi. En hoppvariant räknas som ett steg svårare om fokus inte är explosivt.
+2. Övningarna blandas så att samma kroppsdel inte kommer två gånger i rad (ben, överkropp, core, explosivt).
+3. Hopp begränsas till ungefär var fjärde övning (var tredje om man är pigg). Undantaget är fokus explosivt.
+4. Överkropp har få familjer och fylls ut med core, efter varannan överkroppsövning.
+5. Sist i listan kommer familjernas andra varianter, som reserver för *Byt*.
+
+**Två lägen.** Man kan alltid välja läge, och båda har ett förval som räknas fram från svaren:
+
+| | Timer | Set × reps |
+|---|---|---|
+| Hur | Fast arbetstid och vila per övning | Gör dina reps i egen takt, tryck *Klart*. Vilan räknas ner. |
+| Förval | 40/20 (val: 30/30, 45/15) | Trött 2 set / 60 s vila, som vanligt 3 / 45 s, pigg 3 / 30 s (val: 2–5 set, 30–90 s vila) |
+| Antal övningar | Så många som ryms i tiden. Räcker inte listan blir det flera varv. | Så många som ryms enligt en uppskattning av tid per rep, minst tre |
+| Förvalt för | allt utom löparstyrka | löparstyrka (Runner's World: 3–4 × 10, 30–60 s vila) |
+
+- Övningar *per sida* får ett block per sida i timerläget. I setläget står reps per sida.
+- Hålltider (plankor, häng) räknas ner även i setläget.
+- Antal reps per övning i setläget finns i `DOSE` i `plan.ts`. Standard är 10 reps eller 30 s, men till exempel knäböjshopp har 4 och snabba tåhävningar 40, som i artikeln.
+
+**Passförslaget** visar övningarna med reps eller tid. *Byt* (↻) byter en övning mot en oanvänd, helst för samma kroppsdel och från en annan familj. *Nytt förslag* blandar om. *Uppvärmning* (cirka 3 min, 30 s per rörelse) kan slås på och väljs efter fokus.
+
+**Passläget:**
+- Börjar med *Gör dig redo* (5 s).
+- Under arbetet visas figuren, instruktionen och nedräkningen eller antal reps.
+- Under vilan visas *Nästa* övning. Mellan sidorna står det *Byt sida*.
+- Pip de sista 3 sekunderna och vid start, och telefonen vibrerar vid varje byte.
+- Skärmen hålls tänd (Wake Lock), där webbläsaren stöder det.
+- Den andra sidan av en ensidig övning visas spegelvänd.
+- Man kan pausa, hoppa fram och tillbaka och avsluta.
+- Timern räknar mot klockan, så den drar inte iväg.
 
 ## Utseende
 
