@@ -1,0 +1,15 @@
+{
+  "name": "BDY Day",
+  "short_name": "BDY Day",
+  "description": "Vad vill du träna idag? Korta kroppsviktspass, var som helst.",
+  "start_url": "/bdyday",
+  "scope": "/bdyday",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0F0C",
+  "theme_color": "#0B0F0C",
+  "icons": [
+    { "src": "/bdyday/pwa-icon/192", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/bdyday/pwa-icon/512", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
