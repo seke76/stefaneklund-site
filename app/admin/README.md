@@ -17,6 +17,7 @@ En privat sida på [stefaneklund.se/admin](https://stefaneklund.se/admin) där d
   - stapeldiagram per dag
   - vilka val arrangörerna gör
   - aktivitet: svar, rundor, besök och mejl
+- **Vem ljuger?:** spelade rundor och besök, jämfört med perioden innan, och stapeldiagram per dag.
 - **Hemsidan:** besök per dag.
 - **Senaste fel:** de 20 senaste felen, med tid, var de hände och felmeddelandet.
 
@@ -59,6 +60,7 @@ Räknarna finns i [`lib/stats.ts`](../../lib/stats.ts) och sparas i **samma Upst
   - Botar och automatiska webbläsare filtreras bort.
   - Eftersom vem som helst kan anropa `/api/hit` ska besöksräknarna ses som ungefärliga.
 - **Whenworks** räknar i `app/whenworks/actions.ts` (skapade event och vad som valdes, svar, nya deltagare, rundor, bekräftade tider). Mejl räknas i `sendEmails` och fel i `run()`.
+- **Vem ljuger?** körs helt i webbläsaren och räknar därför via `/api/hit`: besök (`vl`) och spelade rundor (`vl_round`, skickas från `app/vemljuger/_components/game.tsx`).
 
 Ny app? Lägg till den i typen `AppId` i `lib/stats.ts`, anropa `track()` där saker händer och lägg till en sektion i `page.tsx`.
 

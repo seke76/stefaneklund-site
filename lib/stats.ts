@@ -7,7 +7,7 @@ import { getRedis } from './redis'
  * (Stockholm time). No names, emails, IP addresses or cookies. Counters live for a year,
  * so they outlast the Whenworks events themselves (60 days).
  */
-export type AppId = 'site' | 'whenworks'
+export type AppId = 'site' | 'whenworks' | 'vemljuger'
 
 const COUNTER_TTL = 400 * 24 * 60 * 60 // seconds
 const ERRORS_KEY = 'st:errors'

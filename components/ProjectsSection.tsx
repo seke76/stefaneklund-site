@@ -39,6 +39,14 @@ const projects = [
     href: '/whenworks',
     status: 'live' as const,
   },
+  {
+    num: '06',
+    name: 'VEM LJUGER?',
+    desc: 'Sällskapsspelet där alla utom spionen får samma hemliga ord. En telefon, 3–12 spelare, svenska kategorier. Installeras som app och funkar offline.',
+    link: 'stefaneklund.se/vemljuger',
+    href: '/vemljuger',
+    status: 'live' as const,
+  },
 ]
 
 export default function ProjectsSection() {

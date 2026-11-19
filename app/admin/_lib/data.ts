@@ -19,6 +19,7 @@ const WW = [
   'view_organizer',
 ] as const
 const SITE = ['view_home', 'error'] as const
+const VL = ['view_landing', 'round'] as const
 
 export type Series = { dates: string[]; values: number[] }
 /** Totals for the chosen period and the one before it, plus the daily values of the chosen one. */
@@ -38,9 +39,10 @@ function split<M extends string>(series: Record<M, number[]>, days: number) {
 /** Everything the dashboard shows. Checks the session itself, so it can never leak to a visitor. */
 export async function loadDashboard(days: number) {
   if (!(await verifySession())) throw new Error('Not signed in')
-  const [ww, site, db, errors, liveEvents] = await Promise.all([
+  const [ww, site, vl, db, errors, liveEvents] = await Promise.all([
     readDaily('whenworks', WW, days * 2),
     readDaily('site', SITE, days * 2),
+    readDaily('vemljuger', VL, days * 2),
     pingDb(),
     recentErrors(20),
     countKeys('ww:ev:*').catch(() => null),
@@ -51,6 +53,7 @@ export async function loadDashboard(days: number) {
     dates: ww.dates.slice(days),
     whenworks: split(ww.series, days),
     site: split(site.series, days),
+    vemljuger: split(vl.series, days),
     today: {
       emailSent: ww.series.email_sent[t],
       emailFailed: ww.series.email_failed[t],
