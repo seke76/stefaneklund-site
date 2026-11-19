@@ -40,6 +40,7 @@ const DOSE: Record<string, number> = {
   'dead-bug': 12, 'bicycle-crunch': 20, 'hollow-hold': 20, plank: 40, 'mountain-climber': 20,
   'side-plank-rotation': 8, 'side-leg-raise': 12, 'calf-raise': 15, 'single-leg-calf-raise': 12,
   'step-calf-raise': 12, 'fast-calf-raise': 40, 'single-leg-hop': 10, burpee: 8,
+  'walking-lunge': 16, 'static-lunge': 30, 'single-leg-hip-thrust': 10, 'tibialis-raise': 15, 'copenhagen-plank': 20,
 }
 export const doseOf = (ex: Exercise) => DOSE[ex.id] ?? (ex.metric === 'hold' ? 30 : 10)
 

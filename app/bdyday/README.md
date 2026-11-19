@@ -106,6 +106,7 @@ Alla övningar finns i [`_lib/exercises.ts`](_lib/exercises.ts). Varje övning h
 Källor:
 - Grundpasset kommer från Outside Online, *The 15-Minute Bodyweight Workout You Can Do Anywhere*: 15 övningar, 40 s arbete och 20 s vila.
 - Löparstyrkan kommer från Runner's World, *Så kan du minska skaderisken som veteranlöpare* (Jimmy Englund, fysioterapeut). Därifrån är bara övningarna för kroppsvikt med (steg 1 och hoppen i steg 3). Steg 2 med vikter är utelämnat.
+- Fler löparövningar kommer från en reel av Sam Zellien (`source: 'zellien'`): gående utfall, statiskt utfall, enbens höftlyft mot bänk, tibialislyft och Copenhagen-planka. Övriga övningar i reelen fanns redan. Goblet squat görs utan vikt som vanlig knäböj.
 - Resten (`source: 'bdy'`) är vanliga basövningar som fyller ut familjerna med lättare och svårare varianter.
 
 Ett nytt fokus eller en ny övning läggs till i `exercises.ts`. Biblioteket och filtren uppdateras då automatiskt.

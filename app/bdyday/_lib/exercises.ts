@@ -338,6 +338,51 @@ export const EXERCISES: Exercise[] = [
     frames: [STAND, { t: 125, n: [105, -45], an: [0, 0] }, PUSH_HIGH, { t: 125, n: [105, -45], an: [0, 0] }, JUMP],
   },
 
+  /* ===== From Sam Zellien's runner strength reel ===== */
+  {
+    id: 'walking-lunge', family: 'lunge', level: 2, role: 'main', source: 'zellien',
+    name: tx('Gående utfall', 'Walking lunges'),
+    cue: tx('Kliv fram i utfall och fortsätt framåt med andra benet. Rak överkropp, kontrollerade steg.', 'Step into a lunge and keep walking forward with the other leg. Tall chest, controlled steps.'),
+    focus: ['legs', 'runner'], metric: 'reps', sides: 'alternate', view: 'side',
+    frames: [LUNGE, { t: 180, n: [0, 0], f: [40, -30], an: [25, 165] }, swap(LUNGE), { t: 180, n: [40, -30], f: [0, 0], an: [25, 165] }],
+  },
+  {
+    id: 'static-lunge', family: 'lunge', level: 1, role: 'main', source: 'zellien',
+    name: tx('Statiskt utfall', 'Static lunge hold'),
+    cue: tx('Stanna längst ner i utfallet, bakre knät strax ovanför marken. Håll och andas.', 'Hold the bottom of the lunge, back knee just above the ground. Hold and breathe.'),
+    focus: ['legs', 'runner'], metric: 'hold', sides: 'each', view: 'side',
+    frames: [LUNGE],
+  },
+  {
+    id: 'single-leg-hip-thrust', family: 'bridge', level: 3, role: 'main', source: 'zellien', needs: 'step',
+    name: tx('Enbens höftlyft mot bänk', 'Single-leg hip thrust'),
+    cue: tx('Skulderbladen mot en bänk, ena foten i golvet. Pressa upp höften tills kroppen är rak och kläm rumpan.', 'Shoulder blades on a bench, one foot on the floor. Drive your hips up until your body is straight and squeeze your glutes.'),
+    focus: ['legs', 'runner'], metric: 'reps', sides: 'each', view: 'side',
+    frames: [
+      { t: 120, h: 140, n: [-110, 0, -90], f: [-130, -130], an: [100, 100] },
+      { t: 96, h: 100, n: [-84, 0, -90], f: [-82, -82], an: [100, 100], pin: 'neck' },
+    ],
+    box: 'neck',
+  },
+  {
+    id: 'tibialis-raise', family: 'shin', level: 1, role: 'main', source: 'zellien',
+    name: tx('Tibialislyft', 'Tibialis raises'),
+    cue: tx('Luta ryggen mot en vägg med hälarna en bit fram. Lyft tårna så högt du kan och sänk långsamt.', 'Lean your back against a wall with your heels a step out. Lift your toes as high as you can, lower slowly.'),
+    focus: ['legs', 'runner'], metric: 'reps', sides: 'both', view: 'side', tempo: 'slow',
+    frames: [{ t: 194, n: [14, 14, 100], an: [-10, -8] }, { t: 194, n: [14, 14, 150], an: [-10, -8], pin: 'na' }],
+  },
+  {
+    id: 'copenhagen-plank', family: 'adductor', level: 3, role: 'main', source: 'zellien', needs: 'step',
+    name: tx('Copenhagen-planka', 'Copenhagen plank'),
+    cue: tx('Sidoplanka med översta benet på en bänk. Lyft höften och för upp det undre benet mot bänken.', 'Side plank with your top leg on a bench. Lift your hips and bring the bottom leg up towards the bench.'),
+    focus: ['core', 'runner'], metric: 'hold', sides: 'each', view: 'front',
+    frames: [
+      { t: 98, n: [-55, -70], f: [-82, -82], an: [0, 90], af: [-70, -120] },
+      { t: 106, n: [-76, -76], f: [-74, -74], an: [0, 90], af: [-70, -120], pin: 'fa' },
+    ],
+    box: 'fa',
+  },
+
   /* ===== Warm-up ===== */
   {
     id: 'jumping-jacks', family: 'warmup-jacks', level: 1, role: 'warmup', source: 'bdy',

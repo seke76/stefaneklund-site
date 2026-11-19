@@ -79,7 +79,7 @@ export type Exercise = {
   /** Joint resting on a box (bench, step) in the first frame. */
   box?: Joint
   /** Where the exercise comes from, for the README and future credits. */
-  source?: 'outside' | 'runnersworld' | 'bdy'
+  source?: 'outside' | 'runnersworld' | 'zellien' | 'bdy'
 }
 
 /* ---------- Workout planning (see _lib/plan.ts) ---------- */
