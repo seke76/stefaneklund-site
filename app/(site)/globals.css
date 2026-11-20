@@ -125,9 +125,11 @@ section {
 }
 
 .ascii-art {
-  font-family: var(--font-vt323), monospace;
+  /* System monospace fonts carry the block and box-drawing glyphs at equal widths;
+     VT323 lacks some of them, which made the logo's columns drift. */
+  font-family: ui-monospace, Menlo, Consolas, 'DejaVu Sans Mono', 'Liberation Mono', monospace;
   font-size: clamp(14px, 2.2vw, 22px);
-  line-height: 1.2;
+  line-height: 1.15;
   color: var(--green);
   white-space: pre;
   margin-bottom: 2rem;
@@ -218,8 +220,9 @@ section {
   align-items: center;
 }
 
-.hero-text { min-width: 0; }
-.hero-text .ascii-art { font-size: clamp(12px, 1.6vw, 20px); overflow: hidden; }
+/* The ASCII logo is 57 columns wide (~0.6em per column), so scale it to the column width. */
+.hero-text { min-width: 0; container-type: inline-size; }
+.hero-text .ascii-art { font-size: min(20px, calc(100cqi / 34.5)); }
 
 .player-card {
   --pink: #ff3d9a;
@@ -338,7 +341,7 @@ section {
 
 @media (max-width: 860px) {
   .hero-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
   }
   .player-card {
