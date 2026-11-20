@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import profilePic from '@/public/images/stefan-profil.webp'
 
 export default function Hero() {
   const [uptime, setUptime] = useState('0d 0h 0m 0s')
@@ -21,6 +23,8 @@ export default function Hero() {
 
   return (
     <section id="hero">
+      <div className="hero-grid">
+      <div className="hero-text">
       <div className="ascii-art">{`┌─────────────────────────────────────────┐
 │  ███████╗████████╗███████╗███████╗ █████╗ ███╗   ██╗│
 │  ██╔════╝╚══██╔══╝██╔════╝██╔════╝██╔══██╗████╗  ██║│
@@ -49,6 +53,35 @@ export default function Hero() {
         <a className="btn primary" href="#projekt">SE PROJEKT</a>
         <a className="btn" href="#cv">CV / ERFARENHET</a>
         <a className="btn" href="#kontakt">KONTAKTA MIG</a>
+      </div>
+      </div>
+
+      <figure className="player-card">
+        <div className="player-bar">
+          <span>PLAYER_01.webp</span>
+          <span className="player-rec">● REC</span>
+        </div>
+        <div className="player-screen">
+          <Image
+            src={profilePic}
+            alt="Stefan Eklund i retrostil – solnedgång, palmer och stadssiluett"
+            placeholder="blur"
+            loading="eager"
+            fetchPriority="high"
+            sizes="(max-width: 860px) 300px, 360px"
+            className="player-img"
+          />
+          <span className="player-corner tl" />
+          <span className="player-corner tr" />
+          <span className="player-corner bl" />
+          <span className="player-corner br" />
+        </div>
+        <figcaption className="player-caption">
+          <span>▶ S.EKLUND</span>
+          <span>LVL 99</span>
+          <span className="player-online">ONLINE</span>
+        </figcaption>
+      </figure>
       </div>
     </section>
   )

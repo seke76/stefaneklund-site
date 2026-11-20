@@ -208,6 +208,155 @@ section {
   color: var(--green);
 }
 
+/* ── HERO: PLAYER CARD (profile picture) ── */
+#hero { max-width: 1120px; }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 3rem;
+  align-items: center;
+}
+
+.hero-text { min-width: 0; }
+.hero-text .ascii-art { font-size: clamp(12px, 1.6vw, 20px); overflow: hidden; }
+
+.player-card {
+  --pink: #ff3d9a;
+  margin: 0;
+  border: 1px solid var(--green);
+  background: var(--bg2);
+  box-shadow:
+    0 0 0 4px var(--bg),
+    0 0 0 5px var(--green-muted),
+    0 0 28px rgba(255, 61, 154, 0.28),
+    0 0 60px rgba(0, 255, 65, 0.08);
+  transform: rotate(1.2deg);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.player-card:hover {
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow:
+    0 0 0 4px var(--bg),
+    0 0 0 5px var(--green),
+    0 0 40px rgba(255, 61, 154, 0.45),
+    0 0 80px rgba(0, 255, 65, 0.12);
+}
+
+.player-bar,
+.player-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--green-dim);
+}
+
+.player-bar { border-bottom: 1px solid var(--green-muted); }
+.player-caption { border-top: 1px solid var(--green-muted); }
+
+.player-rec {
+  color: var(--pink);
+  text-shadow: 0 0 6px rgba(255, 61, 154, 0.7);
+  animation: blink 1.6s step-end infinite;
+}
+
+.player-online {
+  color: var(--green);
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.6);
+}
+
+.player-screen {
+  position: relative;
+  aspect-ratio: 1122 / 1402;
+  overflow: hidden;
+}
+
+.player-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: player-boot 1.8s ease-out 0.3s both;
+}
+
+/* Scanlines + slight CRT curvature shading on top of the photo */
+.player-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, 0.22) 2px 3px),
+    radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* Bright scan beam that sweeps once while the picture "loads" */
+.player-screen::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  z-index: 2;
+  pointer-events: none;
+  background: var(--green);
+  box-shadow: 0 0 14px 3px rgba(0, 255, 65, 0.7);
+  opacity: 0;
+  animation: player-beam 1.3s ease-in 0.3s both;
+}
+
+.player-corner {
+  position: absolute;
+  z-index: 2;
+  width: 16px;
+  height: 16px;
+  border: 0 solid var(--green);
+  pointer-events: none;
+}
+.player-corner.tl { top: 8px; left: 8px; border-top-width: 2px; border-left-width: 2px; }
+.player-corner.tr { top: 8px; right: 8px; border-top-width: 2px; border-right-width: 2px; }
+.player-corner.bl { bottom: 8px; left: 8px; border-bottom-width: 2px; border-left-width: 2px; }
+.player-corner.br { bottom: 8px; right: 8px; border-bottom-width: 2px; border-right-width: 2px; }
+
+/* Picture boots up green-phosphor, then blooms into full colour */
+@keyframes player-boot {
+  0%   { clip-path: inset(0 0 100% 0); filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(4) brightness(0.8); }
+  70%  { clip-path: inset(0 0 0 0);    filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(4) brightness(0.9); }
+  100% { clip-path: inset(0 0 0 0);    filter: none; }
+}
+
+@keyframes player-beam {
+  0%   { top: 0; opacity: 1; }
+  90%  { top: calc(100% - 3px); opacity: 1; }
+  100% { top: calc(100% - 3px); opacity: 0; }
+}
+
+@media (max-width: 860px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .player-card {
+    order: -1;
+    width: min(300px, 82%);
+    justify-self: center;
+    margin-top: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-img,
+  .player-screen::after,
+  .player-rec { animation: none; }
+  .player-card,
+  .player-card:hover { transform: none; transition: none; }
+}
+
 /* ── SECTION HEADER ── */
 .section-header { margin-bottom: 3rem; }
 
