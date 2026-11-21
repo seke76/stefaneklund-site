@@ -56,7 +56,7 @@ export function birgittaTip(s: GameState): Tip {
   if (p.housing === 'andrahand' && p.items.length && !p.insurance)
     return hint(`Långfingrade Leffe gillar andrahandslägenheter. En hemförsäkring på banken kostar ${kr(price(s, INSURANCE_WEEKLY))} i veckan.`)
   if (!hasFridge(s, p) && p.cash >= price(s, 6000))
-    return hint(`Ett kylskåp på Prylpalatset (${kr(price(s, 4000))}) gör att du kan handla mat hem. Det är billigare än att äta ute.`)
+    return hint(`Ett kylskåp på Prylpalatset (${kr(price(s, 4000))}) gör att du kan handla mat hem för halva priset mot att äta ute.`)
   if (hungry) return hint(`Du behöver äta en gång i veckan. Ät på Bistron eller Puben${hasFridge(s, p) ? ', eller fyll kylskåpet på Kvickköp' : ''}.`)
   if (p.clothes > 0 && p.clothesWeeksLeft <= 1) return hint('Kläderna är snart utslitna. Nya finns på Kvickköp.')
   if (p.relations < 30) return hint('Du har inte träffat någon på länge. Ring familjen hemifrån eller gå till Puben efter 16.')

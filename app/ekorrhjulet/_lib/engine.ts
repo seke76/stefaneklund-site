@@ -6,7 +6,10 @@ import {
   COURSES,
   EGON_QUIPS,
   ERA_PRICE,
+  BAR_FOOD_PRICE,
+  DINNER_PRICE,
   FOOD_PRICE,
+  LUNCH_CARD_PRICE,
   FRIDGE_WEEKS,
   GYM_CARD,
   GYM_DAYPASS,
@@ -412,8 +415,8 @@ export function actionsAt(s: GameState): Action[] {
     }
     case 'bistro': {
       const fed = p.mealsThisWeek > 0
-      add({ id: 'lunch', group: 'Mat', label: 'Dagens lunch', hours: 1, cost: price(s, 120), note: 'Mätt för veckan · Hälsa +2', disabled: fed ? 'Du har redan ätit den här veckan' : undefined })
-      add({ id: 'dinner', group: 'Mat', label: 'Middag i lugn och ro', hours: 2, cost: price(s, 280), note: fed ? 'Lyx: Hälsa +4 · Relationer +2' : 'Mätt för veckan · Hälsa +4 · Relationer +2' })
+      add({ id: 'lunch', group: 'Mat', label: 'Lunchkort för veckan', hours: 1, cost: price(s, LUNCH_CARD_PRICE), note: 'Lunch här varje dag · Mätt för veckan · Hälsa +2', disabled: fed ? 'Du har redan mat för den här veckan' : undefined })
+      add({ id: 'dinner', group: 'Unna dig', label: 'Middag i lugn och ro', hours: 2, cost: price(s, DINNER_PRICE), note: 'Hälsa +4 · Relationer +2 · räknas inte som veckans mat' })
       break
     }
     case 'kvickkop': {
@@ -479,7 +482,7 @@ export function actionsAt(s: GameState): Action[] {
         add({ id: 'wait16', label: 'Vänta tills puben öppnar 16:00', hours: Math.round((16 - hour) * 4) / 4, cost: 0 })
         break
       }
-      add({ id: 'snacks', label: 'Smårätter i baren', hours: 0.5, cost: price(s, 90), note: 'Mätt för veckan · Hälsa −1 (fet mat)', disabled: p.mealsThisWeek > 0 ? 'Du har redan ätit den här veckan' : undefined })
+      add({ id: 'snacks', label: 'Barmat hela veckan', hours: 0.5, cost: price(s, BAR_FOOD_PRICE), note: 'Mätt för veckan · Hälsa −2 (fet mat)', disabled: p.mealsThisWeek > 0 ? 'Du har redan mat för den här veckan' : undefined })
       add({ id: 'afterwork', label: 'Afterwork med kollegor', hours: 3, cost: price(s, 400), note: 'Relationer +10, Hälsa −2' })
       add({ id: 'quiz', label: 'Pubquiz', hours: 2, cost: price(s, 150), note: 'Relationer +6' })
       add({ id: 'date', label: p.partner ? 'Dejt med din partner' : 'Gå på dejt', hours: 3, cost: price(s, 600), note: 'Relationer +12' })
@@ -548,16 +551,17 @@ export function perform(state: GameState, id: string, amount?: number): GameStat
     case 'dinner':
     case 'snacks': {
       pay(p, a.cost)
-      const first = p.mealsThisWeek === 0
-      p.mealsThisWeek = 1
-      if (verb === 'lunch') p.health = clamp(p.health + 2)
       if (verb === 'dinner') {
+        // A treat: health and friends, but not the week's food.
         p.health = clamp(p.health + 4)
         p.relations = clamp(p.relations + 2)
+        say('En lång middag. Du pratade med servitören om livet.')
+        break
       }
-      if (verb === 'snacks') p.health = clamp(p.health - 1)
-      const what = { lunch: 'Dagens lunch var pannbiff. Gott!', dinner: 'En lång middag. Du pratade med servitören om livet.', snacks: 'Pommes och ostbågar. Inte nyttigt, men mätt.' }[verb as 'lunch']
-      say(first ? `${what} Du är mätt för veckan.` : what)
+      p.mealsThisWeek = 1
+      if (verb === 'lunch') p.health = clamp(p.health + 2)
+      if (verb === 'snacks') p.health = clamp(p.health - 2)
+      say(verb === 'lunch' ? 'Lunchkort köpt! Du äter på Bistron hela veckan. I dag: pannbiff.' : 'Pommes och ostbågar hela veckan. Inte nyttigt, men mätt.')
       break
     }
     case 'call':

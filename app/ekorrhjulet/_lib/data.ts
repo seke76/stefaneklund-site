@@ -117,7 +117,11 @@ export const QUEUE_POINTS_NEEDED = 30
 export const BRF_PRICE = 2_000_000
 export const BRF_DOWN = 0.15
 
-export const FOOD_PRICE = 900 // a bag of groceries: food for one week at home
+// A week of food, nutid kr. Cooking at home is the cheapest way to eat, but needs a fridge.
+export const FOOD_PRICE = 700 // a bag of groceries: food for one week at home
+export const LUNCH_CARD_PRICE = 1400 // lunch at Bistron every day for a week
+export const BAR_FOOD_PRICE = 1100 // bar food at Puben for a week
+export const DINNER_PRICE = 380 // a dinner out: a treat, not the week's food
 export const FRIDGE_WEEKS = 4 // how many weeks of food the fridge holds
 export const GYM_CARD = 3000
 export const GYM_DAYPASS = 120
