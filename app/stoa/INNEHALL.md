@@ -1,10 +1,10 @@
 # Stoa – utkast till innehåll
 
-> **Utkast för granskning, version 2.** Här finns alla texter som Stoa ska visa. När de är godkända flyttas de in i koden (`_lib/content.ts`), och den här filen ersätts av en README som beskriver appen.
+> **Utkast för granskning, version 3.** Här finns alla texter som Stoa ska visa. När de är godkända flyttas de in i koden (`_lib/content.ts`), och den här filen ersätts av en README som beskriver appen.
 >
 > **Inga filosofer nämns i appen.** Varje princip och övning har en **ursprunglig term**. Den är på latin där en klassisk latinsk term finns, annars på grekiska (märkt *grek.*). Där ingen etablerad term finns står ett streck. Jag har hellre lämnat tomt än hittat på latin.
 >
-> **Källa** anges per övning: **FB** = Facebook-inlägget, **Dok** = dina Google-dokument, **R** = researchen (källistan finns sist).
+> **Källa** anges per övning: **FB** = Facebook-inlägget, **Dok** = dina Google-dokument, **R** = researchen, **SM** = The Stoic Mindset (källistan finns sist).
 
 ---
 
@@ -19,11 +19,17 @@
 
 | Skärm | Vad den gör |
 |---|---|
-| **Idag** | Morgonförberedelse, dagens övning och kvällsgenomgång. Pågår en **veckoutmaning** har den ett eget kort med *Dag 3 av 7*. |
+| **Idag** | Dagens citat, morgonförberedelse, dagens övning och kvällsgenomgång. Pågår en **veckoutmaning** har den ett eget kort med *Dag 3 av 7*. |
 | **Just nu** | "Vad händer?" Du väljer en situation och får 3–4 korta steg. |
 | **Övningar** | Biblioteket med flikarna *Dagsövningar*, *Just nu*, *Veckoutmaningar*, *Ritualer* och *Planer*. Härifrån startar du veckoutmaningar och planer, byter dagens övning och lägger till egna. |
 | **Grunder** | Vad stoicismen är, de tolv principerna, *Mina dygder* och *Min kod*. |
-| **Dagbok** | Tidigare dagar, anteckningar, avklarade utmaningar och planer, export och import. |
+| **Dagbok** | Tidigare dagar, anteckningar, avklarade utmaningar och planer. Knappen **Skriv** ger en skrivfråga på ett valfritt tema (se *Skrivfrågor*). Här finns också export och import. |
+
+### Citat
+
+- Citaten visas **utan namn**, som "stoisk tanke". Källan (person och ställe) sparas i datan och visas bara om du trycker på *Källa*. *Ska avgöras senare:* ska källan synas alls?
+- Citaten är **mina egna översättningar** från grekiska och latin, inte kopior av moderna översättningar. Därför behöver de granskas.
+- Varje citat är kopplat till en eller flera principer och övningar. Det visas som *Dagens citat* på Idag och på övningens kort.
 
 ### Hur dagens övning väljs
 
@@ -66,6 +72,8 @@ Det är lättare att öva om man vet *vad* man övar. Stoisk träning brukar del
 Stoikerna kallade målet *eudaimonia*, ungefär "ett blomstrande liv". Vägen dit var att leva "i samklang med naturen". Det låter som att bo i en skog, men det betyder något annat: att leva som den människa du är skapad att vara. Människan har två särdrag. Vi kan **tänka**, och vi är **sociala**. Ett gott liv är alltså ett liv där du använder ditt förnuft väl och tar ditt ansvar för andra.
 
 Det här skiljer stoicismen från jakten på lycka. Lycka som känsla kommer och går. Ett gott liv är något du kan leva även en dålig dag.
+
+Med det goda livet följer något som stoikerna kallade *ataraxia*: **ett sinne som inte går att rubba**. Det är inte likgiltighet, utan ett lugn som håller även när det stormar. Tänk dig en klippa som vågorna slår emot. Den står still, och vattnet lägger sig runt den.
 
 **Vanligt missförstånd:** "Stoiker ska vara nöjda med allt." Nej. Du får sträva, bygga och vilja förändra. Det som räknas är *hur* du gör det.
 
@@ -249,6 +257,8 @@ Vi är som delar av en kropp, och en hand som arbetar mot den andra gör ingen g
 
 **I vardagen:** Någon tränger sig i kön. Personen har kanske en dålig dag, och du behöver inte göra din dag sämre också.
 
+En annan bild är **bikupan**: det som inte är bra för kupan är inte bra för biet heller. Dina val påverkar familjen, kollegorna och grannarna, och deras välmående påverkar ditt.
+
 **Bär med dig:** *Hur skulle jag bete mig mot den här personen om hen vore släkt med mig?*
 
 ### 12. Det är en träning
@@ -326,6 +336,18 @@ Varje dagsövning har en **titel**, en **term**, ett **område** (Begär, Handli
 - **Morgon:** Vilken av dina roller behöver dig mest idag?
 - **Kväll:** Vilken roll skötte jag väl? Vilken fick för lite?
 
+**7b. Rätt och sant** · — · Handling · *SM*
+- **Idé:** Två enkla regler för en hel dag.
+- **Så gör du:** Om det inte är rätt, gör det inte. Om det inte är sant, säg det inte. Det gäller även småsaker: en vit lögn, en överdrift eller en genväg ingen märker.
+- **Morgon:** Var beredd på ett tillfälle där det är lättare att fuska eller överdriva.
+- **Kväll:** Sa jag något idag som inte var helt sant? Gjorde jag något som inte var helt rätt?
+
+**7c. Vet vart du seglar** · — · Handling · *SM*
+- **Idé:** Den som inte vet vilken hamn den styr mot har ingen vind som är rätt.
+- **Så gör du:** Skriv i en mening vad som är viktigast för dig just nu i livet, alltså inte idag, utan nu. Pröva sedan dagens val mot den meningen. För det dig närmare hamnen?
+- **Morgon:** Vilken är din hamn? Vad i dagens planer styr dit?
+- **Kväll:** Vad gjorde jag idag som förde mig närmare? Vad var bara vind åt fel håll?
+
 **7. Var ett föredöme** · *exemplum* · Handling · *Dok*
 - **Idé:** Hur du bär det som är svårt visar andra att det går.
 - **Så gör du:** När något är jobbigt, tänk på att någon ser hur du hanterar det, till exempel ett barn, en kollega eller en vän. Gör ditt lidande till något andra kan lära av.
@@ -337,8 +359,15 @@ Varje dagsövning har en **titel**, en **term**, ett **område** (Begär, Handli
 **8. Vems begär är det?** · *appetitus* · Begär · *R*
 - **Idé:** Många av dina önskningar är inte dina egna.
 - **Så gör du:** När du vill ha något, som en pryl, ett erkännande eller en status, fråga dig var begäret kommer ifrån. Är det ett verkligt behov, eller något reklam, flöden eller andra har planterat?
+- **Fördjupning:** Tänk på tre saker du önskade dig som barn. Hur ser dina begär ut nu? Vilka har du vuxit ifrån?
 - **Morgon:** Lägg märke till det första du vill ha idag.
 - **Kväll:** Vilket begär var verkligen mitt? Vilket var lånat?
+
+**9b. Din egen domare** · — · Omdöme · *SM*
+- **Idé:** Hur mycket tid vinner inte den som struntar i vad grannen säger, gör eller tänker.
+- **Så gör du:** Lägg märke till när du gör något för att få beröm, likes eller gillande. Fråga dig vad *du* tycker om det du gör. Jämför dig inte med andras flöden, eftersom de är utvalda höjdpunkter.
+- **Morgon:** Vad vill du göra idag för att *du* tycker att det är rätt, inte för att någon ska se?
+- **Kväll:** När sökte jag andras gillande idag? Vad hade jag gjort annars?
 
 **9. Priset** · — · Begär · *R*
 - **Idé:** Allt har ett pris. Vill du betala det?
@@ -456,6 +485,24 @@ Varje dagsövning har en **titel**, en **term**, ett **område** (Begär, Handli
 - **Morgon:** Välj en sak du har som du en gång längtade efter.
 - **Kväll:** Vad tog jag för givet idag som jag verkligen skulle sakna?
 
+**26b. Vänd på det** · *praemeditatio* · Begär · *SM*
+- **Idé:** Tänk först på vad som kan gå snett, och sedan på allt som inte går snett.
+- **Så gör du:** Ta två minuter med morgonkaffet. Vad kan gå fel idag? Trafiken, ett långt möte, någon som lämnar återbud? Vänd sedan på det: hälsan, en lugn morgon, kaffet i handen. Det mesta går inte fel. Det krymper känslan av att ha rätt till allt.
+- **Morgon:** Tre saker som kan gå snett, och tre saker som inte gör det.
+- **Kväll:** Vad gick inte fel idag som jag tog för givet?
+
+**26c. Beundra de levande** · — · Handling · *SM*
+- **Idé:** När du behöver glädje, tänk på förtjänsterna hos dem som lever omkring dig.
+- **Så gör du:** Välj tre personer i ditt liv och skriv en egenskap du uppskattar hos var och en: hennes energi, hans ödmjukhet, deras generositet. Säg det gärna till någon av dem.
+- **Morgon:** Vem omkring dig vill du lägga märke till det goda hos idag?
+- **Kväll:** Vilken förtjänst såg jag hos någon idag? Sa jag det?
+
+**26d. Brev till ditt framtida jag** · — · Begär · *SM*
+- **Idé:** Skriv till den du blir om ett år.
+- **Så gör du:** Skriv ett kort brev till dig själv om ett år. Ta med tre påminnelser om vad som är viktigt att leva fullt ut, nu. Appen sparar brevet och visar det för dig om ett år.
+- **Morgon:** Vad vill du att ditt framtida jag ska komma ihåg?
+- **Kväll:** Skrev jag brevet? Vad var svårast att formulera?
+
 **27. Allt är på lån** · *omnia aliena sunt* · Begär · *Dok, R*
 - **Idé:** Det du har är lånat, inte ägt.
 - **Så gör du:** Se på dina saker, din tid och dina relationer som något du har fått låna. Uppskatta det du har och det du har haft. När något tar slut, säg *"jag lämnade tillbaka det"*.
@@ -514,6 +561,12 @@ Varje dagsövning har en **titel**, en **term**, ett **område** (Begär, Handli
 - **Morgon:** Vem vill du dra in en cirkel idag?
 - **Kväll:** Vem behandlade jag som om hen stod mig närmare?
 
+**35b. Bikupan** · — · Handling · *SM*
+- **Idé:** Det som inte är bra för kupan är inte bra för biet heller.
+- **Så gör du:** Inför dagens val, stora som små, fråga dig om det bara gynnar dig eller också dem omkring dig: familjen, kollegorna, grannarna, världen.
+- **Morgon:** Vilket val idag påverkar fler än dig?
+- **Kväll:** Gjorde jag något idag som var bra för kupan?
+
 **36. En tjänst i det tysta** · *beneficium* · Handling · *R*
 - **Idé:** Gör gott utan att räkna med något tillbaka.
 - **Så gör du:** Gör en sak för någon annan idag utan att berätta om det och utan att vänta dig tack.
@@ -543,8 +596,14 @@ Du väljer en situation och får 3–4 korta steg. Efteråt kan du anteckna hur 
 **Jag är stressad eller överväldigad** · *blicken ovanifrån* · *Dok, R*
 1. Stanna upp. Se dig själv där du är just nu.
 2. Zooma ut: huset, staden, landet, jorden. Tänk dig sedan om ett år och om tio år.
-3. Hur stort är det här i den bilden?
+3. Hur stort är det här i den bilden? Var klippan som vågorna slår emot.
 4. Vad är **en** sak du kan göra nu?
+
+**Jag har haft en dålig dag** · — · *SM*
+1. Det får vara en dålig dag. Den är snart slut.
+2. Vad har du ändå? Ett hem att komma till, en soffa, någon att prata med, ett jobb?
+3. Vad gjorde du bra idag, trots allt?
+4. Imorgon är en ny dag och ett nytt pass.
 
 **Jag oroar mig** · *praemeditatio malorum* · *R*
 1. Vad vet du säkert? Vad föreställer du dig?
@@ -578,7 +637,7 @@ Du väljer en situation och får 3–4 korta steg. Efteråt kan du anteckna hur 
 **Något gick fel** · *calamitas virtutis occasio* · *R*
 1. Vad hände, rent sakligt?
 2. Vad av det var ditt, och vad var inte ditt?
-3. Vad kan du träna på i det här: tålamod, mod eller ödmjukhet?
+3. Vilka **tre lärdomar** tar du med dig? Vad kan du träna på i det här: tålamod, mod eller ödmjukhet?
 4. Vad är nästa steg?
 
 **Jag har förlorat något** · *reddidi* · *R*
@@ -590,7 +649,8 @@ Du väljer en situation och får 3–4 korta steg. Efteråt kan du anteckna hur 
 **Jag är otålig** · *patientia* · *Dok*
 1. Lägg märke till otåligheten i kroppen.
 2. Det här är träning. Tålamod tränas bara när något går långsamt.
-3. Vad kan du göra med väntan i stället för att bara vänta?
+3. Inget stort blir till på en gång, inte ens ett fikon. Först blom, sedan frukt, sedan mognad.
+4. Vad kan du göra med väntan i stället för att bara vänta?
 
 **Jag är avundsjuk** · *indifferentia* · *R*
 1. Vad är det du avundas, exakt?
@@ -613,8 +673,8 @@ Du väljer en situation och får 3–4 korta steg. Efteråt kan du anteckna hur 
 **Jag har ett svårt beslut** · *virtus* · *R*
 1. Vilka är alternativen? Skriv ner dem.
 2. Vad skulle ett **klokt**, **rättvist**, **modigt** och **måttfullt** val vara?
-3. Vad skulle din förebild göra?
-4. Välj det som är rätt, inte det som är bekvämast. Utfallet styr du inte.
+3. Gynnar det här bara dig, eller också dem omkring dig? Vad skulle din förebild göra?
+4. Speglar valet den du vill vara? Välj det som är rätt, inte det som är bekvämast. Utfallet styr du inte.
 
 **En känsla tar över** · *affectus* · *Dok*
 1. Ge känslan ett namn: ilska, avund, oro, besvikelse.
@@ -663,6 +723,16 @@ En utmaning pågår i 7 dagar. Den visas på *Idag* som *Dag 3 av 7*, och varje 
 - **Varför:** Det du matar sinnet med blir dina tankar. Tid utan brus ger plats för det viktiga.
 - **Kvällsfråga:** Vad fyllde jag tomrummet med? Hur kändes huvudet?
 
+**Skärmfri kväll** · *recede in te ipsum* · *SM*
+- **Utmaning:** Stäng av alla skärmar en timme före sängdags varje kväll. Det räcker inte med ljudlöst. Läs, skriv, prata eller sitt i stillhet.
+- **Varför:** Den som aldrig kopplar ner hinner aldrig dra sig tillbaka in i sig själv. Kvällen blir din inre tillflykt.
+- **Kvällsfråga:** Vad gjorde jag med timmen? Hur sov jag?
+
+**Tre tack om dagen** · — · *SM*
+- **Utmaning:** Skriv ner tre saker du är tacksam för varje dag i en vecka. Var konkret och personlig, så att det inte blir "familjen" varje dag.
+- **Varför:** Tacksamhet är inte passiv. Den är ett sätt att se klart, och den tränas.
+- **Kvällsfråga:** Vilka tre saker idag? Blev det lättare att hitta dem?
+
 **Öva likgiltighet** · *indifferentia* · *Dok*
 - **Utmaning:** Låt bli att reagera på småsaker i en vecka, som köer, förseningar, andras humör och väder.
 - **Varför:** Varje gång du låter bli att reagera tränar du på att styra hur du svarar på yttre omständigheter.
@@ -688,14 +758,17 @@ Ritualerna ramar in dagen på *Idag*. Bara en sak är obligatorisk: kvällens *J
 *praemeditatio* · *R*
 
 Visas överst på *Idag* fram till eftermiddagen. Det tar cirka 2 minuter.
-1. **Dagens övning** och morgonavsikten, med en valfri rad.
-2. **Dagens morgonfråga**, som roterar mellan:
+1. **Dagens citat.** Läs det långsamt och ta med en mening in i dagen.
+2. **Dagens övning** och morgonavsikten, med en valfri rad.
+3. **Dagens morgonfråga**, som roterar mellan:
    - *Vad väntar idag, och vad av det styr jag?*
    - *Vad kan gå fel idag, och hur vill jag möta det?*
    - *Vilken dygd kräver dagen mest?*
    - *Vad gott ska jag göra idag?*
    - *Hur ser dagen ut på den goda vägen?*
    - *Vad är jag tacksam för att jag vaknade till?*
+   - *Vad kan gå snett idag, och vad går inte snett?*
+   - *Vilka tre saker är jag tacksam för just nu?*
 
 ## Kvällsgenomgång
 *examen vespertinum* · *R*
@@ -712,7 +785,10 @@ Visas på kvällen. Det tar cirka 2–5 minuter.
    - *Vilken dålig vana stod jag emot?*
    - *Vad lämnade jag ogjort?*
    - *Vad gott gjorde jag idag?*
-   - *Imorgon ska jag…*
+   - *Hur hanterade jag mina känslor idag?*
+   - *Vad lärde jag mig idag?*
+   - *Vilka tre saker är jag tacksam för idag?*
+   - *Imorgon ska jag…* (planera morgondagen ikväll, så vaknar du med en hamn att styra mot)
 
 Hjälptext: *Var din egen vänliga tränare. Granska dagen ärligt, utan att smickra och utan att straffa. Det som hänt kan inte ändras, men det kan läras av.*
 
@@ -736,6 +812,107 @@ Det du redan har → Allt är på lån → Medan det finns → Tänk dig förlus
 - **Vecka 2, Rättvisa:** Hur du handlade, Dina roller, En tjänst i det tysta, Förstå den som gör fel, Cirklarna, Var ett föredöme, Vad skulle mitt bästa jag göra? *Utmaning: En vänlighet om dagen.*
 - **Vecka 3, Mod:** Motgång som träning, Förbered dig på motstånd, Tänk dig förlusten, Livet är ändligt, Börja från dagen som den är, Din förebild, Balansera perspektivet. *Utmaning: Frivilligt obekväm.*
 - **Vecka 4, Måttfullhet:** Nog, Njut med måtta, Förenkla, Är det nödvändigt?, Vems begär är det?, Priset, Det du redan har. *Utmaning: Måttfullhet.*
+
+---
+
+# Citat
+
+Mina egna översättningar. Källan står inom hakparentes och visas bara om du trycker på *Källa*. **Princip** anger vilken princip (nummer enligt Grunder) citatet hör till.
+
+| # | Citat | Princip | Källa |
+|---|---|---|---|
+| 1 | Det är inte händelserna som upprör människor, utan deras omdömen om händelserna. | 5 | [Epiktetos, Handboken 5] |
+| 2 | Somligt står i vår makt, annat gör det inte. | 4 | [Epiktetos, Handboken 1] |
+| 3 | Vänta lite, intryck. Låt mig se vad du är och vad du gäller. | 5 | [Epiktetos, Samtal 2.18] |
+| 4 | Säg aldrig om något: "Jag har förlorat det", utan: "Jag har lämnat tillbaka det." | 9 | [Epiktetos, Handboken 11] |
+| 5 | Bete dig i livet som vid en bjudning. Ta det som bjuds med måtta, och sträck dig inte efter det som ännu inte kommit. | 10 | [Epiktetos, Handboken 15] |
+| 6 | Inget stort blir till på en gång, inte ens en vindruvsklase eller ett fikon. | 12 | [Epiktetos, Samtal 1.15] |
+| 7 | Räkna de dagar du inte har varit arg. | 12 | [Epiktetos, Samtal 2.18] |
+| 8 | Du kan vara oövervinnlig om du aldrig ger dig in i en tävling där segern inte står i din makt. | 4 | [Epiktetos, Handboken 19] |
+| 9 | Det som står i vägen för handlingen driver den framåt. Det som står i vägen blir vägen. | 7 | [Marcus Aurelius, Självbetraktelser 5.20] |
+| 10 | Var som klippan som vågorna ständigt slår emot. Den står kvar, och vattnet lägger sig runt den. | 1 | [Marcus Aurelius, 4.49] |
+| 11 | Var och en lever bara nu, i detta korta ögonblick. Resten är redan levt, eller okänt. | 9 | [Marcus Aurelius, 3.10] |
+| 12 | Låt inte framtiden oroa dig. Du möter den, om det behövs, med samma förnuft som du möter nuet med. | 4 | [Marcus Aurelius, 7.8] |
+| 13 | Tänk inte på det du saknar som om du redan hade det. Välj ut det bästa av det du har, och tänk på hur du skulle längta efter det om du inte hade det. | 9 | [Marcus Aurelius, 7.27] |
+| 14 | När du vill glädja dig själv, tänk på förtjänsterna hos dem som lever omkring dig. | 11 | [Marcus Aurelius, 6.48] |
+| 15 | Om det inte är rätt, gör det inte. Om det inte är sant, säg det inte. | 2 | [Marcus Aurelius, 12.17] |
+| 16 | Det som inte gagnar kupan gagnar inte heller biet. | 11 | [Marcus Aurelius, 6.54] |
+| 17 | Sluta diskutera hur en god människa ska vara. Var en. | 2 | [Marcus Aurelius, 10.16] |
+| 18 | Hur mycket tid vinner inte den som struntar i vad grannen säger, gör eller tänker. | 3 | [Marcus Aurelius, 4.18] |
+| 19 | Fråga dig inför varje handling: Är det här nödvändigt? | 10 | [Marcus Aurelius, 4.24] |
+| 20 | När någon gör dig fel, tänk genast på vad den trodde var gott eller ont när den gjorde det. | 11 | [Marcus Aurelius, 7.26] |
+| 21 | Vänlighet är oövervinnlig, om den är äkta. | 11 | [Marcus Aurelius, 11.18] |
+| 22 | Tiden är en flod av allt som händer, en strid ström. Knappt har något synts förrän det svepts bort. | 9 | [Marcus Aurelius, 4.43] |
+| 23 | Tro inte att det som är svårt för dig är omöjligt för en människa. | 7 | [Marcus Aurelius, 6.19] |
+| 24 | Den som inte vet vilken hamn den styr mot har ingen vind som är rätt. | 1 | [Seneca, Brev 71] |
+| 25 | Avsätt några dagar då du nöjer dig med den enklaste maten och den grövsta klädseln, och fråga dig: Var det detta jag fruktade? | 10 | [Seneca, Brev 18] |
+| 26 | Ingen kämpe går in i matchen med gott mod om han aldrig fått stryk. | 7 | [Seneca, Brev 13] |
+| 27 | Vi lider oftare i fantasin än i verkligheten. | 5 | [Seneca, Brev 13] |
+| 28 | Allt annat är andras. Bara tiden är vår. | 9 | [Seneca, Brev 1] |
+| 29 | Medan vi skjuter upp, rusar livet förbi. | 9 | [Seneca, Brev 1] |
+| 30 | Fattig är inte den som har för lite, utan den som vill ha mer. | 10 | [Seneca, Brev 2] |
+| 31 | Varje kväll granskar jag hela dagen och går igenom vad jag gjort och sagt. Jag döljer inget för mig själv. | 12 | [Seneca, Om vreden 3.36] |
+| 32 | Det bästa botemedlet mot vrede är att vänta. | 6 | [Seneca, Om vreden 2.29] |
+| 33 | Livet är långt, om man vet hur man använder det. | 9 | [Seneca, Om livets korthet 2] |
+| 34 | Människan är något heligt för människan. | 11 | [Seneca, Brev 95] |
+| 35 | Ödet leder den som vill, och släpar den som inte vill. | 8 | [Seneca, Brev 107] |
+| 36 | Börja leva nu, och räkna varje dag som ett eget liv. | 9 | [Seneca, Brev 101] |
+
+---
+
+# Skrivfrågor
+
+Används av knappen **Skriv** i Dagboken. Du väljer ett tema eller tar *Överraska mig*. Svaret sparas som en vanlig anteckning.
+
+**Tacksamhet**
+- Skriv tre saker du är tacksam för idag. Vad gör de för ditt liv?
+- Vad har du idag som du en gång önskade dig?
+- Vem har gjort ditt liv bättre utan att du har tackat?
+
+**Kontroll**
+- Skriv om en situation som stressat dig nyligen. Vad styrde du, och vad styrde du inte?
+- Skriv tre saker du oroar dig för. Vad kan du göra åt var och en?
+- Vad lägger du energi på som du inte kan påverka?
+
+**Motgång**
+- Skriv om tre hinder du mött nyligen. Hur hanterade du dem, och vad lärde du dig?
+- Vilken motgång i ditt liv har gjort dig starkare?
+- Skriv tre meningar som hjälper dig att stå stadigt när det är tufft.
+
+**Förgänglighet**
+- Skriv ett brev till dig själv om ett år, med tre påminnelser om att leva fullt ut nu.
+- Tänk på en vana eller en tid i livet som har tagit slut. Vad gav den dig?
+- Om du hade ett år kvar, vad skulle du sluta med och vad skulle du börja med?
+
+**Närvaro**
+- När var du distraherad idag? Vad missade du?
+- Beskriv ett ögonblick idag i detalj: ljud, ljus och känsla.
+- Vad gör du på autopilot som du skulle kunna göra med omsorg?
+
+**Lärande**
+- Tänk på ett misstag du gjort nyligen. Skriv tre lärdomar.
+- Vilken kritik har du fått som faktiskt stämde?
+- Vad vet du idag som du inte visste för ett år sedan?
+
+**Karaktär**
+- Tänk på ett löfte du gett nyligen. Vad gör du för att hålla det?
+- När var du senast modig? När borde du ha varit det?
+- Vilken av de fyra dygderna är svagast hos dig just nu?
+
+**Mening**
+- Vilken är din hamn, alltså det du styr mot i livet?
+- Tänk på tre personer som lever med mening. Vad har de gemensamt?
+- Vad vill du att människor ska säga om dig när du inte är där?
+
+**Begär**
+- Skriv tre saker du redan har som fyller dina behov.
+- Tänk på tre saker du önskade dig som barn. Hur ser dina önskningar ut nu?
+- Vad vill du ha just nu, och vem har fått dig att vilja ha det?
+
+**Relationer**
+- Vem är svår för dig just nu? Hur ser saken ut från deras håll?
+- Vem vill du dra in en cirkel närmare?
+- Vilken förtjänst hos någon nära har du slutat lägga märke till?
 
 ---
 
@@ -765,5 +942,9 @@ Du kan skapa egna dagsövningar, Just nu-situationer och veckoutmaningar med sam
 - [Via Stoica – Five daily Stoic practices](https://viastoica.com/five-daily-stoic-practices-for-everyday-life/)
 - [Ryan Holiday – Stoicism, a practical philosophy](https://ryanholiday.net/stoicism-a-practical-philosophy-you-can-actually-use/)
 - [Stoicism Secrets – Evening review](https://stoicismsecrets.com/stoic-evening-review/) och [Journaling prompts](https://stoicismsecrets.com/stoic-journaling-prompts-for-beginners/) (via indexsidan [Stoic practices](https://stoicismsecrets.com/stoic-practices/))
+
+- [The Stoic Mindset](https://thestoicmindset.com/) (märkt **SM**): 13 sidor, bland annat 100 skrivfrågor, kvällsritualer, tacksamhet, memento mori och beslutsfattande
+
+**Avstått från SM:** djupandning (inte stoisk) och Ask Marcus Aurelius (en chattbot).
 
 **Gick inte att läsa:** byrongrealy.medium.com (blockerad), reddit.com (blockerad), philosophybasics.com (blockerad), njlifehacks.com (tom sida) och ixcoach.com (blockerad).
