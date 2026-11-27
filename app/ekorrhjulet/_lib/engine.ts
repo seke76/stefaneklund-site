@@ -325,6 +325,7 @@ export function actionsAt(s: GameState): Action[] {
     })
   }
 
+  // Buying things takes no time (items, clothes, groceries, cards, insurance); doing things does.
   switch (p.location) {
     case 'lagenheten': {
       const rest = 2 + restBonus(s, p)
@@ -407,7 +408,7 @@ export function actionsAt(s: GameState): Action[] {
         id: 'insurance',
         group: 'Försäkring',
         label: p.insurance ? 'Säg upp hemförsäkringen' : 'Teckna hemförsäkring',
-        hours: 0.5,
+        hours: 0,
         cost: 0,
         note: `${kr(price(s, INSURANCE_WEEKLY))}/vecka, ersätter stulna prylar`,
       })
@@ -415,7 +416,7 @@ export function actionsAt(s: GameState): Action[] {
     }
     case 'bistro': {
       const fed = p.mealsThisWeek > 0
-      add({ id: 'lunch', group: 'Mat', label: 'Lunchkort för veckan', hours: 1, cost: price(s, LUNCH_CARD_PRICE), note: 'Lunch här varje dag · Mätt för veckan · Hälsa +2', disabled: fed ? 'Du har redan mat för den här veckan' : undefined })
+      add({ id: 'lunch', group: 'Mat', label: 'Lunchkort för veckan', hours: 0, cost: price(s, LUNCH_CARD_PRICE), note: 'Lunch här varje dag · Mätt för veckan · Hälsa +2', disabled: fed ? 'Du har redan mat för den här veckan' : undefined })
       add({ id: 'dinner', group: 'Unna dig', label: 'Middag i lugn och ro', hours: 2, cost: price(s, DINNER_PRICE), note: 'Hälsa +4 · Relationer +2 · räknas inte som veckans mat' })
       break
     }
@@ -425,14 +426,14 @@ export function actionsAt(s: GameState): Action[] {
         id: 'food',
         group: 'Mat',
         label: 'Matkasse för en vecka',
-        hours: 0.5,
+        hours: 0,
         cost: price(s, FOOD_PRICE),
         note: p.foodPortions ? `Hemma: mat för ${p.foodPortions} v · äts automatiskt` : 'Maten äts hemma automatiskt',
         // No fridge? You may still buy it: it goes bad at the weekend. Players learn the hard way.
         disabled: p.foodPortions >= FRIDGE_WEEKS ? (fridge ? 'Kylskåpet är fullt' : 'Du har redan mat hemma') : undefined,
       })
       for (const c of CLOTHES) {
-        add({ id: `clothes:${c.level}`, group: 'Kläder', label: `Köp ${c.name.toLowerCase()}`, hours: 0.5, cost: price(s, c.price), note: `Håller ca ${c.weeks} veckor` })
+        add({ id: `clothes:${c.level}`, group: 'Kläder', label: `Köp ${c.name.toLowerCase()}`, hours: 0, cost: price(s, c.price), note: `Håller ca ${c.weeks} veckor` })
       }
       break
     }
@@ -444,10 +445,10 @@ export function actionsAt(s: GameState): Action[] {
         const effects = [`Status +${it.status}`, it.happy ? `trivsel +${it.happy}` : '', it.rest ? 'bättre vila' : '', it.travel ? 'kortare restid' : '']
           .filter(Boolean)
           .join(', ')
-        add({ id: `buy:${it.id}`, group: 'Köp', label: `${it.name}`, hours: 0.5, cost: pr, note: effects, disabled: owned, short: `Köp ${kr(pr)}` })
+        add({ id: `buy:${it.id}`, group: 'Köp', label: `${it.name}`, hours: 0, cost: pr, note: effects, disabled: owned, short: `Köp ${kr(pr)}` })
         if (p.location === 'pryl') {
           const weekly = round((pr * 1.2) / 24 + price(s, 39))
-          add({ id: `inst:${it.id}`, group: 'Avbetalning', label: `${it.name} på avbetalning`, hours: 0.5, cost: 0, note: `0 kr idag, ${kr(weekly)}/vecka i 24 veckor`, disabled: owned, short: `Avbetala ${kr(weekly)}/v` })
+          add({ id: `inst:${it.id}`, group: 'Avbetalning', label: `${it.name} på avbetalning`, hours: 0, cost: 0, note: `0 kr idag, ${kr(weekly)}/vecka i 24 veckor`, disabled: owned, short: `Avbetala ${kr(weekly)}/v` })
         }
       }
       break
@@ -482,14 +483,14 @@ export function actionsAt(s: GameState): Action[] {
         add({ id: 'wait16', label: 'Vänta tills puben öppnar 16:00', hours: Math.round((16 - hour) * 4) / 4, cost: 0 })
         break
       }
-      add({ id: 'snacks', label: 'Barmat hela veckan', hours: 0.5, cost: price(s, BAR_FOOD_PRICE), note: 'Mätt för veckan · Hälsa −2 (fet mat)', disabled: p.mealsThisWeek > 0 ? 'Du har redan mat för den här veckan' : undefined })
+      add({ id: 'snacks', label: 'Barmat hela veckan', hours: 0, cost: price(s, BAR_FOOD_PRICE), note: 'Mätt för veckan · Hälsa −2 (fet mat)', disabled: p.mealsThisWeek > 0 ? 'Du har redan mat för den här veckan' : undefined })
       add({ id: 'afterwork', label: 'Afterwork med kollegor', hours: 3, cost: price(s, 400), note: 'Relationer +10, Hälsa −2' })
       add({ id: 'quiz', label: 'Pubquiz', hours: 2, cost: price(s, 150), note: 'Relationer +6' })
       add({ id: 'date', label: p.partner ? 'Dejt med din partner' : 'Gå på dejt', hours: 3, cost: price(s, 600), note: 'Relationer +12' })
       break
     }
     case 'gymmet': {
-      add({ id: 'gymcard', label: 'Köp årskort', hours: 0.5, cost: price(s, GYM_CARD), note: 'Träna utan dagsavgift', disabled: p.gymCard ? 'Du har redan årskort' : undefined })
+      add({ id: 'gymcard', label: 'Köp årskort', hours: 0, cost: price(s, GYM_CARD), note: 'Träna utan dagsavgift', disabled: p.gymCard ? 'Du har redan årskort' : undefined })
       add({ id: 'train', label: 'Träna 2 h', hours: 2, cost: p.gymCard ? 0 : price(s, GYM_DAYPASS), note: 'Hälsa +8' })
       break
     }
