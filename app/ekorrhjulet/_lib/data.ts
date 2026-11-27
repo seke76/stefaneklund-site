@@ -3,7 +3,7 @@ import type { ClothesLevel, Era, GoalPreset, Goals, PlaceId } from './types'
 /** Game constants. Prices are "nutid" kronor; 1994 multiplies them by ERA_PRICE['1994']. */
 export const HOURS_PER_WEEK = 60
 export const WEEK_START_HOUR = 8 // Monday 08:00
-export const HOURS_PER_STEP = 0.5 // walking one place along the ring (basic city)
+export const HOURS_PER_STEP = 0.25 // walking one place along the ring (15 min; the longest walk is 5 steps)
 export const RENT_EVERY = 4 // weeks
 export const ERA_PRICE: Record<Era, number> = { '1994': 0.6, nutid: 1 }
 
