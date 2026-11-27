@@ -222,7 +222,9 @@ export function clock(hoursLeft: number) {
   return { day: DAYS[day], hour: h, label: `${DAYS[day]} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}` }
 }
 
-const slow = (p: Player) => (p.health < 25 ? 1.25 : 1)
+/** Hälsa under 25: everything (work, study, walking) takes 25 % longer. Shown to the player in the dialogs. */
+export const isExhausted = (p: Player) => p.health < 25
+const slow = (p: Player) => (isExhausted(p) ? 1.25 : 1)
 const withSlow = (p: Player, h: number) => Math.round(h * slow(p) * 4) / 4
 
 export function steps(from: PlaceId, to: PlaceId) {
@@ -289,7 +291,7 @@ function pay(p: Player, amount: number): boolean {
   return false
 }
 
-const ok = (p: Player, a: Action) => (a.hours > p.hoursLeft ? 'Du har inte tid' : a.cost > p.cash ? 'Du har inte råd' : undefined)
+const ok = (p: Player, a: Action) => (a.hours > p.hoursLeft ? (isExhausted(p) ? 'Du har inte tid (utmattad)' : 'Du har inte tid') : a.cost > p.cash ? 'Du har inte råd' : undefined)
 
 export function meetsJob(s: GameState, p: Player, j: Job): string | undefined {
   const missing = j.degrees.filter((d) => !p.degrees.includes(d))
@@ -307,13 +309,14 @@ export function actionsAt(s: GameState): Action[] {
   const hour = clock(p.hoursLeft).hour
   const out: Action[] = []
   const add = (a: Action) => out.push({ ...a, disabled: a.disabled ?? ok(p, a) })
+  const tired = (h: number) => (isExhausted(p) ? ` · utmattad, ${h} h tar ${withSlow(p, h)} h` : '')
   const job = jobOf(p)
 
   if (job && job.place === p.location) {
     const w = p.wage
     const garnish = p.inkasso > 0 ? ' (hälften går till inkasso)' : ''
-    add({ id: 'work4', group: 'Jobb', label: `Jobba 4 h som ${job.name[era].toLowerCase()}`, hours: withSlow(p, 4), cost: -w * 4, note: `+${kr(w * 4)}${garnish}` })
-    add({ id: 'work8', group: 'Jobb', label: 'Jobba 8 h', hours: withSlow(p, 8), cost: -w * 8, note: `+${kr(w * 8)}${garnish}` })
+    add({ id: 'work4', group: 'Jobb', label: `Jobba 4 h som ${job.name[era].toLowerCase()}`, hours: withSlow(p, 4), cost: -w * 4, note: `+${kr(w * 4)}${garnish}${tired(4)}` })
+    add({ id: 'work8', group: 'Jobb', label: 'Jobba 8 h', hours: withSlow(p, 8), cost: -w * 8, note: `+${kr(w * 8)}${garnish}${tired(8)}` })
     add({
       id: 'raise',
       group: 'Jobb',
@@ -356,8 +359,8 @@ export function actionsAt(s: GameState): Action[] {
       if (p.enrolled) {
         const c = COURSES.find((x) => x.id === p.enrolled)!
         const left = c.hours - (p.studyHours[c.id] ?? 0)
-        add({ id: 'study4', group: c.name, label: 'Plugga 4 h', hours: withSlow(p, 4), cost: 0, note: `${left} h kvar till examen` })
-        add({ id: 'study8', group: c.name, label: 'Plugga 8 h', hours: withSlow(p, 8), cost: 0, note: `${left} h kvar till examen` })
+        add({ id: 'study4', group: c.name, label: 'Plugga 4 h', hours: withSlow(p, 4), cost: 0, note: `${left} h kvar till examen${tired(4)}` })
+        add({ id: 'study8', group: c.name, label: 'Plugga 8 h', hours: withSlow(p, 8), cost: 0, note: `${left} h kvar till examen${tired(8)}` })
       }
       for (const c of COURSES) {
         if (p.degrees.includes(c.id) || p.enrolled === c.id) continue

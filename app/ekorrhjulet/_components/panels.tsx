@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { CLOTHES_NAME, HOURS_PER_WEEK, PLACES, RENT_EVERY, placeName } from '../_lib/data'
-import { actionsAt, clock, genitive, hasFridge, jobOf, kr, lycka, progress, status, trygghet, utveckling } from '../_lib/engine'
+import { actionsAt, clock, genitive, hasFridge, isExhausted, jobOf, kr, lycka, progress, status, trygghet, utveckling } from '../_lib/engine'
 import type { Action, GameState, PlaceId, Player } from '../_lib/types'
 
 /** Shows how much a meter just moved, for a couple of seconds. The sidebar is re-mounted per player. */
@@ -191,6 +191,11 @@ export function PlaceDialog({ s, place, onAction, onClose }: { s: GameState; pla
             <span className="pill">{p.hoursLeft} h kvar</span>
             <span className="pill">Plånbok {kr(p.cash)}</span>
             {place === 'banken' && <span className="pill">Banken {kr(p.bank)}</span>}
+            {isExhausted(p) && (
+              <span className="pill pill-warn" title="Hälsa under 25: allt tar 25 % längre tid">
+                Utmattad: +25 % tid
+              </span>
+            )}
           </div>
         </header>
         {asking && (

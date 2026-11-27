@@ -21,7 +21,7 @@ export function birgittaTip(s: GameState): Tip {
   if (p.hoursLeft < 0.5) return hint('Veckan är slut! Nu blir det helg.')
 
   // Survival first.
-  if (p.health < 25) return urgent('Du ser helt slut ut! Gå hem till Lägenheten och vila, annars blir du sjuk och förlorar en hel vecka.')
+  if (p.health < 25) return urgent('Du ser helt slut ut! Allt tar 25 % längre tid nu. Gå hem till Lägenheten och vila, annars blir du sjuk och förlorar en hel vecka.')
   const hungry = p.mealsThisWeek === 0 && p.foodPortions === 0
   if (hungry && p.hoursLeft <= 30)
     return urgent(
