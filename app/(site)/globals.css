@@ -614,6 +614,11 @@ section {
 
 .project-link::before { content: '→ '; }
 
+.project-card.wip { cursor: default; border-style: dashed; }
+.project-card.wip:hover { border-color: var(--green-muted); box-shadow: none; }
+.project-link.soon { color: var(--amber); }
+.project-link.soon::before { content: '… '; }
+
 .project-status {
   float: right;
   font-size: 10px;
